@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="Arisoul.T212.App.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Arisoul.T212.App"
+    xmlns:models="clr-namespace:Arisoul.T212.App.Models"
+    xmlns:views="clr-namespace:Arisoul.T212.App.Views">
+
+    <ShellContent
+        Title="Home"
+        ContentTemplate="{DataTemplate views:MainPage}"
+        Route="MainPage"
+        Shell.NavBarIsVisible="true">
+        <ShellContent.Icon>
+            <FontImageSource FontFamily="FontAwesomeSolid" Glyph="{x:Static models:FaSolid.House}" />
+        </ShellContent.Icon>
+    </ShellContent>
+    <ShellContent
+        Title="OpenPositions"
+        ContentTemplate="{DataTemplate views:OpenPositionsPage}"
+        Icon="iconlistdetail.png"
+        Route="OpenPositionsPage"
+        Shell.NavBarIsVisible="true" />
+    <ShellContent
+        Title="Settings"
+        ContentTemplate="{DataTemplate views:SettingsPage}"
+        Route="SettingsPage"
+        Shell.NavBarIsVisible="true">
+        <ShellContent.Icon>
+            <FontImageSource FontFamily="FontAwesomeSolid" Glyph="{x:Static models:FaSolid.Gear}" />
+        </ShellContent.Icon>
+    </ShellContent>
+</Shell>

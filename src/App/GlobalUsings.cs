@@ -1,0 +1,11 @@
+﻿global using CommunityToolkit.Maui;
+global using Arisoul.T212.App.Models;
+global using Arisoul.T212.App.Services;
+global using CommunityToolkit.Mvvm.ComponentModel;
+global using CommunityToolkit.Mvvm.Input;
+global using Arisoul.T212.App.ViewModels;
+global using Arisoul.T212.App.Views;
+global using System.Collections.ObjectModel;
+global using System.Diagnostics;
+global using System.Text.Json;
+global using System.Threading.Tasks;

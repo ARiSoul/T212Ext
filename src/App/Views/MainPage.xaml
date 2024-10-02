@@ -1,0 +1,206 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Arisoul.T212.App.Views.MainPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:Arisoul.T212.App.ViewModels"
+    x:DataType="vm:MainViewModel">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior Command="{Binding LoadAccountCommand}" EventName="Loaded" />
+    </ContentPage.Behaviors>
+
+    <ScrollView>
+        <VerticalStackLayout>
+            <ActivityIndicator IsRunning="{Binding IsRefreshing}" IsVisible="{Binding IsRefreshing}" />
+
+            <VerticalStackLayout IsVisible="{Binding HasError}">
+                <Label Text="Loading failed" />
+                <Button Command="{Binding LoadAccountCommand}" Text="Retry" />
+            </VerticalStackLayout>
+
+            <VerticalStackLayout
+                Padding="15"
+                IsVisible="{Binding ShowAccountData}"
+                Spacing="5">
+                <Label
+                    FontSize="Title"
+                    HorizontalOptions="Center"
+                    Text="Account Details" />
+                <Grid
+                    ColumnDefinitions=".15*,*"
+                    ColumnSpacing="5"
+                    RowDefinitions="*,*"
+                    RowSpacing="10">
+                    <Label
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Text="Id"
+                        VerticalTextAlignment="Center" />
+                    <Entry
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        IsReadOnly="True"
+                        Text="{Binding Account.Id}" />
+                    <Label
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Text="Currency Code"
+                        VerticalTextAlignment="Center" />
+                    <Entry
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        IsReadOnly="True"
+                        Text="{Binding Account.CurrencyCode}" />
+                </Grid>
+            </VerticalStackLayout>
+
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="15">
+
+                <Button
+                    x:Name="ShowCashButton"
+                    Clicked="ShowCashButton_Clicked"
+                    Command="{Binding LoadAccountCashCommand}"
+                    HorizontalOptions="Center"
+                    IsVisible="{Binding ShowAccountCash, Converter={StaticResource InvertedBoolConverter}}"
+                    Text="Show Cash Details"
+                    WidthRequest="200" />
+
+                <Button
+                    x:Name="RefreshCashButton"
+                    Command="{Binding LoadAccountCashCommand}"
+                    HorizontalOptions="Center"
+                    IsVisible="{Binding ShowAccountCash}"
+                    Text="Refresh Cash"
+                    WidthRequest="200" />
+
+                <Button
+                    x:Name="HideCashButton"
+                    Clicked="HideCashButton_Clicked"
+                    Command="{Binding HideAccountCashCommand}"
+                    HorizontalOptions="Center"
+                    IsVisible="{Binding ShowAccountCash}"
+                    Text="Hide Cash Details"
+                    WidthRequest="200" />
+
+            </HorizontalStackLayout>
+
+            <ActivityIndicator IsRunning="{Binding IsRefreshingCash}" IsVisible="{Binding IsRefreshingCash}" />
+
+            <VerticalStackLayout IsVisible="{Binding CashHasError}">
+                <Label Text="Loading failed" />
+                <Button Command="{Binding LoadAccountCashCommand}" Text="Retry" />
+            </VerticalStackLayout>
+
+            <Grid
+                Padding="15"
+                ColumnDefinitions=".15*,*"
+                ColumnSpacing="5"
+                IsVisible="{Binding ShowAccountCash}"
+                RowDefinitions="*,*,*,*,*,*,*"
+                RowSpacing="10">
+
+                <Label
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Text="Invested"
+                    VerticalTextAlignment="Center" />
+
+                <Entry
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    IsReadOnly="True"
+                    Text="{Binding AccountCash.Invested}" />
+
+                <Label
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Text="Return"
+                    VerticalTextAlignment="Center" />
+
+                <Entry
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    IsReadOnly="True"
+                    Text="{Binding AccountCash.Ppl}" />
+
+                <Label
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Text="Free Funds"
+                    VerticalTextAlignment="Center" />
+
+                <Entry
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    IsReadOnly="True"
+                    Text="{Binding AccountCash.Free}" />
+
+                <Label
+                    Grid.Row="3"
+                    Grid.Column="0"
+                    IsVisible="False"
+                    Text="Invested in Pies"
+                    VerticalTextAlignment="Center" />
+
+                <Entry
+                    Grid.Row="3"
+                    Grid.Column="1"
+                    IsReadOnly="True"
+                    IsVisible="false"
+                    Text="{Binding AccountCash.PieCash}" />
+
+                <Label
+                    Grid.Row="4"
+                    Grid.Column="0"
+                    Text="Result"
+                    VerticalTextAlignment="Center" />
+
+                <Entry
+                    Grid.Row="4"
+                    Grid.Column="1"
+                    IsReadOnly="True"
+                    Text="{Binding AccountCash.Result}" />
+
+                <Label
+                    Grid.Row="5"
+                    Grid.Column="0"
+                    Text="Blocked"
+                    VerticalTextAlignment="Center" />
+
+                <Entry
+                    Grid.Row="5"
+                    Grid.Column="1"
+                    IsReadOnly="True"
+                    Text="{Binding AccountCash.Blocked}" />
+
+                <Label
+                    Grid.Row="6"
+                    Grid.Column="0"
+                    FontAttributes="Bold"
+                    FontSize="Medium"
+                    Text="Total"
+                    VerticalTextAlignment="Center" />
+
+                <Entry
+                    Grid.Row="6"
+                    Grid.Column="1"
+                    BackgroundColor="Green"
+                    FontAttributes="Bold"
+                    FontSize="Medium"
+                    IsReadOnly="True"
+                    Text="{Binding AccountCash.Total}" />
+
+            </Grid>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
