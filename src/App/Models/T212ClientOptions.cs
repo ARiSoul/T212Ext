@@ -7,7 +7,8 @@ public class T212ClientOptions : IT212ClientOptions
     public string BaseAddress { get; set; } = "https://demo.trading212.com";
     public string ApiKey { get; set; } = "demo";
     public string ApiVersion { get; set; } = "0";
-    public bool Initiated { get; set; } = false;
+    public bool IsInitiated { get; set; } = false;
+    public bool HasChanged { get; private set; } = false;
 
     public void LoadOptions()
     {
@@ -21,12 +22,14 @@ public class T212ClientOptions : IT212ClientOptions
             this.BaseAddress = options.BaseAddress;
             this.ApiKey = options.ApiKey;
             this.ApiVersion = options.ApiVersion;
-            this.Initiated = options.Initiated;
+            this.IsInitiated = options.IsInitiated;
+            this.HasChanged = options.HasChanged;
         }
     }
 
-    public void SaveOptions()
+    public void SaveOptions(bool markAsChanged)
     {
+        HasChanged = markAsChanged;
         var optionsSerialized = JsonSerializer.Serialize(this);
         Preferences.Set("T212ClientOptions", optionsSerialized);
     }

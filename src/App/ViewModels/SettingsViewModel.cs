@@ -17,6 +17,7 @@ public partial class SettingsViewModel
     [RelayCommand]
     public void Save()
     {
-        ClientOptions.SaveOptions();
+        ClientOptions.IsInitiated = true;
+        ClientOptions.SaveOptions(markAsChanged: true);
     }
 }

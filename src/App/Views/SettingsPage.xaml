@@ -8,10 +8,12 @@
     <VerticalStackLayout Padding="15" Spacing="5">
         <Label Text="API base address" />
         <Entry Text="{Binding ClientOptions.BaseAddress}" />
+
         <Label Text="API key" />
-        <Entry
-            IsPassword="True"
-            Text="{Binding ClientOptions.ApiKey}" />
+        <Entry IsPassword="True" Text="{Binding ClientOptions.ApiKey}" />
+
+        <Label Text="API Version" />
+        <Entry Text="{Binding ClientOptions.ApiVersion}" />
 
         <Button Command="{Binding SaveCommand}" Text="Save" />
     </VerticalStackLayout>

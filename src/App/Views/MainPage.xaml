@@ -146,7 +146,6 @@
                 <Label
                     Grid.Row="3"
                     Grid.Column="0"
-                    IsVisible="False"
                     Text="Invested in Pies"
                     VerticalTextAlignment="Center" />
 
@@ -154,7 +153,6 @@
                     Grid.Row="3"
                     Grid.Column="1"
                     IsReadOnly="True"
-                    IsVisible="false"
                     Text="{Binding AccountCash.PieCash}" />
 
                 <Label

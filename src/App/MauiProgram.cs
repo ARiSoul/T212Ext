@@ -1,4 +1,5 @@
 ﻿using Arisoul.Core.Maui;
+using Arisoul.T212.App.Storage;
 using Arisoul.T212.Client;
 
 namespace Arisoul.T212.App;
@@ -34,6 +35,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<SettingsPage>();
 
         builder.Services.AddTransient<SampleDataService>();
+
+		builder.Services.AddSingleton<ApplicationDbContext>();
 
 		return builder.Build();
 	}

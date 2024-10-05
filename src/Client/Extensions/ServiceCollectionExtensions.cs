@@ -15,7 +15,11 @@ public static class ServiceCollectionExtensions
 
             return options;
         });
+
         services.AddScoped<AccountRestService>();
+        services.AddScoped<PortfolioRestService>();
+        services.AddScoped<InstrumentRestService>();
+        services.AddScoped<HistoryRestService>();
 
         return services;
     }

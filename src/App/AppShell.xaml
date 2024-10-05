@@ -17,11 +17,14 @@
         </ShellContent.Icon>
     </ShellContent>
     <ShellContent
-        Title="OpenPositions"
+        Title="Open Positions"
         ContentTemplate="{DataTemplate views:OpenPositionsPage}"
-        Icon="iconlistdetail.png"
         Route="OpenPositionsPage"
-        Shell.NavBarIsVisible="true" />
+        Shell.NavBarIsVisible="true">
+        <ShellContent.Icon>
+            <FontImageSource FontFamily="FontAwesomeSolid" Glyph="{x:Static models:FaSolid.DollarSign}" />
+        </ShellContent.Icon>
+    </ShellContent>
     <ShellContent
         Title="Settings"
         ContentTemplate="{DataTemplate views:SettingsPage}"

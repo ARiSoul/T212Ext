@@ -10,11 +10,4 @@ public partial class OpenPositionsPage : ContentPage
 
 		BindingContext = _viewModel = viewModel;
 	}
-
-	protected override async void OnNavigatedTo(NavigatedToEventArgs args)
-	{
-		base.OnNavigatedTo(args);
-
-		await _viewModel.LoadDataAsync();
-	}
 }

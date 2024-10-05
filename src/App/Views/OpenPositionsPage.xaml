@@ -1,22 +1,159 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			 xmlns:vm="clr-namespace:Arisoul.T212.App.ViewModels"
-			 xmlns:m="clr-namespace:Arisoul.T212.App.Models"
-			 x:Class="Arisoul.T212.App.Views.OpenPositionsPage"
-			 x:DataType="vm:OpenPositionsViewModel">
-	<RefreshView IsRefreshing="{Binding IsRefreshing}" Command="{Binding RefreshingCommand}">
-		<CollectionView ItemsSource="{Binding Items}" RemainingItemsThreshold="10" RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
-			<CollectionView.ItemTemplate>
-				<DataTemplate x:DataType="m:SampleItem">
-					<Frame Margin="4" Padding="12">
-						<Frame.GestureRecognizers>
-							<TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OpenPositionsViewModel}}, Path=GoToDetailsCommand}" CommandParameter="{Binding .}" />
-						</Frame.GestureRecognizers>
-						<Label Text="{Binding Title}" FontSize="Large" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Black}}" />
-					</Frame>
-				</DataTemplate>
-			</CollectionView.ItemTemplate>
-		</CollectionView>
-	</RefreshView>
+<ContentPage
+    x:Class="Arisoul.T212.App.Views.OpenPositionsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:converters="clr-namespace:Arisoul.T212.App.Converters"
+    xmlns:m="clr-namespace:Arisoul.T212.Models;assembly=Models"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:Arisoul.T212.App.ViewModels"
+    x:DataType="vm:OpenPositionsViewModel">
+
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior Command="{Binding LoadPositionsCommand}" EventName="Loaded" />
+    </ContentPage.Behaviors>
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:NegativePositiveConverter x:Key="NegativePositiveConverter" />
+            <converters:PositiveConverter x:Key="PositiveConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <RefreshView Command="{Binding RefreshingCommand}" IsRefreshing="{Binding IsRefreshing}">
+        <Grid RowDefinitions="0.15*,*">
+            <HorizontalStackLayout
+                Grid.Row="0"
+                Padding="15"
+                Spacing="5">
+                <Button Command="{Binding RefreshingCommand}" Text="Refresh" />
+                <Label
+                    Padding="15,0,0,0"
+                    FontAttributes="Bold"
+                    FontSize="Medium"
+                    Text="Positions:" />
+                <Label FontSize="Medium" Text="{Binding Items.Count}" />
+                <Label
+                    Padding="15,0,0,0"
+                    FontAttributes="Bold"
+                    FontSize="Medium"
+                    Text="Invested:" />
+                <Label FontSize="Medium" Text="{Binding TotalInvested, StringFormat='{0:#,0.#00} €'}" />
+                <Label
+                    Padding="15,0,0,0"
+                    FontAttributes="Bold"
+                    FontSize="Medium"
+                    Text="Return:" />
+                <Label FontSize="Medium" Text="{Binding TotalReturn, StringFormat='{0:#,0.#00} €'}" />
+                <Label
+                    Padding="15,0,0,0"
+                    FontAttributes="Bold"
+                    FontSize="Medium"
+                    Text="Dividends:" />
+                <Label FontSize="Medium" Text="{Binding TotalDividends, StringFormat='{0:#,0.#00} €'}" />
+            </HorizontalStackLayout>
+            <CollectionView Grid.Row="1" ItemsSource="{Binding Items}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="m:PositionModel">
+                        <VerticalStackLayout Padding="15,0,15,5">
+                            <Frame
+                                Padding="12"
+                                BackgroundColor="Transparent"
+                                BorderColor="Gray">
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OpenPositionsViewModel}}, Path=GoToDetailsCommand}" CommandParameter="{Binding .}" />
+                                </Frame.GestureRecognizers>
+                                <Grid ColumnDefinitions="*,*,*,*,*,*" RowDefinitions="*,*">
+
+                                    <!--  Short name  -->
+                                    <HorizontalStackLayout Grid.RowSpan="2" Spacing="15">
+                                        <toolkit:AvatarView
+                                            BackgroundColor="BlueViolet"
+                                            FontAttributes="Bold"
+                                            Text="{Binding Instrument.Shortname}" />
+                                        <toolkit:AvatarView
+                                            BackgroundColor="Orange"
+                                            FontAttributes="Bold"
+                                            HeightRequest="25"
+                                            Text="{Binding Instrument.CurrencyCode}"
+                                            TextColor="Black" />
+                                    </HorizontalStackLayout>
+
+                                    <!--  Name and Shares  -->
+                                    <Label
+                                        Grid.Row="0"
+                                        Grid.Column="1"
+                                        FontSize="Medium"
+                                        Text="{Binding Instrument.Name}" />
+                                    <Label
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Padding="0,3,0,0"
+                                        Text="{Binding Quantity, StringFormat='{0:#,0.#0000} Shares'}"
+                                        TextColor="Gray" />
+
+                                    <!--  Invested and Return  -->
+                                    <HorizontalStackLayout Grid.Row="0" Grid.Column="2">
+                                        <Label
+                                            Padding="0,0,5,0"
+                                            FontAttributes="Bold"
+                                            Text="INV:" />
+                                        <Label Text="{Binding Invested, StringFormat='{0:#,0.#0} €'}" />
+                                    </HorizontalStackLayout>
+                                    <HorizontalStackLayout Grid.Row="1" Grid.Column="2">
+                                        <Label
+                                            Padding="0,0,5,0"
+                                            FontAttributes="Bold"
+                                            Text="RET:" />
+                                        <Label Text="{Binding Ppl, StringFormat='{0:#,0.#0} €'}" TextColor="{Binding Ppl, Converter={StaticResource NegativePositiveConverter}}" />
+                                    </HorizontalStackLayout>
+
+                                    <!--  Current and Average Price  -->
+                                    <HorizontalStackLayout Grid.Row="0" Grid.Column="3">
+                                        <Label
+                                            Padding="0,0,5,0"
+                                            FontAttributes="Bold"
+                                            Text="Current:" />
+                                        <Label Text="{Binding CurrentPrice, StringFormat='{0:#,0.#0} €'}" />
+                                    </HorizontalStackLayout>
+                                    <HorizontalStackLayout Grid.Row="1" Grid.Column="3">
+                                        <Label
+                                            Padding="0,0,5,0"
+                                            FontAttributes="Bold"
+                                            Text="Average:" />
+                                        <Label Text="{Binding AveragePrice, StringFormat='{0:#,0.#0} €'}" />
+                                    </HorizontalStackLayout>
+
+                                    <!--  Fx Impact and Initial Date  -->
+                                    <HorizontalStackLayout Grid.Row="0" Grid.Column="4">
+                                        <Label
+                                            Padding="0,0,5,0"
+                                            FontAttributes="Bold"
+                                            Text="Fx Impact:" />
+                                        <Label Text="{Binding FxPpl, StringFormat='{0:#,0.#00} €'}" TextColor="{Binding FxPpl, Converter={StaticResource NegativePositiveConverter}}" />
+                                    </HorizontalStackLayout>
+                                    <HorizontalStackLayout Grid.Row="1" Grid.Column="4">
+                                        <Label
+                                            Padding="0,0,5,0"
+                                            FontAttributes="Bold"
+                                            Text="Since:" />
+                                        <Label Text="{Binding InitialFillDate}" />
+                                    </HorizontalStackLayout>
+
+                                    <!--  Dividends  -->
+                                    <HorizontalStackLayout Grid.Row="0" Grid.Column="5">
+                                        <Label
+                                            Padding="0,0,5,0"
+                                            FontAttributes="Bold"
+                                            Text="Total Dividends:" />
+                                        <Label Text="{Binding TotalDividendsInEuro, StringFormat='{0:#,0.#00} €'}" TextColor="{Binding TotalDividendsInEuro, Converter={StaticResource PositiveConverter}}" />
+                                    </HorizontalStackLayout>
+                                </Grid>
+                            </Frame>
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
+    </RefreshView>
 </ContentPage>
