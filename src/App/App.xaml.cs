@@ -2,10 +2,23 @@
 
 public partial class App : Application
 {
-	public App()
-	{
-		InitializeComponent();
+    public App(BackgroundSyncService backgroundSyncService)
+    {
+        InitializeComponent();
 
-		MainPage = new AppShell();
-	}
+        Task.Run(async () =>
+        {
+            try
+            {
+                await backgroundSyncService.SyncDividendsAsync().ConfigureAwait(false);
+                // await backgroundSyncService.SyncOrdersAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+        });
+
+        MainPage = new AppShell();
+    }
 }

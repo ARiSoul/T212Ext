@@ -13,8 +13,13 @@ public class HistoryRestService(IT212ClientOptions clientOptions)
     public async Task<Result<PaginatedResponseHistoryDividendItem>> GetDividendsAsync(CursorLimitTickerRequestParams? requestParams)
     {
         requestParams ??= new CursorLimitTickerRequestParams();
-
         return await GetItem<PaginatedResponseHistoryDividendItem>($"/api/v{ApiVersion}/history/dividends{requestParams}");
+    }
+
+    public async Task<Result<PaginatedResponseHistoryOrder>> GetOrdersAsync(CursorLimitTickerRequestParams? requestParams)
+    {
+        requestParams ??= new CursorLimitTickerRequestParams();
+        return await GetItem<PaginatedResponseHistoryOrder>($"/api/v{ApiVersion}/equity/history/orders{requestParams}");
     }
 
     public override async Task<Result<T>> ExecuteRequestAndGetResponse<T>(RestRequest request)
@@ -28,6 +33,11 @@ public class HistoryRestService(IT212ClientOptions clientOptions)
         if (restResponse.StatusCode == HttpStatusCode.Unauthorized)
         {
             return Result<T>.Unauthorized();
+        }
+
+        if (restResponse.StatusCode == HttpStatusCode.NotFound)
+        {
+            return Result<T>.NotFound(restResponse.Content!);
         }
 
         if (!string.IsNullOrEmpty(restResponse.Content))

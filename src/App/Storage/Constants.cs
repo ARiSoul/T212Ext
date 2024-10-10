@@ -14,4 +14,10 @@ public static class Constants
 
     public static string DatabasePath =>
         Path.Combine(FileSystem.AppDataDirectory, DatabaseFilename);
+
+    public struct ParameterKeys
+    {
+        public const string LastDividendCursor = nameof(LastDividendCursor);
+        public const string LastOrderCursor = nameof(LastOrderCursor);
+    }
 }

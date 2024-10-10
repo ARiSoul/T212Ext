@@ -11,7 +11,7 @@ public static class MauiProgram
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()
-			.UseMauiCommunityToolkit()
+            .UseMauiCommunityToolkit()
 			.UseArisoulMaui()
 			.ConfigureFonts(fonts =>
 			{
@@ -38,6 +38,8 @@ public static class MauiProgram
 
 		builder.Services.AddSingleton<ApplicationDbContext>();
 
-		return builder.Build();
+		builder.Services.AddSingleton<BackgroundSyncService>();
+
+        return builder.Build();
 	}
 }

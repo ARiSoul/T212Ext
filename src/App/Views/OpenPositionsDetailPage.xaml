@@ -1,13 +1,156 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			 xmlns:vm="clr-namespace:Arisoul.T212.App.ViewModels"
-			 x:Class="Arisoul.T212.App.Views.OpenPositionsDetailPage"
-			 x:DataType="vm:OpenPositionsDetailViewModel">
-	<ScrollView>
-		<VerticalStackLayout Margin="12">
-			<Label Text="{Binding Item.Title}" FontSize="Header" />
-			<Label Text="{Binding Item.Description}" FontSize="Default" />
-		</VerticalStackLayout>
-	</ScrollView>
+<ContentPage
+    x:Class="Arisoul.T212.App.Views.OpenPositionsDetailPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:converters="clr-namespace:Arisoul.T212.App.Converters"
+    xmlns:ctrl="clr-namespace:Arisoul.T212.App.Controls"
+    xmlns:m="clr-namespace:Arisoul.T212.Models;assembly=Models"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:vm="clr-namespace:Arisoul.T212.App.ViewModels"
+    x:DataType="vm:OpenPositionsDetailViewModel">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:NegativePositiveConverter x:Key="NegativePositiveConverter" />
+            <converters:PositiveConverter x:Key="PositiveConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior Command="{Binding LoadTickerOrdersCommand}" EventName="Loaded" />
+    </ContentPage.Behaviors>
+
+    <ScrollView Padding="15">
+        <Grid ColumnDefinitions="*,*,*,*,*,*" RowDefinitions="0.05*,0.05*,*">
+
+            <!--  Short name  -->
+            <HorizontalStackLayout Grid.RowSpan="2" Spacing="15">
+                <toolkit:AvatarView
+                    BackgroundColor="BlueViolet"
+                    FontAttributes="Bold"
+                    Text="{Binding Item.Instrument.Shortname}" />
+                <toolkit:AvatarView
+                    BackgroundColor="Orange"
+                    FontAttributes="Bold"
+                    HeightRequest="25"
+                    Text="{Binding Item.Instrument.CurrencyCode}"
+                    TextColor="Black" />
+            </HorizontalStackLayout>
+
+            <!--  Name and Shares  -->
+            <Label
+                Grid.Row="0"
+                Grid.Column="1"
+                FontSize="Medium"
+                Text="{Binding Item.Instrument.Name}" />
+            <Label
+                Grid.Row="1"
+                Grid.Column="1"
+                Padding="0,3,0,0"
+                Text="{Binding Item.Quantity, StringFormat='{0:#,0.#0000} Shares'}"
+                TextColor="Gray" />
+
+            <!--  Invested and Return  -->
+            <HorizontalStackLayout Grid.Row="0" Grid.Column="2">
+                <Label
+                    Padding="0,0,5,0"
+                    FontAttributes="Bold"
+                    Text="INV:" />
+                <Label Text="{Binding Item.Invested, StringFormat='{0:#,0.#0} €'}" />
+            </HorizontalStackLayout>
+            <HorizontalStackLayout Grid.Row="1" Grid.Column="2">
+                <Label
+                    Padding="0,0,5,0"
+                    FontAttributes="Bold"
+                    Text="RET:" />
+                <Label Text="{Binding Item.Ppl, StringFormat='{0:#,0.#0} €'}" TextColor="{Binding Item.Ppl, Converter={StaticResource NegativePositiveConverter}}" />
+            </HorizontalStackLayout>
+
+            <!--  Current and Average Price  -->
+            <HorizontalStackLayout Grid.Row="0" Grid.Column="3">
+                <Label
+                    Padding="0,0,5,0"
+                    FontAttributes="Bold"
+                    Text="Current:" />
+                <Label Text="{Binding Item.CurrentPrice, StringFormat='{0:#,0.#0} €'}" />
+            </HorizontalStackLayout>
+            <HorizontalStackLayout Grid.Row="1" Grid.Column="3">
+                <Label
+                    Padding="0,0,5,0"
+                    FontAttributes="Bold"
+                    Text="Average:" />
+                <Label Text="{Binding Item.AveragePrice, StringFormat='{0:#,0.#0} €'}" />
+            </HorizontalStackLayout>
+
+            <!--  Fx Impact and Initial Date  -->
+            <HorizontalStackLayout Grid.Row="0" Grid.Column="4">
+                <Label
+                    Padding="0,0,5,0"
+                    FontAttributes="Bold"
+                    Text="Fx Impact:" />
+                <Label Text="{Binding Item.FxPpl, StringFormat='{0:#,0.#00} €'}" TextColor="{Binding Item.FxPpl, Converter={StaticResource NegativePositiveConverter}}" />
+            </HorizontalStackLayout>
+            <HorizontalStackLayout Grid.Row="1" Grid.Column="4">
+                <Label
+                    Padding="0,0,5,0"
+                    FontAttributes="Bold"
+                    Text="Since:" />
+                <Label Text="{Binding Item.InitialFillDate}" />
+            </HorizontalStackLayout>
+
+            <ctrl:TabView
+                Grid.Row="2"
+                Grid.ColumnSpan="6"
+                Padding="15">
+                <ctrl:TabView.Tabs>
+                    <ctrl:CustomTab Caption="Dividends">
+                        <ctrl:CustomTab.Content>
+                            <ListView
+                                IsRefreshing="{Binding IsRefreshing}"
+                                ItemsSource="{Binding Item.Dividends}"
+                                RefreshCommand="{Binding LoadTickerOrdersCommand}">
+                                <ListView.Header>
+                                    <HorizontalStackLayout Padding="10,0,0,0">
+                                        <Label
+                                            Padding="0,0,5,0"
+                                            FontAttributes="Bold"
+                                            Text="Total:" />
+                                        <Label Text="{Binding Item.TotalDividendsInEuro, StringFormat='{0:#,0.#00} €'}" TextColor="{Binding Item.TotalDividendsInEuro, Converter={StaticResource PositiveConverter}}" />
+                                    </HorizontalStackLayout>
+                                </ListView.Header>
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="m:HistoryDividendItem">
+                                        <ViewCell>
+                                            <HorizontalStackLayout Padding="10" Spacing="15">
+                                                <Label Text="{Binding Amount, StringFormat='{0:#,0.#00} €'}" />
+                                                <Label Text="{Binding PaidOn}" />
+                                            </HorizontalStackLayout>
+                                        </ViewCell>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </ctrl:CustomTab.Content>
+                    </ctrl:CustomTab>
+                    <ctrl:CustomTab Caption="Orders">
+                        <ctrl:CustomTab.Content>
+                            <ListView ItemsSource="{Binding Item.Orders}">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="m:HistoryOrderModel">
+                                        <ViewCell>
+                                            <StackLayout Padding="10">
+                                                <Label Text="{Binding DateCreated}" />
+                                                <Label Text="{Binding FilledQuantity, StringFormat='{0:#,0.#0000} Shares'}" />
+                                                <Label Text="{Binding FilledValue, StringFormat='{0:#,0.#00} €'}" />
+                                            </StackLayout>
+                                        </ViewCell>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </ctrl:CustomTab.Content>
+                    </ctrl:CustomTab>
+                </ctrl:TabView.Tabs>
+            </ctrl:TabView>
+        </Grid>
+    </ScrollView>
 </ContentPage>

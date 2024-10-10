@@ -18,7 +18,7 @@ public partial class OpenPositionsViewModel
     [ObservableProperty] decimal _totalDividends = 0;
     [ObservableProperty] decimal _totalInvested = 0;
     [ObservableProperty] decimal _totalReturn = 0;
-    [ObservableProperty] decimal _totalDividendsOthers  = 0;
+    [ObservableProperty] decimal _totalDividendsOthers = 0;
 
     public OpenPositionsViewModel(IServiceProvider serviceProvider)
     {
@@ -71,6 +71,7 @@ public partial class OpenPositionsViewModel
             {
                 await SyncTickerNamesAsync(result.Value!);
                 await SyncTickerDividendsAsync(result.Value!);
+                // await SyncTickerOrdersAsync(result.Value!);
                 Items = new ObservableCollection<PositionModel>(result.Value!.OrderBy(x => x.Ticker)!);
             }
             else
@@ -90,7 +91,7 @@ public partial class OpenPositionsViewModel
     }
 
     [RelayCommand]
-    private async Task GoToDetails(SampleItem item)
+    private async Task GoToDetails(PositionModel item)
     {
         await Shell.Current.GoToAsync(nameof(OpenPositionsDetailPage), true, new Dictionary<string, object>
         {
@@ -141,9 +142,9 @@ public partial class OpenPositionsViewModel
     private async Task SyncTickerDividendsAsync(IEnumerable<PositionModel> positions)
     {
         Debug.WriteLine("Syncing ticker dividends...");
-        List<HistoryDividendItem> dividendsInDatabase = (List<HistoryDividendItem>)await _dbContext.GetHistoryDividendItemsAsync();
+        List<HistoryDividendItem> dividendsInDatabase = (await _dbContext.GetHistoryDividendItemsAsync()).ToList();
 
-        string? lastDividendCursor = Preferences.Get("LastDividendCursor", null);
+        string? lastDividendCursor = await _dbContext.GetParameterValueAsync(Storage.Constants.ParameterKeys.LastDividendCursor);
 
         do
         {
@@ -161,8 +162,8 @@ public partial class OpenPositionsViewModel
         // now, there can be dividends of instruments that are not in positions, so we need to add them
         var missingDividends = dividendsInDatabase.Where(i => positions.All(x => x.Ticker != i.Ticker)).ToList();
 
-        TotalDividendsOthers = missingDividends.Sum(x => x.Amount) ?? 0;
-        TotalDividends = (positions.Sum(x => x.TotalDividends!) ?? 0) + TotalDividendsOthers;
+        TotalDividendsOthers = missingDividends.Sum(x => x.AmountInEuro) ?? 0;
+        TotalDividends = (positions.Sum(x => x.TotalDividendsInEuro!) ?? 0) + TotalDividendsOthers;
         TotalReturn = positions.Sum(x => x.Ppl!) ?? 0;
         TotalInvested = positions.Sum(x => x.Invested!) ?? 0;
 
@@ -196,11 +197,91 @@ public partial class OpenPositionsViewModel
             {
                 var fromNextCursorPart = result.Value!.NextPagePath.Split("cursor=")[1];
                 var nextCursor2 = fromNextCursorPart.Split("&")[0];
-                Preferences.Set("LastDividendCursor", nextCursor2);
+                await _dbContext.SaveParameterValueAsync(Storage.Constants.ParameterKeys.LastDividendCursor, nextCursor2);
 
                 while (nextCursor2 is not null)
                 {
                     nextCursor2 = await GetDividendsRecursivelyAsync(nextCursor2, dividendsInDatabase);
+                }
+            }
+        }
+        else
+        {
+            await Dialogs.ShowError(result.Message);
+        }
+
+        return null;
+    }
+
+    private async Task SyncTickerOrdersAsync(IEnumerable<PositionModel> positions)
+    {
+        try
+        {
+            Debug.WriteLine("Syncing ticker orders...");
+
+            List<HistoryOrderModel> ordersInDatabase = (await _dbContext.GetHistoryOrdersAsync()).ToList();
+
+            string? lastOrderCursor = await _dbContext.GetParameterValueAsync(Storage.Constants.ParameterKeys.LastOrderCursor);
+
+            do
+            {
+                lastOrderCursor = await GetOrdersRecursivelyAsync(lastOrderCursor, ordersInDatabase);
+            } while (lastOrderCursor is not null);
+
+            // update position orders
+            Debug.WriteLine("Updating position orders...");
+            foreach (PositionModel item in positions!.Cast<PositionModel>())
+            {
+                var orders = ordersInDatabase.Where(i => i.Ticker == item.Ticker);
+                item.Orders = orders.ToList();
+            }
+
+            // now, there can be orders of instruments that are not in positions, so we need to add them
+            var missingOrders = ordersInDatabase.Where(i => positions.All(x => x.Ticker != i.Ticker)).ToList();
+
+            TotalInvested = positions.Sum(x => x.Invested!) ?? 0;
+
+            Debug.WriteLine("Finished syncing position orders.");
+        }
+        catch (Exception ex)
+        {
+
+            throw;
+        }
+    }
+
+    private async Task<string?> GetOrdersRecursivelyAsync(string? nextCursor, List<HistoryOrderModel> ordersInDatabase)
+    {
+        CursorLimitTickerRequestParams requestParams = new()
+        {
+            Cursor = nextCursor
+        };
+
+        var result = await _historyRestService.GetOrdersAsync(requestParams);
+
+        if (result.Success)
+        {
+            // get orders obtained that don't exist in database
+            var newOrders = result.Value!.Items!.Where(i => ordersInDatabase.All(x => x.Id != i.Id)).ToList();
+
+            // save new orders if any
+            if (newOrders.Count != 0)
+            {
+                Debug.WriteLine("Saving new orders...");
+                await _dbContext.SaveHistoryOrdersAsync(newOrders);
+                ordersInDatabase.AddRange(newOrders);
+            }
+
+            // if next page path is not null, extract cursor from it and save it
+            if (result.Value!.NextPagePath is not null)
+            {
+                var fromNextCursorPart = result.Value!.NextPagePath.Split("cursor=")[1];
+                var nextCursor2 = fromNextCursorPart.Split("&")[0];
+                await _dbContext.SaveParameterValueAsync(Storage.Constants.ParameterKeys.LastOrderCursor, nextCursor2);
+
+                while (nextCursor2 is not null)
+                {
+                    nextCursor2 = await GetOrdersRecursivelyAsync(nextCursor2, ordersInDatabase);
                 }
             }
         }

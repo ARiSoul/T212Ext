@@ -18,5 +18,5 @@ public abstract class PaginatedResponseHistoryBase<T>
     /// </summary>
     [DataMember(Name = "nextPagePath", EmitDefaultValue = false)]
     [JsonPropertyName("nextPagePath")]
-    public string NextPagePath { get; set; }
+    public string? NextPagePath { get; set; }
 }
