@@ -145,6 +145,13 @@
                                         <Label
                                             Padding="0,0,5,0"
                                             FontAttributes="Bold"
+                                            Text="Dividends:" />
+                                        <Label Text="{Binding Dividends.Count}" />
+                                    </HorizontalStackLayout>
+                                    <HorizontalStackLayout Grid.Row="1" Grid.Column="5">
+                                        <Label
+                                            Padding="0,0,5,0"
+                                            FontAttributes="Bold"
                                             Text="Total Dividends:" />
                                         <Label Text="{Binding TotalDividendsInEuro, StringFormat='{0:#,0.#00} €'}" TextColor="{Binding TotalDividendsInEuro, Converter={StaticResource PositiveConverter}}" />
                                     </HorizontalStackLayout>

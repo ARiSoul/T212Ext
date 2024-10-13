@@ -5,10 +5,10 @@ namespace Arisoul.T212.Models;
 public class PositionModel : Position
 {
     [JsonPropertyName("invested")]
-    public decimal? Invested => Quantity * AveragePrice;
+    public decimal? Invested => Orders.Count != 0 ? Orders.Sum(o => o.FilledValue) : Quantity * AveragePrice;
 
     [JsonPropertyName("instrument")]
-    public Instrument Instrument { get; set; }
+    public Instrument Instrument { get; set; } = new();
 
     [JsonPropertyName("dividends")]
     public List<HistoryDividendItem> Dividends { get; set; } = [];

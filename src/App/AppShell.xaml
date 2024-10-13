@@ -26,6 +26,15 @@
         </ShellContent.Icon>
     </ShellContent>
     <ShellContent
+        Title="Dividends"
+        ContentTemplate="{DataTemplate views:DividendsPage}"
+        Route="DividendsPage"
+        Shell.NavBarIsVisible="true">
+        <ShellContent.Icon>
+            <FontImageSource FontFamily="FontAwesomeSolid" Glyph="{x:Static models:FaSolid.SackDollar}" />
+        </ShellContent.Icon>
+    </ShellContent>
+    <ShellContent
         Title="Settings"
         ContentTemplate="{DataTemplate views:SettingsPage}"
         Route="SettingsPage"

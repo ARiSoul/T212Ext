@@ -39,6 +39,33 @@ internal class ApplicationDbContext
         return await _database.Table<HistoryDividendItem>().ToListAsync();
     }
 
+    public async Task<IEnumerable<DividendModel>> GetDividendsAsync()
+    {
+        await Init();
+
+        var historyDividendItems = await _database.Table<HistoryDividendItem>().ToListAsync();
+        var dividendTickers = historyDividendItems.Select(d => d.Ticker).Distinct();
+        var instruments = await _database.Table<Instrument>().Where(i => dividendTickers.Contains(i.Ticker)).ToListAsync();
+
+        return historyDividendItems.Select(dividend =>
+        {
+            var dividendModel = new DividendModel
+            {
+                Amount = dividend.Amount,
+                AmountInEuro = dividend.AmountInEuro,
+                GrossAmountPerShare = dividend.GrossAmountPerShare,
+                PaidOn = dividend.PaidOn,
+                Quantity = dividend.Quantity,
+                Reference = dividend.Reference,
+                Type = dividend.Type,
+                Ticker = dividend.Ticker,
+                Instrument = instruments.FirstOrDefault(i => i.Ticker == dividend.Ticker)!
+            };
+
+            return dividendModel;
+        });
+    }
+
     public async Task<int> SaveHistoryDividendItemsAsync(IEnumerable<HistoryDividendItem> historyDividendItems)
     {
         await Init();

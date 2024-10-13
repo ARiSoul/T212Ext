@@ -31,6 +31,9 @@ public static class MauiProgram
 		builder.Services.AddSingleton<OpenPositionsViewModel>();
 		builder.Services.AddSingleton<OpenPositionsPage>();
 
+        builder.Services.AddSingleton<DividendsViewModel>();
+        builder.Services.AddSingleton<DividendsPage>();
+
         builder.Services.AddSingleton<SettingsViewModel>();
         builder.Services.AddSingleton<SettingsPage>();
 

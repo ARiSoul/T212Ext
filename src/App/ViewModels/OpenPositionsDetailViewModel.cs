@@ -38,10 +38,6 @@ public partial class OpenPositionsDetailViewModel : BaseViewModel
 
             string? lastOrderCursor = null;
 
-            // TODO: format orders items in list view
-            // TODO: add total invested in position
-            // TODO: maybe show the quantity of orders and dividends in the list view
-
             do
             {
                 lastOrderCursor = await GetOrdersRecursivelyAsync(lastOrderCursor, ordersInDatabase);
