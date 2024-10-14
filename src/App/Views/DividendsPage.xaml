@@ -69,7 +69,7 @@
                                     <Label
                                         FontAttributes="Bold"
                                         FontSize="Medium"
-                                        Text="{Binding Count, StringFormat='Count: {0}'}" />
+                                        Text="{Binding DividendsCount, StringFormat='Count: {0}'}" />
 
                                 </HorizontalStackLayout>
                             </FlexLayout>
@@ -79,7 +79,7 @@
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="m:DividendModel">
-                        <VerticalStackLayout Padding="15,0,15,5" IsVisible="{Binding IsVisible}">
+                        <VerticalStackLayout Padding="15,0,15,5">
                             <Frame
                                 Padding="12"
                                 BackgroundColor="Transparent"

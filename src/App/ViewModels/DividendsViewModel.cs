@@ -12,6 +12,8 @@ public partial class DividendsViewModel : BaseViewModel
     private readonly ApplicationDbContext _dbContext;
     private readonly IT212ClientOptions _clientOptions;
     private readonly BackgroundSyncService _backgroundSyncService;
+    private List<DividendModel> _allDividends = [];
+    private List<string> _previousExpandedGroups = [];
 
     [ObservableProperty] ObservableCollection<MonthlyDividendGroup> _items;
     [ObservableProperty] decimal _totalDividends = 0;
@@ -67,19 +69,30 @@ public partial class DividendsViewModel : BaseViewModel
 
             var dividends = await _dbContext.GetDividendsAsync();
 
-            // TODO: group by year and month
+            _allDividends.Clear();
+            _allDividends.AddRange(dividends);
+
             Items!.Clear();
 
             // Group by Year and Month
             var grouped = dividends
                 .GroupBy(d => d.PaidOn!.Value.ToString("yyyy MMMM")) // Group by year and month
-                .Select(g => new MonthlyDividendGroup(g.Key, g.ToList()))
+                .Select(g => new MonthlyDividendGroup(g.Key, g.Count(), g.Sum(x => x.AmountInEuro!.Value), []))
                 .ToList();
 
             Items = new ObservableCollection<MonthlyDividendGroup>(grouped);
 
             TotalDividends = grouped.Sum(x => x.MonthTotalPaid);
             TotalDividendsCount = dividends.Count();
+
+            if (_previousExpandedGroups.Any())
+                foreach (var group in _previousExpandedGroups)
+                {
+                    var monthlyGroup = Items.FirstOrDefault(x => x.YearMonth.Equals(group));
+
+                    if (monthlyGroup != null)
+                        await ToggleGroupExpansion(monthlyGroup).ConfigureAwait(false);
+                }
         }
         catch (Exception ex)
         {
@@ -95,11 +108,31 @@ public partial class DividendsViewModel : BaseViewModel
     [RelayCommand]
     Task ToggleGroupExpansion(MonthlyDividendGroup group)
     {
-        // TODO: improve expansion logic
         group.IsExpanded = !group.IsExpanded;
 
-        foreach (var item in group)
-            item.IsVisible = group.IsExpanded;
+        if (group.IsExpanded)
+        {
+            var dividends = _allDividends
+                .Where(x => x.PaidOn!.Value.ToString("yyyy MMMM").Equals(group.YearMonth))
+                .OrderBy(x => x.PaidOn)
+                .ToList();
+
+            group.AddRange(dividends);
+
+            var previousExpandedGroup = _previousExpandedGroups.FirstOrDefault(x => x.Equals(group.YearMonth));
+
+            if (previousExpandedGroup == default)
+                _previousExpandedGroups.Add(group.YearMonth);
+        }
+        else
+        {
+            group.Clear();
+
+            var previousExpandedGroup = _previousExpandedGroups.FirstOrDefault(x => x.Equals(group.YearMonth));
+
+            if (previousExpandedGroup != default)
+                _previousExpandedGroups.Remove(previousExpandedGroup);
+        }
 
         return Task.CompletedTask;
     }

@@ -9,19 +9,23 @@ public class MonthlyDividendGroup
 {
     public string YearMonth { get; set; }
 
-    public decimal MonthTotalPaid => this.Items.Sum(x => x.AmountInEuro!.Value);
+    private decimal _monthTotalPaid;
+    public decimal MonthTotalPaid { get => _monthTotalPaid; set => SetProperty(ref _monthTotalPaid, value); }
 
     private bool _isExpanded;
-
-    /// <summary>
-    /// Gets or sets the IsExpanded value.
-    /// </summary>
+    
     public bool IsExpanded { get => _isExpanded; set => SetProperty(ref _isExpanded, value); }
 
-    public MonthlyDividendGroup(string yearMonth, IEnumerable<DividendModel> dividends)
+    private int _dividendsCount;
+
+    public int DividendsCount { get => _dividendsCount; set => SetProperty(ref _dividendsCount, value); }
+
+    public MonthlyDividendGroup(string yearMonth, int count, decimal totalPaid, IEnumerable<DividendModel> dividends)
         : base(dividends)
     {
         YearMonth = yearMonth;
+        DividendsCount = count;
+        MonthTotalPaid = totalPaid;
     }
 
     protected bool SetProperty<T>(ref T backingStore, T value, [CallerMemberName] string propertyName = "", Action onChanged = null)

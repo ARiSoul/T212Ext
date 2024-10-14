@@ -7,7 +7,4 @@ public class DividendModel
 {
     [JsonPropertyName("instrument")]
     public Instrument Instrument { get; set; } = new();
-
-    [JsonPropertyName("isVisible")]
-    public bool IsVisible { get; set; }
 }
