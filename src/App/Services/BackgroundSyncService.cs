@@ -30,8 +30,7 @@ public class BackgroundSyncService
         Debug.WriteLine("Syncing ticker dividends...");
         List<HistoryDividendItem> dividendsInDatabase = (await _dbContext.GetHistoryDividendItemsAsync().ConfigureAwait(false)).ToList();
 
-        string? lastDividendCursor = await _dbContext.GetParameterValueAsync(Storage.Constants.ParameterKeys.LastDividendCursor).ConfigureAwait(false);
-        await GetDividendsRecursivelyAsync(lastDividendCursor, dividendsInDatabase).ConfigureAwait(false);
+        await GetDividendsRecursivelyAsync(null, dividendsInDatabase).ConfigureAwait(false);
 
         Debug.WriteLine("Finished syncing position dividends.");
     }
@@ -45,8 +44,7 @@ public class BackgroundSyncService
 
         List<HistoryOrderModel> ordersInDatabase = (await _dbContext.GetHistoryOrdersAsync().ConfigureAwait(false)).ToList();
 
-        string? lastOrderCursor = await _dbContext.GetParameterValueAsync(Storage.Constants.ParameterKeys.LastOrderCursor).ConfigureAwait(false);
-        await GetOrdersRecursivelyAsync(lastOrderCursor, ordersInDatabase).ConfigureAwait(false);
+        await GetOrdersRecursivelyAsync(null, ordersInDatabase).ConfigureAwait(false);
 
         Debug.WriteLine("Finished syncing position orders.");
     }
@@ -71,14 +69,20 @@ public class BackgroundSyncService
                 Debug.WriteLine("Saving new dividends...");
                 await _dbContext.SaveHistoryDividendItemsAsync(newDividends).ConfigureAwait(false);
                 dividendsInDatabase.AddRange(newDividends);
+
+                // since this comes from the most recent to the older ones, if the count of newDividends is different from the return value
+                // it means that everything else is already sync, so we can leave
+                if (newDividends.Count != result.Value!.Items!.Count())
+                    return null;
             }
+            else
+                return null;
 
             // if next page path is not null, extract cursor from it and save it
             if (result.Value!.NextPagePath is not null)
             {
                 var fromNextCursorPart = result.Value!.NextPagePath.Split("cursor=")[1];
                 var nextCursor2 = fromNextCursorPart.Split("&")[0];
-                await _dbContext.SaveParameterValueAsync(Storage.Constants.ParameterKeys.LastDividendCursor, nextCursor2).ConfigureAwait(false);
 
                 while (nextCursor2 is not null)
                     nextCursor2 = await GetDividendsRecursivelyAsync(nextCursor2, dividendsInDatabase).ConfigureAwait(false);
@@ -134,16 +138,12 @@ public class BackgroundSyncService
             Debug.WriteLine($"Date created from last order in result: {minDateCreated}");
 
             // TODO: they need to fix the API to return the correct cursor
-            // TODO: don't forget to refactor the synchronization in the view model
-            // TODO: This is running in the startup and the user may not have configured the API key yet
             // Get the timestamp of the min date created
             var minDateCreatedTimestamp = new DateTimeOffset(minDateCreated).ToUnixTimeMilliseconds();
             Debug.WriteLine($"Min date created timestamp: {minDateCreatedTimestamp}");
 
             // Use the timestamp as cursor to fetch the next orders
             var nextCursor2 = minDateCreatedTimestamp.ToString();
-            await _dbContext.SaveParameterValueAsync(Storage.Constants.ParameterKeys.LastOrderCursor, nextCursor2).ConfigureAwait(false);
-
             while (nextCursor2 is not null)
                 nextCursor2 = await GetOrdersRecursivelyAsync(nextCursor2, ordersInDatabase).ConfigureAwait(false);
         }
