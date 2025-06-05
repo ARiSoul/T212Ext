@@ -8,12 +8,53 @@
     <VerticalStackLayout Padding="15" Spacing="5">
         <Label Text="API base address" />
         <Entry Text="{Binding ClientOptions.BaseAddress}" />
+        <Label>
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span Text="The live version is " />
+                    <Span
+                        Text="https://live.trading212.com"
+                        TextColor="Blue"
+                        TextDecorations="Underline">
+                        <Span.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SetBaseAddressCommand}" CommandParameter="https://live.trading212.com" />
+                        </Span.GestureRecognizers>
+                    </Span>
+                    <Span Text=" and the demo version is " />
+                    <Span
+                        Text="https://demo.trading212.com."
+                        TextColor="Blue"
+                        TextDecorations="Underline">
+                        <Span.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SetBaseAddressCommand}" CommandParameter="https://demo.trading212.com" />
+                        </Span.GestureRecognizers>
+                    </Span>
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
 
         <Label Text="API key" />
         <Entry IsPassword="True" Text="{Binding ClientOptions.ApiKey}" />
+        <Label>
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span Text="See " />
+                    <Span
+                        Text="here"
+                        TextColor="Blue"
+                        TextDecorations="Underline">
+                        <Span.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SeeCreateAPIKeyCommand}" CommandParameter="https://helpcentre.trading212.com/hc/en-us/articles/14584770928157-How-can-I-generate-an-API-key" />
+                        </Span.GestureRecognizers>
+                    </Span>
+                    <Span Text=" how to create your API Key." />
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
 
         <Label Text="API Version" />
         <Entry Text="{Binding ClientOptions.ApiVersion}" />
+
 
         <Button Command="{Binding SaveCommand}" Text="Save" />
     </VerticalStackLayout>

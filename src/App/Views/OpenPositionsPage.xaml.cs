@@ -10,4 +10,11 @@ public partial class OpenPositionsPage : ContentPage
 
 		BindingContext = _viewModel = viewModel;
 	}
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+
+		_viewModel.LoadPositionsCommand.Execute(null);
+    }
 }

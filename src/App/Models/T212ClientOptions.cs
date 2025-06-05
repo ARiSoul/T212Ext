@@ -2,11 +2,18 @@
 
 namespace Arisoul.T212.App.Models;
 
-public class T212ClientOptions : IT212ClientOptions
+public partial class T212ClientOptions 
+    : ObservableValidator, IT212ClientOptions
 {
-    public string BaseAddress { get; set; } = "https://demo.trading212.com";
-    public string ApiKey { get; set; } = "demo";
-    public string ApiVersion { get; set; } = "0";
+    [ObservableProperty]
+    string _baseAddress = "https://demo.trading212.com";
+
+    [ObservableProperty]
+    string _apiKey = "demo";
+
+    [ObservableProperty]
+    string _apiVersion = "0";
+    
     public bool IsInitiated { get; set; } = false;
     public bool HasChanged { get; private set; } = false;
 

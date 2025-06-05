@@ -5,19 +5,14 @@ using Arisoul.T212.Models;
 namespace Arisoul.T212.App.ViewModels;
 
 [QueryProperty(nameof(Item), "Item")]
-public partial class OpenPositionsDetailViewModel : BaseViewModel
+public partial class OpenPositionsDetailViewModel(IServiceProvider serviceProvider) 
+    : BaseViewModel
 {
-    private readonly HistoryRestService _historyRestService;
-    private readonly ApplicationDbContext _dbContext;
+    private readonly HistoryRestService _historyRestService = serviceProvider.GetRequiredService<HistoryRestService>();
+    private readonly ApplicationDbContext _dbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
 
     [ObservableProperty] PositionModel? _item;
     [ObservableProperty] decimal _totalInvested = 0;
-
-    public OpenPositionsDetailViewModel(IServiceProvider serviceProvider)
-    {
-        _historyRestService = serviceProvider.GetRequiredService<HistoryRestService>();
-        _dbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
-    }
 
     [RelayCommand]
     private async Task LoadTickerOrdersAsync()
@@ -34,19 +29,19 @@ public partial class OpenPositionsDetailViewModel : BaseViewModel
 
             Debug.WriteLine("Syncing ticker orders...");
 
-            List<HistoryOrderModel> ordersInDatabase = (await _dbContext.GetHistoryOrdersAsync(x => x.Ticker == Item.Ticker)).ToList();
+            List<HistoryOrderModel> ordersInDatabase = [.. (await _dbContext.GetHistoryOrdersAsync(x => x.Ticker == Item.Ticker))];
 
             string? lastOrderCursor = null;
 
             do
             {
-                lastOrderCursor = await GetOrdersRecursivelyAsync(lastOrderCursor, ordersInDatabase);
+                lastOrderCursor = await GetOrdersRecursivelyAsync(ordersInDatabase);
             } while (lastOrderCursor is not null);
 
             // update position orders
             Debug.WriteLine("Updating position orders...");
             var orders = ordersInDatabase.Where(i => i.Ticker == Item.Ticker);
-            Item.Orders = orders.ToList();
+            Item.Orders = [.. orders];
 
             TotalInvested = Item.Orders.Sum(x => x.FilledValue!) ?? 0;
 
@@ -62,7 +57,7 @@ public partial class OpenPositionsDetailViewModel : BaseViewModel
         }
     }
 
-    private async Task<string?> GetOrdersRecursivelyAsync(string? nextCursor, List<HistoryOrderModel> ordersInDatabase)
+    private async Task<string?> GetOrdersRecursivelyAsync(List<HistoryOrderModel> ordersInDatabase)
     {
         if (Item is null)
             return null;
@@ -74,7 +69,7 @@ public partial class OpenPositionsDetailViewModel : BaseViewModel
 
         var result = await _historyRestService.GetOrdersAsync(requestParams);
 
-        if (result.Success)
+        if (result.Succeeded)
         {
             // get orders obtained that don't exist in database
             var newOrders = result.Value!.Items!.Where(i => ordersInDatabase.All(x => x.Id != i.Id)).ToList();
@@ -95,13 +90,13 @@ public partial class OpenPositionsDetailViewModel : BaseViewModel
 
                 while (nextCursor2 is not null)
                 {
-                    nextCursor2 = await GetOrdersRecursivelyAsync(nextCursor2, ordersInDatabase);
+                    nextCursor2 = await GetOrdersRecursivelyAsync(ordersInDatabase);
                 }
             }
         }
         else
         {
-            await Dialogs.ShowError(result.Message);
+            await Dialogs.ShowError(result.Error!.Description);
         }
 
         return null;

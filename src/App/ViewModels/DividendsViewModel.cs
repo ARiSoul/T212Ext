@@ -15,7 +15,8 @@ public partial class DividendsViewModel : BaseViewModel
     private List<DividendModel> _allDividends = [];
     private List<string> _previousExpandedGroups = [];
 
-    [ObservableProperty] ObservableCollection<MonthlyDividendGroup> _items;
+    public ObservableCollection<MonthlyDividendGroup> Items { get; set; } = [];
+
     [ObservableProperty] decimal _totalDividends = 0;
     [ObservableProperty] decimal _totalDividendsOthers = 0;
     [ObservableProperty] decimal _totalDividendsCount = 0;
@@ -27,17 +28,23 @@ public partial class DividendsViewModel : BaseViewModel
         _backgroundSyncService = serviceProvider.GetRequiredService<BackgroundSyncService>();
         _clientOptions = serviceProvider.GetRequiredService<IT212ClientOptions>();
         _clientOptions.LoadOptions();
-        Items = [];
     }
 
     [RelayCommand]
     private async Task OnRefreshing()
     {
+        await LoadDividendsAsync();
+    }
+
+    [RelayCommand]
+    private Task ManualRefresh()
+    {
         if (IsRefreshing)
-            return;
+            return Task.CompletedTask;
 
         IsRefreshing = true;
-        await LoadDividendsAsync();
+
+        return Task.CompletedTask;
     }
 
     [RelayCommand]
@@ -50,10 +57,6 @@ public partial class DividendsViewModel : BaseViewModel
             return;
         }
 
-        if (Items is not null && Items.Any() && !IsRefreshing)
-            return;
-
-        IsRefreshing = true;
         HasError = false;
 
         try
@@ -75,17 +78,21 @@ public partial class DividendsViewModel : BaseViewModel
             Items!.Clear();
 
             // Group by Year and Month
-            var grouped = dividends
+            var grouped = dividends.OrderByDescending(d => d.PaidOn)
                 .GroupBy(d => d.PaidOn!.Value.ToString("yyyy MMMM")) // Group by year and month
                 .Select(g => new MonthlyDividendGroup(g.Key, g.Count(), g.Sum(x => x.AmountInEuro!.Value), []))
                 .ToList();
 
-            Items = new ObservableCollection<MonthlyDividendGroup>(grouped);
+            foreach (var group in grouped)
+                Items.Add(new MonthlyDividendGroup(group.YearMonth, group.DividendsCount, group.MonthTotalPaid, [])
+                {
+                    IsExpanded = _previousExpandedGroups.Contains(group.YearMonth)
+                });
 
             TotalDividends = grouped.Sum(x => x.MonthTotalPaid);
             TotalDividendsCount = dividends.Count();
 
-            if (_previousExpandedGroups.Any())
+            if (_previousExpandedGroups.Count > 0)
                 foreach (var group in _previousExpandedGroups)
                 {
                     var monthlyGroup = Items.FirstOrDefault(x => x.YearMonth.Equals(group));

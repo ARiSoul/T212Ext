@@ -110,7 +110,7 @@ internal class ApplicationDbContext
                 StopPrice = order.StopPrice,
                 Ticker = order.Ticker,
                 Type = order.Type,
-                Taxes = taxes.Where(t => t.OrderId == order.Id).ToList()
+                Taxes = [.. taxes.Where(t => t.OrderId == order.Id)]
             };
 
             return historyOrder;

@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net8.0-android;net8.0-ios;net8.0-maccatalyst</TargetFrameworks>
-		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.19041.0</TargetFrameworks>
+		<TargetFrameworks>net9.0-android;net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
+		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>
 		<OutputType>Exe</OutputType>
 		<RootNamespace>Arisoul.T212.App</RootNamespace>
 		<UseMaui>true</UseMaui>
@@ -12,16 +12,16 @@
 		<MauiVersion>8.0.14</MauiVersion>
 
 		<!-- Display name -->
-		<ApplicationTitle>App</ApplicationTitle>
+		<ApplicationTitle>T212Ext</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.App</ApplicationId>
+		<ApplicationId>arisoul.t212ext</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
 		<ApplicationVersion>1</ApplicationVersion>
 
-		<WindowsSdkPackageVersion>10.0.19041.34</WindowsSdkPackageVersion>
+		<WindowsSdkPackageVersion>10.0.19041.53</WindowsSdkPackageVersion>
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.2</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">14.0</SupportedOSPlatformVersion>
@@ -29,13 +29,20 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 	</PropertyGroup>
+	
+	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(RuntimeIdentifierOverride)' != ''">
+    <RuntimeIdentifier>$(RuntimeIdentifierOverride)</RuntimeIdentifier>
+</PropertyGroup>
+	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(RuntimeIdentifierOverride)' != ''">
+		<RuntimeIdentifier>$(RuntimeIdentifierOverride)</RuntimeIdentifier>
+	</PropertyGroup>
 
-		<!-- Note for MacCatalyst:
+	<!-- Note for MacCatalyst:
 		The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
 		When specifying both architectures, use the plural <RuntimeIdentifiers> instead of the singular <RuntimeIdentifier>.
 		The Mac App Store will NOT accept apps with ONLY maccatalyst-arm64 indicated;
 		either BOTH runtimes must be indicated or ONLY macatalyst-x64. -->
-		<!-- For example: <RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers> -->
+	<!-- For example: <RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers> -->
 
 	<ItemGroup>
 		<!-- App Icon -->
@@ -56,34 +63,56 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Arisoul.Core.Maui" Version="2.0.2" />
-		<PackageReference Include="CommunityToolkit.Maui" Version="8.0.0" />
-		<PackageReference Include="CommunityToolkit.MVVM" Version="8.2.2" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.3" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
-		<PackageReference Include="Microsoft.Maui.Essentials" Version="$(MauiVersion)" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+		<PackageReference Include="Arisoul.Core.Maui" Version="3.0.4" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="11.2.0" />
+		<PackageReference Include="CommunityToolkit.MVVM" Version="8.4.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.5" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.70" />
+		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.70" />
+		<PackageReference Include="Microsoft.Maui.Essentials" Version="9.0.70" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.5" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Client\Client.csproj" />
+		<ProjectReference Include="..\Client\Client.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="Views\DividendsPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\SettingsPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
+			  <MauiFont Update="Resources\Fonts\FontAwesome6FreeBrands.otf">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </MauiFont>
+	  <MauiFont Update="Resources\Fonts\FontAwesome6FreeRegular.otf">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </MauiFont>
+	  <MauiFont Update="Resources\Fonts\FontAwesome6FreeSolid.otf">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </MauiFont>
+	  <MauiFont Update="Resources\Fonts\OpenSans-Regular.ttf">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </MauiFont>
+	  <MauiFont Update="Resources\Fonts\OpenSans-Semibold.ttf">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </MauiFont>
+	</ItemGroup>
+
+	<ItemGroup>
+<MauiXaml Update="Views\DividendsPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Views\SettingsPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 	</ItemGroup>
 
 	<PropertyGroup Label="MauiAppAccelerator">
 		<wizardVersion>v1.5</wizardVersion>
 		<projectType>MVVMToolkit</projectType>
 		<framework>Flyout</framework>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-android|AnyCPU'">
+	  <AndroidPackageFormat>apk</AndroidPackageFormat>
 	</PropertyGroup>
 
 </Project>

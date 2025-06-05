@@ -1,8 +1,9 @@
 ﻿using Arisoul.T212.Client;
+using System.Windows.Input;
 
 namespace Arisoul.T212.App.ViewModels;
 
-public partial class SettingsViewModel 
+public partial class SettingsViewModel
     : BaseViewModel
 {
     [ObservableProperty]
@@ -19,5 +20,17 @@ public partial class SettingsViewModel
     {
         ClientOptions.IsInitiated = true;
         ClientOptions.SaveOptions(markAsChanged: true);
+    }
+
+    [RelayCommand]
+    public async Task SeeCreateAPIKeyAsync(string url)
+    {
+        await Launcher.OpenAsync(url).ConfigureAwait(false);
+    }
+
+    [RelayCommand]
+    public void SetBaseAddress(string url)
+    {
+        ClientOptions.BaseAddress = url;
     }
 }

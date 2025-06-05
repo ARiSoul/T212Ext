@@ -1,7 +1,7 @@
-﻿using Arisoul.T212.Client.Services;
+﻿using Arisoul.T212.App.Storage;
 using Arisoul.T212.Client;
+using Arisoul.T212.Client.Services;
 using Arisoul.T212.Models;
-using Arisoul.T212.App.Storage;
 
 namespace Arisoul.T212.App.ViewModels;
 
@@ -35,11 +35,18 @@ public partial class OpenPositionsViewModel
     [RelayCommand]
     private async Task OnRefreshing()
     {
-        if (IsRefreshing)
-            return;
-
-        IsRefreshing = true;
         await LoadPositionsAsync();
+    }
+
+    [RelayCommand]
+    private Task ManualRefresh()
+    {
+        if (IsRefreshing)
+            return Task.CompletedTask;
+        
+        IsRefreshing = true;
+
+        return Task.CompletedTask;
     }
 
     [RelayCommand]
@@ -52,10 +59,6 @@ public partial class OpenPositionsViewModel
             return;
         }
 
-        if (Items is not null && Items.Any() && !IsRefreshing)
-            return;
-
-        IsRefreshing = true;
         HasError = false;
 
         try
@@ -69,7 +72,7 @@ public partial class OpenPositionsViewModel
 
             var result = await _portfolioRestService.GetOpenPositionsAsync();
 
-            if (result.Success)
+            if (result.Succeeded)
             {
                 await SyncTickerNamesAsync(result.Value!);
                 await GetPositionDividendsAsync(result.Value!);
@@ -79,7 +82,7 @@ public partial class OpenPositionsViewModel
             else
             {
                 HasError = true;
-                await Dialogs.ShowError(result.Message);
+                await Dialogs.ShowError(result.Error!.Description);
             }
         }
         catch
@@ -114,7 +117,7 @@ public partial class OpenPositionsViewModel
         {
             Debug.WriteLine("Fetching missing tickers...");
             var result = await _instrumentRestService.GetInstrumentsAsync();
-            if (result.Success)
+            if (result.Succeeded)
             {
                 Debug.WriteLine("Saving instruments...");
                 await _dbContext.SaveInstrumentsAsync(result.Value!);
@@ -122,7 +125,7 @@ public partial class OpenPositionsViewModel
             }
             else
             {
-                await Dialogs.ShowError(result.Message);
+                await Dialogs.ShowError(result.Error!.Description);
                 return;
             }
         }
@@ -146,14 +149,14 @@ public partial class OpenPositionsViewModel
         await _backgroundSyncService.SyncDividendsAsync().ConfigureAwait(false);
 
         Debug.WriteLine("Getting ticker dividends...");
-        List<HistoryDividendItem> dividendsInDatabase = (await _dbContext.GetHistoryDividendItemsAsync()).ToList();
+        List<HistoryDividendItem> dividendsInDatabase = [.. (await _dbContext.GetHistoryDividendItemsAsync())];
 
         // update position dividends
         Debug.WriteLine("Updating position dividends...");
         foreach (PositionModel item in positions!.Cast<PositionModel>())
         {
             var dividends = dividendsInDatabase.Where(i => i.Ticker == item.Ticker);
-            item.Dividends = dividends.ToList();
+            item.Dividends = [.. dividends];
         }
 
         // now, there can be dividends of instruments that are not in positions, so we need to add them
@@ -171,14 +174,14 @@ public partial class OpenPositionsViewModel
     {
         Debug.WriteLine("Getting ticker orders...");
 
-        List<HistoryOrderModel> ordersInDatabase = (await _dbContext.GetHistoryOrdersAsync()).ToList();
+        List<HistoryOrderModel> ordersInDatabase = [.. (await _dbContext.GetHistoryOrdersAsync())];
 
         // update position orders
         Debug.WriteLine("Updating position orders...");
         foreach (PositionModel item in positions!.Cast<PositionModel>())
         {
             var orders = ordersInDatabase.Where(i => i.Ticker == item.Ticker);
-            item.Orders = orders.ToList();
+            item.Orders = [.. orders];
         }
 
         TotalInvested = positions.Sum(x => x.Invested!) ?? 0;

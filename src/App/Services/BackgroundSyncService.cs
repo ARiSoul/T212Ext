@@ -28,7 +28,7 @@ public class BackgroundSyncService
             return;
 
         Debug.WriteLine("Syncing ticker dividends...");
-        List<HistoryDividendItem> dividendsInDatabase = (await _dbContext.GetHistoryDividendItemsAsync().ConfigureAwait(false)).ToList();
+        List<HistoryDividendItem> dividendsInDatabase = [.. (await _dbContext.GetHistoryDividendItemsAsync().ConfigureAwait(false))];
 
         await GetDividendsRecursivelyAsync(null, dividendsInDatabase).ConfigureAwait(false);
 
@@ -42,7 +42,7 @@ public class BackgroundSyncService
 
         Debug.WriteLine("Syncing ticker orders...");
 
-        List<HistoryOrderModel> ordersInDatabase = (await _dbContext.GetHistoryOrdersAsync().ConfigureAwait(false)).ToList();
+        List<HistoryOrderModel> ordersInDatabase = [.. (await _dbContext.GetHistoryOrdersAsync().ConfigureAwait(false))];
 
         await GetOrdersRecursivelyAsync(null, ordersInDatabase).ConfigureAwait(false);
 
@@ -58,7 +58,7 @@ public class BackgroundSyncService
 
         var result = await _historyRestService.GetDividendsAsync(requestParams).ConfigureAwait(false);
 
-        if (result.Success)
+        if (result.Succeeded)
         {
             // get dividends obtained that don't exist in database
             var newDividends = result.Value!.Items!.Where(i => dividendsInDatabase.All(x => x.Reference != i.Reference)).ToList();
@@ -88,15 +88,13 @@ public class BackgroundSyncService
                     nextCursor2 = await GetDividendsRecursivelyAsync(nextCursor2, dividendsInDatabase).ConfigureAwait(false);
             }
         }
-        else if (!string.IsNullOrEmpty(result.Message) && result.Message.Contains("TooManyRequests", StringComparison.OrdinalIgnoreCase))
+        else if (result.Error is not null && result.Error.Description.Contains("TooManyRequests", StringComparison.OrdinalIgnoreCase))
         {
             await Task.Delay(_dividendsRequestRateDelay).ConfigureAwait(false);
             await GetDividendsRecursivelyAsync(nextCursor, dividendsInDatabase).ConfigureAwait(false);
         }
         else
-        {
-            Debug.WriteLine($"Sync dividends failed: {result.Message}");
-        }
+            Debug.WriteLine($"Sync dividends failed: {result.Error!.Description}");
 
         return null;
     }
@@ -110,7 +108,7 @@ public class BackgroundSyncService
 
         var result = await _historyRestService.GetOrdersAsync(requestParams).ConfigureAwait(false);
 
-        if (result.Success && result.Value is not null && result.Value.Items.Any())
+        if (result.Succeeded && result.Value is not null && result.Value.Items.Any())
         {
             var alphaOrders = result.Value!.Items!.Where(i => i.Ticker == "ABECd_EQ").ToList();
 
@@ -147,16 +145,14 @@ public class BackgroundSyncService
             while (nextCursor2 is not null)
                 nextCursor2 = await GetOrdersRecursivelyAsync(nextCursor2, ordersInDatabase).ConfigureAwait(false);
         }
-        else if (!string.IsNullOrEmpty(result.Message) && result.Message.Contains("TooManyRequests", StringComparison.OrdinalIgnoreCase))
+        else if (result.Error is not null && result.Error.Description.Contains("TooManyRequests", StringComparison.OrdinalIgnoreCase))
         {
             Debug.WriteLine("Too many requests, delaying...");
             await Task.Delay(_ordersRequestRateDelay).ConfigureAwait(false);
             await GetOrdersRecursivelyAsync(nextCursor, ordersInDatabase).ConfigureAwait(false);
         }
-        else if (result.Failure)
-        {
-            Debug.WriteLine($"Sync orders failed: {result.Message}");
-        }
+        else if (result.Failed)
+            Debug.WriteLine($"Sync orders failed: {result.Error!.Description}");
 
         return null;
     }

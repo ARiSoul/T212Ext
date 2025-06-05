@@ -27,36 +27,25 @@ public class HistoryRestService(IT212ClientOptions clientOptions)
         RestResponse restResponse = await Client.ExecuteAsync(request).ConfigureAwait(continueOnCapturedContext: false);
         if (restResponse.IsSuccessful)
         {
-            return Result<T>.Succeeded(Client.Deserialize<T>(restResponse).Data);
+            var result = await Client.Deserialize<T>(restResponse, default).ConfigureAwait(false);
+            return result.Data!;
         }
 
         if (restResponse.StatusCode == HttpStatusCode.Unauthorized)
-        {
-            return Result<T>.Unauthorized();
-        }
+            return new ResultUnauthorizedError();
 
         if (restResponse.StatusCode == HttpStatusCode.NotFound)
-        {
-            return Result<T>.NotFound(restResponse.Content!);
-        }
+            return new ResultNotFoundError(restResponse.Content!);
 
         if (!string.IsNullOrEmpty(restResponse.Content))
         {
-            ClientProblemDetails clientProblemDetails = JsonSerializer.Deserialize<ClientProblemDetails>(restResponse.Content);
+            ClientProblemDetails? clientProblemDetails = JsonSerializer.Deserialize<ClientProblemDetails>(restResponse.Content);
             if (clientProblemDetails != null && !string.IsNullOrWhiteSpace(clientProblemDetails.Title))
-            {
-                Dictionary<string, List<string>> dictionary = new Dictionary<string, List<string>>();
-                foreach (KeyValuePair<string, object> error in clientProblemDetails.Errors)
-                {
-                    dictionary.Add(error.Key, JsonSerializer.Deserialize<List<string>>(error.Value.ToString()));
-                }
+                return ResultValidationError.FromClientProblemDetails(clientProblemDetails);
 
-                return Result<T>.Failed(clientProblemDetails.Title, dictionary);
-            }
-
-            return Result<T>.Failed(restResponse.ErrorMessage ?? restResponse.ErrorException.Message, restResponse.Content.ToString());
+            return new ResultValidationError(restResponse.ErrorMessage ?? restResponse.ErrorException!.Message, restResponse.Content.ToString());
         }
 
-        return Result<T>.Failed(restResponse.ErrorMessage ?? restResponse.ErrorException.Message);
+        return new ResultValidationError(restResponse.ErrorMessage ?? restResponse.ErrorException!.Message, "UnknownDetails");
     }
 }

@@ -21,69 +21,74 @@
     </ContentPage.Resources>
 
     <RefreshView Command="{Binding RefreshingCommand}" IsRefreshing="{Binding IsRefreshing}">
-        <Grid RowDefinitions="0.15*,*">
-            <HorizontalStackLayout
+        <Grid RowDefinitions="0.10*,*">
+            <ScrollView
                 Grid.Row="0"
-                Padding="15"
-                Spacing="5">
-                <Button Command="{Binding RefreshingCommand}" Text="Refresh" />
-                <Label
-                    Padding="15,0,0,0"
-                    FontAttributes="Bold"
-                    FontSize="Medium"
-                    Text="Positions:" />
-                <Label FontSize="Medium" Text="{Binding Items.Count}" />
-                <Label
-                    Padding="15,0,0,0"
-                    FontAttributes="Bold"
-                    FontSize="Medium"
-                    Text="Invested:" />
-                <Label FontSize="Medium" Text="{Binding TotalInvested, StringFormat='{0:#,0.#00} €'}" />
-                <Label
-                    Padding="15,0,0,0"
-                    FontAttributes="Bold"
-                    FontSize="Medium"
-                    Text="Return:" />
-                <Label FontSize="Medium" Text="{Binding TotalReturn, StringFormat='{0:#,0.#00} €'}" />
-                <Label
-                    Padding="15,0,0,0"
-                    FontAttributes="Bold"
-                    FontSize="Medium"
-                    Text="Dividends:" />
-                <Label FontSize="Medium" Text="{Binding TotalDividends, StringFormat='{0:#,0.#00} €'}" />
-            </HorizontalStackLayout>
+                Margin="0,0,0,5"
+                Orientation="Horizontal">
+                <HorizontalStackLayout Padding="10" Spacing="5">
+                    <Button
+                        Command="{Binding ManualRefreshCommand}"
+                        IsVisible="{Binding IsWindows}"
+                        Text="Refresh" />
+                    <Label
+                        FontAttributes="Bold"
+                        FontSize="Medium"
+                        Text="Positions:" />
+                    <Label FontSize="Medium" Text="{Binding Items.Count}" />
+                    <Label
+                        Padding="15,0,0,0"
+                        FontAttributes="Bold"
+                        FontSize="Medium"
+                        Text="Invested:" />
+                    <Label FontSize="Medium" Text="{Binding TotalInvested, StringFormat='{0:#,0.#00} €'}" />
+                    <Label
+                        Padding="15,0,0,0"
+                        FontAttributes="Bold"
+                        FontSize="Medium"
+                        Text="Return:" />
+                    <Label FontSize="Medium" Text="{Binding TotalReturn, StringFormat='{0:#,0.#00} €'}" />
+                    <Label
+                        Padding="15,0,0,0"
+                        FontAttributes="Bold"
+                        FontSize="Medium"
+                        Text="Dividends:" />
+                    <Label FontSize="Medium" Text="{Binding TotalDividends, StringFormat='{0:#,0.#00} €'}" />
+                </HorizontalStackLayout>
+            </ScrollView>
             <CollectionView Grid.Row="1" ItemsSource="{Binding Items}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="m:PositionModel">
                         <VerticalStackLayout Padding="15,0,15,5">
-                            <Frame
-                                Padding="12"
-                                BackgroundColor="Transparent"
-                                BorderColor="Gray">
-                                <Frame.GestureRecognizers>
+                            <Border Padding="5">
+                                <Border.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:OpenPositionsViewModel}}, Path=GoToDetailsCommand}" CommandParameter="{Binding .}" />
-                                </Frame.GestureRecognizers>
-                                <Grid ColumnDefinitions="*,*,*,*,*,*" RowDefinitions="*,*">
+                                </Border.GestureRecognizers>
+                                <Grid
+                                    ColumnDefinitions="0.30*,0.40*,*"
+                                    ColumnSpacing="2"
+                                    RowDefinitions="*,*">
 
-                                    <!--  Short name  -->
-                                    <HorizontalStackLayout Grid.RowSpan="2" Spacing="15">
-                                        <toolkit:AvatarView
-                                            BackgroundColor="BlueViolet"
-                                            FontAttributes="Bold"
-                                            Text="{Binding Instrument.Shortname}" />
-                                        <toolkit:AvatarView
-                                            BackgroundColor="Orange"
-                                            FontAttributes="Bold"
-                                            HeightRequest="25"
-                                            Text="{Binding Instrument.CurrencyCode}"
-                                            TextColor="Black" />
-                                    </HorizontalStackLayout>
+                                    <!--  Short name (column 0)  -->
+                                    <toolkit:AvatarView
+                                        Grid.Row="0"
+                                        Grid.Column="0"
+                                        BackgroundColor="BlueViolet"
+                                        FontAttributes="Bold"
+                                        Text="{Binding Instrument.Shortname}" />
+                                    <toolkit:AvatarView
+                                        Grid.Row="1"
+                                        Grid.Column="0"
+                                        BackgroundColor="Orange"
+                                        FontAttributes="Bold"
+                                        HeightRequest="25"
+                                        Text="{Binding Instrument.CurrencyCode}"
+                                        TextColor="Black" />
 
-                                    <!--  Name and Shares  -->
+                                    <!--  Name and Shares (column 1)  -->
                                     <Label
                                         Grid.Row="0"
                                         Grid.Column="1"
-                                        FontSize="Medium"
                                         Text="{Binding Instrument.Name}" />
                                     <Label
                                         Grid.Row="1"
@@ -92,71 +97,123 @@
                                         Text="{Binding Quantity, StringFormat='{0:#,0.#0000} Shares'}"
                                         TextColor="Gray" />
 
-                                    <!--  Invested and Return  -->
-                                    <HorizontalStackLayout Grid.Row="0" Grid.Column="2">
-                                        <Label
-                                            Padding="0,0,5,0"
-                                            FontAttributes="Bold"
-                                            Text="INV:" />
-                                        <Label Text="{Binding Invested, StringFormat='{0:#,0.#0} €'}" />
-                                    </HorizontalStackLayout>
-                                    <HorizontalStackLayout Grid.Row="1" Grid.Column="2">
-                                        <Label
-                                            Padding="0,0,5,0"
-                                            FontAttributes="Bold"
-                                            Text="RET:" />
-                                        <Label Text="{Binding Ppl, StringFormat='{0:#,0.#0} €'}" TextColor="{Binding Ppl, Converter={StaticResource NegativePositiveConverter}}" />
-                                    </HorizontalStackLayout>
+                                    <!--  column 2  -->
+                                    <Grid
+                                        Grid.RowSpan="2"
+                                        Grid.Column="2"
+                                        ColumnDefinitions="0.25*,0.6*,0.25*,0.9*"
+                                        RowDefinitions="*,*,*,*">
 
-                                    <!--  Current and Average Price  -->
-                                    <HorizontalStackLayout Grid.Row="0" Grid.Column="3">
+                                        <!--  Invested and Return  -->
                                         <Label
+                                            Grid.Row="0"
+                                            Grid.Column="0"
                                             Padding="0,0,5,0"
                                             FontAttributes="Bold"
-                                            Text="Current:" />
-                                        <Label Text="{Binding CurrentPrice, StringFormat='{0:#,0.#0} €'}" />
-                                    </HorizontalStackLayout>
-                                    <HorizontalStackLayout Grid.Row="1" Grid.Column="3">
+                                            FontSize="Micro"
+                                            Text="Inv:" />
                                         <Label
-                                            Padding="0,0,5,0"
-                                            FontAttributes="Bold"
-                                            Text="Average:" />
-                                        <Label Text="{Binding AveragePrice, StringFormat='{0:#,0.#0} €'}" />
-                                    </HorizontalStackLayout>
+                                            Grid.Row="0"
+                                            Grid.Column="1"
+                                            FontSize="Micro"
+                                            Text="{Binding Invested, StringFormat='{0:#,0.#0} €'}" />
 
-                                    <!--  Fx Impact and Initial Date  -->
-                                    <HorizontalStackLayout Grid.Row="0" Grid.Column="4">
                                         <Label
+                                            Grid.Row="0"
+                                            Grid.Column="2"
                                             Padding="0,0,5,0"
                                             FontAttributes="Bold"
-                                            Text="Fx Impact:" />
-                                        <Label Text="{Binding FxPpl, StringFormat='{0:#,0.#00} €'}" TextColor="{Binding FxPpl, Converter={StaticResource NegativePositiveConverter}}" />
-                                    </HorizontalStackLayout>
-                                    <HorizontalStackLayout Grid.Row="1" Grid.Column="4">
+                                            FontSize="Micro"
+                                            Text="Ret:" />
                                         <Label
-                                            Padding="0,0,5,0"
-                                            FontAttributes="Bold"
-                                            Text="Since:" />
-                                        <Label Text="{Binding InitialFillDate}" />
-                                    </HorizontalStackLayout>
+                                            Grid.Row="0"
+                                            Grid.Column="3"
+                                            FontSize="Micro"
+                                            Text="{Binding Ppl, StringFormat='{0:#,0.#0} €'}"
+                                            TextColor="{Binding Ppl, Converter={StaticResource NegativePositiveConverter}}" />
 
-                                    <!--  Dividends  -->
-                                    <HorizontalStackLayout Grid.Row="0" Grid.Column="5">
+                                        <!--  Current and Average Price  -->
                                         <Label
+                                            Grid.Row="1"
+                                            Grid.Column="0"
                                             Padding="0,0,5,0"
                                             FontAttributes="Bold"
-                                            Text="Dividends:" />
-                                        <Label Text="{Binding Dividends.Count}" />
-                                    </HorizontalStackLayout>
-                                    <HorizontalStackLayout Grid.Row="1" Grid.Column="5">
+                                            FontSize="Micro"
+                                            Text="Cur:" />
                                         <Label
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            FontSize="Micro"
+                                            Text="{Binding CurrentPrice, StringFormat='{0:#,0.#0} €'}" />
+                                        <Label
+                                            Grid.Row="1"
+                                            Grid.Column="2"
                                             Padding="0,0,5,0"
                                             FontAttributes="Bold"
-                                            Text="Total Dividends:" />
-                                        <Label Text="{Binding TotalDividendsInEuro, StringFormat='{0:#,0.#00} €'}" TextColor="{Binding TotalDividendsInEuro, Converter={StaticResource PositiveConverter}}" />
-                                    </HorizontalStackLayout>
+                                            FontSize="Micro"
+                                            Text="Avg:" />
+                                        <Label
+                                            Grid.Row="1"
+                                            Grid.Column="3"
+                                            FontSize="Micro"
+                                            Text="{Binding AveragePrice, StringFormat='{0:#,0.#0} €'}" />
+
+                                        <!--  Fx Impact and Initial Date  -->
+                                        <Label
+                                            Grid.Row="2"
+                                            Grid.Column="0"
+                                            Padding="0,0,5,0"
+                                            FontAttributes="Bold"
+                                            FontSize="Micro"
+                                            Text="FxI:" />
+                                        <Label
+                                            Grid.Row="2"
+                                            Grid.Column="1"
+                                            FontSize="Micro"
+                                            Text="{Binding FxPpl, StringFormat='{0:#,0.#00} €'}"
+                                            TextColor="{Binding FxPpl, Converter={StaticResource NegativePositiveConverter}}" />
+                                        <Label
+                                            Grid.Row="2"
+                                            Grid.Column="2"
+                                            Padding="0,0,5,0"
+                                            FontAttributes="Bold"
+                                            FontSize="Micro"
+                                            Text="Sin:" />
+                                        <Label
+                                            Grid.Row="2"
+                                            Grid.Column="3"
+                                            FontSize="Micro"
+                                            Text="{Binding InitialFillDate}" />
+
+                                        <!--  Dividends  -->
+                                        <Label
+                                            Grid.Row="3"
+                                            Grid.Column="0"
+                                            Padding="0,0,5,0"
+                                            FontAttributes="Bold"
+                                            FontSize="Micro"
+                                            Text="Div:" />
+                                        <Label
+                                            Grid.Row="3"
+                                            Grid.Column="1"
+                                            FontSize="Micro"
+                                            Text="{Binding Dividends.Count}" />
+                                        <Label
+                                            Grid.Row="3"
+                                            Grid.Column="2"
+                                            Padding="0,0,5,0"
+                                            FontAttributes="Bold"
+                                            FontSize="Micro"
+                                            Text="Tot Div:" />
+                                        <Label
+                                            Grid.Row="3"
+                                            Grid.Column="3"
+                                            FontSize="Micro"
+                                            Text="{Binding TotalDividendsInEuro, StringFormat='{0:#,0.#00} €'}"
+                                            TextColor="{Binding TotalDividendsInEuro, Converter={StaticResource PositiveConverter}}" />
+                                    </Grid>
                                 </Grid>
-                            </Frame>
+                            </Border>
                         </VerticalStackLayout>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>

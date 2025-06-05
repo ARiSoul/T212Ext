@@ -68,7 +68,7 @@ public partial class MainViewModel
 
             var result = await _accountRestService.GetAccountMetadataAsync();
 
-            if (result.Success)
+            if (result.Succeeded)
             {
                 Account = result.Value!;
                 Preferences.Set(nameof(T212.Models.Account), JsonSerializer.Serialize(Account));
@@ -79,7 +79,7 @@ public partial class MainViewModel
             else
             {
                 HasError = true;
-                await Dialogs.ShowError(result.Message);
+                await Dialogs.ShowError(result.Error!.Description);
             }
         }
         catch
@@ -109,7 +109,7 @@ public partial class MainViewModel
 
             var result = await _accountRestService.GetAccountCashAsync();
 
-            if (result.Success)
+            if (result.Succeeded)
             {
                 AccountCash = result.Value!;
                 _accountCashLoadedFirstTime = true;
@@ -118,7 +118,7 @@ public partial class MainViewModel
             else
             {
                 CashHasError = true;
-                await Dialogs.ShowError(result.Message);
+                await Dialogs.ShowError(result.Error!.Description);
             }
         }
         catch

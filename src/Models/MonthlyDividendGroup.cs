@@ -1,4 +1,4 @@
-﻿using MvvmHelpers;
+﻿using Arisoul.T212.Models.Helpers;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -28,7 +28,7 @@ public class MonthlyDividendGroup
         MonthTotalPaid = totalPaid;
     }
 
-    protected bool SetProperty<T>(ref T backingStore, T value, [CallerMemberName] string propertyName = "", Action onChanged = null)
+    protected bool SetProperty<T>(ref T backingStore, T value, [CallerMemberName] string propertyName = "", Action? onChanged = null)
     {
         if (EqualityComparer<T>.Default.Equals(backingStore, value))
             return false;
@@ -39,7 +39,7 @@ public class MonthlyDividendGroup
         return true;
     }
 
-    public event PropertyChangedEventHandler PropertyChanged;
+    public new event PropertyChangedEventHandler? PropertyChanged;
     protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
     {
         var changed = PropertyChanged;
