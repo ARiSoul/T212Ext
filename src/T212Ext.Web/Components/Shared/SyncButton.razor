@@ -1,0 +1,51 @@
+@implements IDisposable
+@inject SyncCoordinator Coordinator
+
+<div class="d-flex flex-wrap align-items-center gap-2">
+    @if (Coordinator.IsRunning)
+    {
+        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        <span class="text-body-secondary small">Syncing@(Coordinator.CurrentStep is { } step ? $" · {step}" : "")…</span>
+    }
+    else if (Coordinator.LastFinishedAt is { } finished)
+    {
+        <span class="text-body-secondary small">Last sync @Format.DateTime(finished)</span>
+    }
+    <button class="btn btn-primary btn-sm" disabled="@Coordinator.IsRunning" @onclick="() => Coordinator.Request(new SyncRequest())">
+        Sync now
+    </button>
+    @if (ShowFullHistory)
+    {
+        <button class="btn btn-outline-secondary btn-sm" disabled="@Coordinator.IsRunning"
+                title="Reads the whole history again instead of stopping at the first known page"
+                @onclick="() => Coordinator.Request(new SyncRequest(FullHistory: true))">
+            Full history
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter] public bool ShowFullHistory { get; set; }
+
+    /// <summary>Called when a sync ends, so the page can reload its data.</summary>
+    [Parameter] public EventCallback Finished { get; set; }
+
+    private bool _wasRunning;
+
+    protected override void OnInitialized()
+    {
+        _wasRunning = Coordinator.IsRunning;
+        Coordinator.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged() => _ = InvokeAsync(async () =>
+    {
+        var finished = _wasRunning && !Coordinator.IsRunning;
+        _wasRunning = Coordinator.IsRunning;
+        StateHasChanged();
+        if (finished)
+            await Finished.InvokeAsync();
+    });
+
+    public void Dispose() => Coordinator.StateChanged -= OnStateChanged;
+}

@@ -1,0 +1,136 @@
+@page "/dividends"
+@using System.Globalization
+@inject OverviewQueries Overview
+@inject DividendQueries DividendQueries
+
+<PageTitle>Dividends · T212Ext</PageTitle>
+
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+    <h1 class="h3 mb-0 me-auto">Dividends</h1>
+    <SyncButton Finished="LoadAsync" />
+</div>
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+    <select class="form-select w-auto" aria-label="Account" value="@_accountId" @onchange="OnAccountChanged">
+        <option value="">All accounts</option>
+        @foreach (var account in _accounts)
+        {
+            <option value="@account.Id">@account.Name</option>
+        }
+    </select>
+    <select class="form-select w-auto" aria-label="Year" value="@_year" @onchange="OnYearChanged">
+        <option value="">All years</option>
+        @foreach (var year in _years)
+        {
+            <option value="@year">@year</option>
+        }
+    </select>
+</div>
+
+@if (_rows is null)
+{
+    <p class="text-body-secondary">Loading…</p>
+}
+else if (_rows.Count == 0)
+{
+    <p class="text-body-secondary">No dividends yet. Run a sync or import a CSV report.</p>
+}
+else
+{
+    @foreach (var summary in _summaries)
+    {
+        var periods = _year is null ? summary.ByYear : summary.ByMonth.Where(m => m.Year == _year).ToList();
+        <div class="card mb-3">
+            <div class="card-header">@(_year is null ? "By year" : $"{_year} by month") · @summary.Currency</div>
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr><th>@(_year is null ? "Year" : "Month")</th><th class="text-end">Payments</th><th class="text-end">Net</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var period in periods)
+                        {
+                            <tr>
+                                <td>@(period.Month is { } month ? CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month) : period.Year.ToString())</td>
+                                <td class="text-end">@period.Count</td>
+                                <td class="text-end">@Format.Money(period.Total, summary.Currency)</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="fw-semibold">
+                            <td>Total</td>
+                            <td class="text-end">@periods.Sum(p => p.Count)</td>
+                            <td class="text-end">@Format.Money(periods.Sum(p => p.Total), summary.Currency)</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    }
+
+    <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Paid</th>
+                    <th>Instrument</th>
+                    <th class="d-none d-md-table-cell">Type</th>
+                    <th class="text-end d-none d-sm-table-cell">Shares</th>
+                    <th class="text-end d-none d-lg-table-cell">Gross / share</th>
+                    <th class="text-end d-none d-lg-table-cell">Withheld</th>
+                    <th class="text-end">Net</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in _rows)
+                {
+                    <tr>
+                        <td class="text-nowrap">@Format.Date(row.PaidOn)</td>
+                        <td>
+                            <div>@(row.InstrumentName ?? row.Ticker)</div>
+                            <div class="small text-body-secondary">@row.Ticker@(_accountId is null && _accounts.Count > 1 ? $" · {row.AccountName}" : "")</div>
+                        </td>
+                        <td class="small d-none d-md-table-cell">@row.Type</td>
+                        <td class="text-end d-none d-sm-table-cell">@Format.Number(row.Quantity)</td>
+                        <td class="text-end d-none d-lg-table-cell">@Format.Number(row.GrossAmountPerShare) @row.InstrumentCurrency</td>
+                        <td class="text-end d-none d-lg-table-cell">@(row.WithholdingTax is null ? "—" : $"{Format.Number(row.WithholdingTax)} {row.WithholdingTaxCurrency}")</td>
+                        <td class="text-end text-nowrap">@Format.Money(row.Amount, row.Currency)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <p class="small text-body-secondary">Withheld tax comes only from CSV reports; the API does not give it.</p>
+}
+
+@code {
+    private IReadOnlyList<AccountOverview> _accounts = [];
+    private IReadOnlyList<int> _years = [];
+    private IReadOnlyList<DividendRow>? _rows;
+    private IReadOnlyList<DividendSummary> _summaries = [];
+    private int? _accountId;
+    private int? _year;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _accounts = await Overview.GetAccountsAsync();
+        _years = await DividendQueries.GetYearsAsync(_accountId);
+        _rows = await DividendQueries.GetDividendsAsync(_accountId, _year);
+        _summaries = await DividendQueries.GetSummariesAsync(_accountId);
+    }
+
+    private Task OnAccountChanged(ChangeEventArgs e)
+    {
+        _accountId = int.TryParse(e.Value?.ToString(), out var id) ? id : null;
+        return LoadAsync();
+    }
+
+    private Task OnYearChanged(ChangeEventArgs e)
+    {
+        _year = int.TryParse(e.Value?.ToString(), out var year) ? year : null;
+        return LoadAsync();
+    }
+}

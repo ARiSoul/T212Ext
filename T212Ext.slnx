@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/T212Ext.Client/T212Ext.Client.csproj" />
+    <Project Path="src/T212Ext.Core/T212Ext.Core.csproj" />
+    <Project Path="src/T212Ext.Web/T212Ext.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/T212Ext.Client.Tests/T212Ext.Client.Tests.csproj" />
+    <Project Path="tests/T212Ext.Core.Tests/T212Ext.Core.Tests.csproj" />
+  </Folder>
+</Solution>
