@@ -2,6 +2,28 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.3.0 — Capital gains for the IRS (2026-10-13)
+
+The IRS report gets a second tab: the sales of shares and ETFs, for Anexo J, quadro 9.2A. See [TAX.md](TAX.md#capital-gains-anexo-j-quadro-92a). To check, not tax advice.
+
+**New**
+- **Capital gains (quadro 9.2A).** Every sale of the year is matched to the shares bought longest ago (FIFO), one line per purchase:
+  - sale and purchase dates and values in euros, at the ECB rate of each date;
+  - expenses (fees on the purchase and the sale);
+  - code G01 for shares, G20 for ETFs (to confirm);
+  - source country, counterparty country, "Sim" for listed securities;
+  - lines numbered from 951, with CSV export and print.
+- **Totals:**
+  - sale value, purchase value, expenses and the year's balance, next to Trading 212's own result (average cost);
+  - the balance of what was held less than 365 days, with when it must be aggregated;
+  - the partial exclusion for holdings of 2, 5 or 8 years.
+- **Stock splits:** Trading 212 records no order for a split, so you can enter them (date and new shares per share). When sales exceed purchases, the page names the instrument and the date, which is usually a split to enter.
+- **Quadro 11:** both tax tabs show your account number and the country of the Trading 212 entity, for identifying the account abroad.
+
+**Changed**
+- Exchange rates are kept from the first trade as well as from the first dividend.
+- The setting for the Trading 212 entity's country is shared by both tabs.
+
 ## 2.2.0 — IRS report (2026-10-13)
 
 Phase 3: the figures for the Portuguese tax return, prepared from your dividends. To check, not tax advice. See [TAX.md](TAX.md).

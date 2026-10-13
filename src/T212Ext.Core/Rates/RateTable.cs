@@ -57,6 +57,16 @@ public sealed class RateTable
         return RateFor(currency, date) is { } rate ? Math.Round(amount / rate.PerEuro, 2, MidpointRounding.AwayFromZero) : null;
     }
 
+    /// <summary>The amount in euros without rounding (for costs split later across lots), or null without a rate.</summary>
+    public decimal? ToEuroExact(decimal amount, string? currency, DateOnly date)
+    {
+        if (string.IsNullOrEmpty(currency))
+            return null;
+
+        (amount, currency) = Normalise(amount, currency);
+        return RateFor(currency, date) is { } rate ? amount / rate.PerEuro : null;
+    }
+
     /// <summary>The ECB has no rate for pence: GBX (or GBp) amounts are pounds divided by 100.</summary>
     public static (decimal Amount, string Currency) Normalise(decimal amount, string currency) =>
         currency is "GBX" or "GBp" or "gbx" ? (amount / 100, "GBP") : (amount, currency.ToUpperInvariant());

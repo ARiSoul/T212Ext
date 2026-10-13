@@ -15,7 +15,8 @@ public sealed record AccountOverview(
     PortfolioSnapshot? LatestSnapshot,
     int DividendCount,
     int OrderCount,
-    int TransactionCount);
+    int TransactionCount,
+    long? ExternalId);
 
 public sealed record SyncRunRow(
     long Id,
@@ -53,7 +54,8 @@ public sealed class OverviewQueries(IDbContextFactory<T212ExtDbContext> dbFactor
                 snapshot,
                 await db.Dividends.CountAsync(d => d.AccountId == account.Id, cancellationToken),
                 await db.Orders.CountAsync(o => o.AccountId == account.Id, cancellationToken),
-                await db.CashTransactions.CountAsync(t => t.AccountId == account.Id, cancellationToken)));
+                await db.CashTransactions.CountAsync(t => t.AccountId == account.Id, cancellationToken),
+                account.ExternalId));
         }
 
         return result;

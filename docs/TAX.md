@@ -1,6 +1,6 @@
 # The IRS report
 
-How the **IRS report** page (`/tax`) gets its figures, the rules it follows, and what is still to confirm. The report prepares figures to check. **It is not tax advice.** Before relying on it, check each year's form and the instructions of the Portal das Finanças.
+How the **IRS report** pages (`/tax` for dividends, `/tax/gains` for capital gains) get their figures, the rules it follows, and what is still to confirm. The report prepares figures to check. **It is not tax advice.** Before relying on it, check each year's form and the instructions of the Portal das Finanças.
 
 Researched on 2026-10-13. Sources are at the end. When a rule changes, update this file and `Core/Tax/IrsReport.cs` together.
 
@@ -66,6 +66,51 @@ Dividends are left out of the lines when:
 - **ADRs:** the source country is presumably the underlying company's, not the US. Set it per instrument.
 - **Irish-domiciled ETFs:** Irish-source (372), usually with nothing withheld.
 
+## Capital gains: Anexo J, quadro 9.2A
+
+The **Capital gains** tab (`/tax/gains`) prepares the sales of shares and ETFs. Open positions are not declared: only sales are taxed.
+
+**What it produces:** one line per sale and purchase it was matched to, numbered from 951. Each line carries:
+
+| Column | From |
+|---|---|
+| País da fonte | The ISIN country, or the instrument's override. For ETFs, the fund's domicile, e.g. Ireland. |
+| Código | **G01** for shares; **G20** for ETFs (fund units) |
+| Realização: data, valor | Sale date; quantity × price, in euros |
+| Aquisição: data, valor | Purchase date; quantity × price, in euros |
+| Despesas e encargos | The broker's fees on the purchase (pro rata) and the sale |
+| Imposto pago no estrangeiro | 0: nothing is withheld on these sales |
+| País da contraparte | The country of the Trading 212 entity |
+| Valores admitidos à negociação | Sim |
+
+**How it is computed:**
+- **FIFO (art. 43.º n.º 8 d)):** each sale takes the shares bought longest ago. The rule applies per institution (n.º 9); the page works per account, or across all of them.
+- **Euros (art. 23.º):** each purchase and each sale is converted at the ECB rate of its own date.
+  - The article says income uses the buying rate and expenses the selling rate. The ECB reference rate is a single middle rate.
+  - Converting the acquisition at its own date is common practice; no ruling says so explicitly.
+- **Expenses (art. 51.º n.º 1 b)):** fees "inerentes à aquisição e alienação". The currency conversion fees Trading 212 charges are counted. No ruling names them.
+- **Splits (art. 43.º n.º 8 a)):** the new shares keep the original purchase date and cost.
+  - Trading 212 records no order for a split, so splits are entered on the page (date, new shares per share).
+  - When sales exceed purchases, the page names the instrument and the date where it happens. The uncovered quantity shows as a line with no acquisition value, so the sale value stays complete.
+- **Trading 212's own result** is shown to compare. It uses average cost and its own exchange rate, so it differs.
+
+**Taxation, for reference:**
+- **Rate:** 28% on the year's balance (art. 72.º n.º 1 c)), or aggregation (englobamento) by choice (quadro 9.2C).
+- **Mandatory aggregation (art. 72.º n.º 14):** a positive balance from assets held less than 365 days must be aggregated when taxable income, including it, reaches the top bracket. The top bracket starts at €83,696 for 2025 income and €86,634 for 2026.
+- **Losses** can be carried forward 5 years only with aggregation (art. 55.º).
+- **Partial exclusion (art. 43.º n.º 5, since 29 June 2024):** for listed securities and open-ended funds, 10% of the gain is excluded for holdings of 2 to 5 years, 20% for 5 to 8, and 30% from 8. The page shows the percentage per line. The form asks whether the securities are listed, and the AT should apply it.
+
+**To confirm:**
+- **The ETF code.** G20 fits the wording best. The OCC guide also uses G90, and some use G01. All are taxed alike: pick one and keep it.
+- **The inflation coefficient (art. 50.º)** for holdings of more than 24 months: Anexo J's instructions are silent. The coefficients are about 1.00.
+- **Spin-offs, mergers and scrip dividends:** not handled. The page lists those fills, if any, to check by hand.
+
+## Anexo J, quadro 11: accounts abroad
+
+- **What it is:** securities and deposit accounts at institutions outside Portugal are identified **every year, even without income** (AT FAQ 3808).
+- **How to fill it for Trading 212:** there is no IBAN, so the account number goes in "Outros números de identificação". The tax pages show each account's number, which comes from the API's account summary, and the country of the Trading 212 entity.
+- **Which entity:** most EU clients have been with Trading 212 Markets Ltd (Cyprus, 196). Check the client agreement.
+
 ## Sources
 
 - AT binding ruling, Proc. 26057: https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/informacoes_vinculativas/rendimento/cirs/Documents/PIV_26057.pdf
@@ -73,4 +118,8 @@ Dividends are left out of the lines when:
 - Código do IRS, art. 81.º: https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs81.aspx
 - Portaria n.º 104/2026/1: https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/legislacao/diplomas_legislativos/Documents/portaria-104-2026-1.pdf
 - OCC, "IRS – Rendimentos de 2025" (quadro 8A columns and Tabela V codes): https://www.occ.pt/sites/default/files/public/2026-03/Essencial_IRS2026_DIG_final.pdf
+- OCC, "Guia Prático Mais-Valias" (2025): https://www.occ.pt/sites/default/files/public/2025-04/Guia_Pratico_MAIS-VALIASMd2.pdf
+- Código do IRS, art. 43.º (FIFO, splits, partial exclusion): https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs43.aspx (same pattern for irs50, irs51, irs55, irs72)
+- Lei 31/2024 (partial exclusion): https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/legislacao/diplomas_legislativos/Documents/Lei_31_2024.pdf
+- AT FAQ on foreign income and accounts: https://info.portaldasfinancas.gov.pt/pt/apoio_contribuinte/questoes_frequentes/Pages/faqs-00653.aspx
 - ECB data API: https://data.ecb.europa.eu/help/api/data. Series `EXR/D.{CUR}.EUR.SP00.A`, `format=csvdata`, units of currency per euro, no rates on TARGET holidays.

@@ -4,6 +4,7 @@ The roadmap by phase, then ideas and known limitations not yet planned. When an 
 
 Done so far:
 - **2.0.0, phase 1 (foundations):** API client, database, scheduled sync, CSV import, first pages, tests.
+- **2.3.0:** capital gains for Anexo J quadro 9.2A (FIFO, ECB rates, splits), quadro 11 account details.
 - **2.2.0, phase 3 (IRS report):** Anexo J quadro 8A from dividends, ECB rates, source country per instrument, Portuguese dividends and interest apart, CSV export and print.
 - **2.1.0, phase 2 (dividend dashboard):**
   - dividend charts and figures: monthly, yearly, by instrument, country and currency, yield on cost, forward estimate, passive income;
@@ -23,13 +24,16 @@ Done so far:
 
 ## IRS report follow-ups
 
-Phase 3 shipped as **2.2.0** ([TAX.md](TAX.md)). Left for later:
+Phase 3 shipped as **2.2.0** (dividends) and **2.3.0** (capital gains): see [TAX.md](TAX.md). Left for later:
 
 | # | Item | Notes |
 |---|---|---|
 | 3.6b | **Confirm the interest code and country** | E21 or E22, and the country of the Trading 212 entity. Once confirmed, remove the "to confirm" badge, or make it a setting per account. |
 | 3.8b | **Treaty caps per country** | A table of treaty dividend rates (US 15%, CH 15%, FR 12.8%…) to show the capped credit next to the tax withheld, once it is clear which one to declare. |
-| 3.9 | **Sales (Anexo J, quadro 9.2A)** | Capital gains from sales also go in Anexo J. That needs FIFO cost per lot from orders, plus CSV order import for the history the API misses. **Effort:** 15–20 h. |
+| 3.9b | **CSV order import** | Orders from the CSV reports (IDs `EOF…`), matched to the API's by instrument, time and quantity, for accounts whose API history misses orders. The maintainer's account does not need it: the API has the same 1,469 filled orders as the reports. |
+| 3.9c | **Corporate actions** | Spin-offs, mergers and scrip dividends in the FIFO (splits are done). |
+| 3.9d | **Englobamento check** | An optional field for the year's other taxable income, to say whether the balance of short holdings must be aggregated. |
+| 3.9e | **Inflation coefficient** | For holdings over 24 months (art. 50.º), if Anexo J's instructions confirm it applies. |
 | 3.10 | **Domestic dividends in Anexo E** | Only if the maintainer chooses aggregation (englobamento). |
 
 ## Phase 4 — Deploy next to traceon (2.3)
@@ -72,7 +76,7 @@ Recorded 2026-10-13 with the 2.1 work.
 
 ## Known limitations and technical debt
 
-- **Orders from CSV reports are not imported.** Report order IDs (`EOF…`) are not the API's order ids, so matching needs rules of their own (ticker, time, quantity). Needed for 3.9 and to cover the API's missing order history.
+- **Orders from CSV reports are not imported** (3.9b). Capital gains rely on the API's order history.
 - **CSV action names not seen yet** land in "Other lines skipped". Examples: other order types, card payments, currency conversions, transfers between accounts. When one shows up, decide whether it matters, and update [T212-API.md](T212-API.md#csv-reports) and the parser together.
 - **Transactions pagination** fails after page 2 for some accounts (a Trading 212 bug). The sync then logs a failed job; CSV reports fill the gap.
 - **No sign-in** until phase 4. Do not expose the app.

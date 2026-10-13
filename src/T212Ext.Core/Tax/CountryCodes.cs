@@ -17,6 +17,7 @@ public static class CountryCodes
         ["CA"] = 124,
         ["CH"] = 756,
         ["CN"] = 156,
+        ["CW"] = 531,
         ["CY"] = 196,
         ["DE"] = 276,
         ["DK"] = 208,

@@ -26,6 +26,8 @@
     </div>
 </div>
 
+<TaxTabs />
+
 <div class="alert alert-info d-flex gap-2 small">
     <i class="bi bi-info-circle mt-1"></i>
     <div>@((MarkupString)L["Tax_Disclaimer"].Value)</div>
@@ -151,6 +153,8 @@ else
     <DataGrid TItem="IrsDividend" Items="r.Dividends" Columns="DividendColumns" StorageKey="tax-dividends" ExportFileName="@($"irs-{_year}-dividends")"
               DefaultSortKey="paid" DefaultSummaries="DividendSummaries" EmptyText="@L["Dividends_Empty"]" />
 }
+
+<Quadro11Card EntityCountry="@_interestCountry" />
 
 @code {
     private const string InterestCountryKey = "t212ext.tax.interestCountry";

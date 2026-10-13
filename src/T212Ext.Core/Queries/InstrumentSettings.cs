@@ -37,4 +37,34 @@ public sealed class InstrumentSettings(IDbContextFactory<T212ExtDbContext> dbFac
         setting.UpdatedAt = time.GetUtcNow();
         await db.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlyList<StockSplit>> GetSplitsAsync(CancellationToken cancellationToken = default)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        return await db.StockSplits.AsNoTracking().OrderBy(s => s.Date).ToListAsync(cancellationToken);
+    }
+
+    /// <summary>Adds (or replaces) the split of an instrument on a date.</summary>
+    public async Task AddSplitAsync(string isin, DateOnly date, decimal ratio, CancellationToken cancellationToken = default)
+    {
+        if (ratio <= 0 || ratio == 1)
+            throw new ArgumentOutOfRangeException(nameof(ratio), "A split ratio is positive and not 1.");
+
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        var split = await db.StockSplits.FirstOrDefaultAsync(s => s.Isin == isin && s.Date == date, cancellationToken);
+        if (split is null)
+        {
+            split = new StockSplit { Isin = isin, Date = date, CreatedAt = time.GetUtcNow() };
+            db.StockSplits.Add(split);
+        }
+
+        split.Ratio = ratio;
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task DeleteSplitAsync(long id, CancellationToken cancellationToken = default)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        await db.StockSplits.Where(s => s.Id == id).ExecuteDeleteAsync(cancellationToken);
+    }
 }

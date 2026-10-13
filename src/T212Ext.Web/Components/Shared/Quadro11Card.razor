@@ -1,0 +1,28 @@
+@using Arisoul.T212Ext.Core.Tax
+@inject IStringLocalizer<SharedResource> L
+@inject OverviewQueries Overview
+
+<h2 class="section-title">@L["Quadro11_Title"]</h2>
+<div class="card">
+    <div class="card-body small">
+        <p>@L["Quadro11_Text"]</p>
+        <ul class="mb-0">
+            @foreach (var account in _accounts)
+            {
+                <li>
+                    <strong>@account.Name</strong>:
+                    @string.Format(L["Quadro11_Account"], account.ExternalId?.ToString() ?? "—", $"{CountryCodes.Format(CountryCodes.Numeric(EntityCountry))} · {Labels.Country(L, EntityCountry)}")
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+
+@code {
+    /// <summary>The country of the Trading 212 entity that holds the accounts.</summary>
+    [Parameter, EditorRequired] public string EntityCountry { get; set; } = "CY";
+
+    private IReadOnlyList<AccountOverview> _accounts = [];
+
+    protected override async Task OnInitializedAsync() => _accounts = await Overview.GetAccountsAsync();
+}

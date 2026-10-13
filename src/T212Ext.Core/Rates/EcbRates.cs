@@ -86,6 +86,7 @@ public sealed class ExchangeRateUpdater(
         var currencies = (await db.Dividends.Select(d => d.InstrumentCurrency).Distinct().ToListAsync(cancellationToken))
             .Concat(await db.Dividends.Select(d => d.WithholdingTaxCurrency).Distinct().ToListAsync(cancellationToken))
             .Concat(await db.Dividends.Select(d => d.Currency).Distinct().ToListAsync(cancellationToken))
+            .Concat(await db.Orders.Where(o => o.FillId != null).Select(o => o.InstrumentCurrency).Distinct().ToListAsync(cancellationToken))
             .OfType<string>()
             .Select(c => RateTable.Normalise(0, c.Trim()).Currency)
             .Where(c => c.Length == 3 && c != "EUR")
@@ -97,8 +98,13 @@ public sealed class ExchangeRateUpdater(
             return 0;
 
         var firstDividend = await db.Dividends.MinAsync(d => (DateTimeOffset?)d.PaidOn, cancellationToken);
-        // A week before the first payment, so a payment on a Monday after a holiday still has a rate.
-        var start = DateOnly.FromDateTime(firstDividend!.Value.UtcDateTime).AddDays(-7);
+        var firstTrade = await db.Orders.Where(o => o.FillId != null).MinAsync(o => o.FilledAt, cancellationToken);
+        var first = new[] { firstDividend, firstTrade }.Where(d => d is not null).Min();
+        if (first is null)
+            return 0;
+
+        // A week before the first payment or trade, so a Monday after a holiday still has a rate.
+        var start = DateOnly.FromDateTime(first.Value.UtcDateTime).AddDays(-7);
         var today = DateOnly.FromDateTime(time.GetUtcNow().UtcDateTime);
         var added = 0;
 
