@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Arisoul.T212Ext.Core.Data;
+using Arisoul.T212Ext.Core.Data.Configurations;
 using Arisoul.T212Ext.Core.Domain;
 using Microsoft.EntityFrameworkCore;
 
@@ -126,7 +127,8 @@ public sealed class CsvImportService(IDbContextFactory<T212ExtDbContext> dbFacto
                     Type = DividendType(row.Action),
                     PaidOn = row.Time,
                     Quantity = quantity,
-                    GrossAmountPerShare = row.PricePerShare,
+                    GrossAmountPerShare = GrossPerShare(row, quantity),
+                    NetAmountPerShare = row.PricePerShare,
                     InstrumentCurrency = row.PriceCurrency,
                     Amount = amount,
                     Currency = row.TotalCurrency ?? account.Currency ?? "",
@@ -141,6 +143,7 @@ public sealed class CsvImportService(IDbContextFactory<T212ExtDbContext> dbFacto
             {
                 dividend.Sources |= DataSources.Csv;
                 dividend.CsvReference = reference;
+                dividend.NetAmountPerShare ??= row.PricePerShare;
                 result.DividendsMatched++;
             }
 
@@ -195,6 +198,7 @@ public sealed class CsvImportService(IDbContextFactory<T212ExtDbContext> dbFacto
                     Amount = amount,
                     Currency = row.TotalCurrency ?? account.Currency ?? "",
                     DateTime = row.Time,
+                    Note = Truncate(row.Notes),
                     ImportedAt = now,
                 };
                 db.CashTransactions.Add(transaction);
@@ -205,12 +209,29 @@ public sealed class CsvImportService(IDbContextFactory<T212ExtDbContext> dbFacto
             {
                 transaction.Sources |= DataSources.Csv;
                 transaction.CsvReference = reference;
+                transaction.Note ??= Truncate(row.Notes);
                 result.TransactionsMatched++;
             }
 
             matched.Add(transaction);
         }
     }
+
+    /// <summary>
+    /// The report's "Price / share" is net of withholding: the gross is net + withholding per share.
+    /// The withholding is rounded to cents, so this is approximate; the API's gross replaces it.
+    /// </summary>
+    private static decimal? GrossPerShare(T212CsvRow row, decimal quantity)
+    {
+        if (row.PricePerShare is not { } net)
+            return null;
+
+        var sameCurrency = row.WithholdingTaxCurrency is null || row.WithholdingTaxCurrency == row.PriceCurrency;
+        return row.WithholdingTax is { } tax && sameCurrency && quantity > 0 ? net + Math.Abs(tax) / quantity : net;
+    }
+
+    private static string? Truncate(string? note) =>
+        note is { Length: > Lengths.Note } ? note[..Lengths.Note] : note;
 
     /// <summary>"Dividend (Ordinary)" → "Ordinary".</summary>
     internal static string DividendType(string action)

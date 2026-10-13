@@ -93,6 +93,10 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                     b.Property<DateTimeOffset>("ImportedAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("Reference")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -165,6 +169,10 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<decimal?>("NetAmountPerShare")
+                        .HasPrecision(28, 10)
+                        .HasColumnType("decimal(28,10)");
+
                     b.Property<DateTimeOffset>("PaidOn")
                         .HasColumnType("datetimeoffset");
 
@@ -210,6 +218,24 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Dividends");
+                });
+
+            modelBuilder.Entity("Arisoul.T212Ext.Core.Domain.ExchangeRate", b =>
+                {
+                    b.Property<string>("Currency")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("PerEuro")
+                        .HasPrecision(28, 10)
+                        .HasColumnType("decimal(28,10)");
+
+                    b.HasKey("Currency", "Date");
+
+                    b.ToTable("ExchangeRates");
                 });
 
             modelBuilder.Entity("Arisoul.T212Ext.Core.Domain.HistoricalOrder", b =>
@@ -381,6 +407,24 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                     b.HasIndex("Isin");
 
                     b.ToTable("Instruments");
+                });
+
+            modelBuilder.Entity("Arisoul.T212Ext.Core.Domain.InstrumentSetting", b =>
+                {
+                    b.Property<string>("Isin")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("SourceCountry")
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Isin");
+
+                    b.ToTable("InstrumentSettings");
                 });
 
             modelBuilder.Entity("Arisoul.T212Ext.Core.Domain.PortfolioSnapshot", b =>

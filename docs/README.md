@@ -3,6 +3,7 @@
 | File | What it is |
 |---|---|
 | [CONVENTIONS.md](CONVENTIONS.md) | The rules every change follows: workflow, the API client, data and sync, the app. |
+| [TAX.md](TAX.md) | The IRS report: what it computes, the rules it follows (with sources), and what is still to confirm. |
 | [T212-API.md](T212-API.md) | What we know about the Trading 212 API: authentication, endpoints, rate limits, quirks, terms of use. |
 | [BACKLOG.md](BACKLOG.md) | The roadmap by phase, and ideas not yet planned. |
 | [RELEASE-NOTES.md](RELEASE-NOTES.md) | What changed in each version, for the person using the app. |

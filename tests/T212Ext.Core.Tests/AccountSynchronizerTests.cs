@@ -2,6 +2,7 @@ using Arisoul.T212Ext.Client;
 using Arisoul.T212Ext.Client.Models;
 using Arisoul.T212Ext.Core.Domain;
 using HistoricalOrder = Arisoul.T212Ext.Client.Models.HistoricalOrder;
+using ApiTax = Arisoul.T212Ext.Client.Models.Tax;
 using Arisoul.T212Ext.Core.Sync;
 using Arisoul.T212Ext.Core.Tests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -170,7 +171,7 @@ public class AccountSynchronizerTests(DatabaseFixture database)
                     Fill = new Fill
                     {
                         Id = 200, Price = 120.5m, Quantity = 1.5m, Type = "TRADE",
-                        WalletImpact = new FillWalletImpact { Currency = "EUR", NetValue = -180.75m, Taxes = [new Tax { Name = "STAMP_DUTY", Quantity = 0.9m, Currency = "EUR" }] },
+                        WalletImpact = new FillWalletImpact { Currency = "EUR", NetValue = -180.75m, Taxes = [new ApiTax { Name = "STAMP_DUTY", Quantity = 0.9m, Currency = "EUR" }] },
                     },
                 },
                 new HistoricalOrder { Order = new Order { Id = 101, Ticker = "VWCE_EQ", Status = "CANCELLED" } },

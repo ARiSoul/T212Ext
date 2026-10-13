@@ -12,6 +12,8 @@ Read [docs/CONVENTIONS.md](docs/CONVENTIONS.md) before changing code, and follow
   - `Sync/`: synchronizer, runner, worker;
   - `Import/`: CSV parser and import;
   - `Analytics/`: dividend figures, computed in memory from plain facts;
+  - `Rates/`: ECB exchange rates (source, updater, `RateTable`);
+  - `Tax/`: the IRS report (`IrsReport`; rules in docs/TAX.md);
   - `Queries/`: read models for the UI.
 - `src/T212Ext.Web/`: Blazor Web App (Interactive Server). It hosts the sync worker and applies migrations at startup.
   - `Components/Grid/`: `DataGrid` and `GridEngine`;

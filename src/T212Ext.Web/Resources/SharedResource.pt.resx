@@ -83,17 +83,20 @@
   <data name="Common_Loading" xml:space="preserve"><value>A carregar…</value></data>
   <data name="Common_No" xml:space="preserve"><value>Não</value></data>
   <data name="Common_Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="Common_Saved" xml:space="preserve"><value>Guardado</value></data>
   <data name="Common_TryAgain" xml:space="preserve"><value>Tentar de novo</value></data>
   <data name="Common_Year" xml:space="preserve"><value>Ano</value></data>
   <data name="Common_Yes" xml:space="preserve"><value>Sim</value></data>
   <data name="Country_AT" xml:space="preserve"><value>Áustria</value></data>
   <data name="Country_AU" xml:space="preserve"><value>Austrália</value></data>
   <data name="Country_BE" xml:space="preserve"><value>Bélgica</value></data>
+  <data name="Country_BG" xml:space="preserve"><value>Bulgária</value></data>
   <data name="Country_BM" xml:space="preserve"><value>Bermudas</value></data>
   <data name="Country_BR" xml:space="preserve"><value>Brasil</value></data>
   <data name="Country_CA" xml:space="preserve"><value>Canadá</value></data>
   <data name="Country_CH" xml:space="preserve"><value>Suíça</value></data>
   <data name="Country_CN" xml:space="preserve"><value>China</value></data>
+  <data name="Country_CY" xml:space="preserve"><value>Chipre</value></data>
   <data name="Country_DE" xml:space="preserve"><value>Alemanha</value></data>
   <data name="Country_DK" xml:space="preserve"><value>Dinamarca</value></data>
   <data name="Country_ES" xml:space="preserve"><value>Espanha</value></data>
@@ -178,6 +181,7 @@
   <data name="Nav_Overview" xml:space="preserve"><value>Visão geral</value></data>
   <data name="Nav_Positions" xml:space="preserve"><value>Posições</value></data>
   <data name="Nav_SyncLog" xml:space="preserve"><value>Registo de sincronização</value></data>
+  <data name="Nav_Tax" xml:space="preserve"><value>Relatório de IRS</value></data>
   <data name="NotFound_Text" xml:space="preserve"><value>A página que procura não existe.</value></data>
   <data name="NotFound_Title" xml:space="preserve"><value>Página não encontrada</value></data>
   <data name="Order_Buy" xml:space="preserve"><value>Compra</value></data>
@@ -215,6 +219,7 @@
   <data name="Stat_YieldOnCost" xml:space="preserve"><value>Yield sobre custo</value></data>
   <data name="Stat_YieldOnCostHint" xml:space="preserve"><value>Últimos 12 meses das posições atuais ÷ investido</value></data>
   <data name="SyncJob_Dividends" xml:space="preserve"><value>Dividendos</value></data>
+  <data name="SyncJob_ExchangeRates" xml:space="preserve"><value>Câmbios</value></data>
   <data name="SyncJob_Instruments" xml:space="preserve"><value>Instrumentos</value></data>
   <data name="SyncJob_Orders" xml:space="preserve"><value>Ordens</value></data>
   <data name="SyncJob_Snapshot" xml:space="preserve"><value>Fotografia diária</value></data>
@@ -226,6 +231,54 @@
   <data name="Sync_Last" xml:space="preserve"><value>Última sincronização {0}</value></data>
   <data name="Sync_Now" xml:space="preserve"><value>Sincronizar</value></data>
   <data name="Sync_Running" xml:space="preserve"><value>A sincronizar</value></data>
+  <data name="Tax_Check" xml:space="preserve"><value>Verificação</value></data>
+  <data name="Tax_Code" xml:space="preserve"><value>Código</value></data>
+  <data name="Tax_DeductRefunds" xml:space="preserve"><value>Descontar devoluções de retenção do ano</value></data>
+  <data name="Tax_Detail" xml:space="preserve"><value>Dividendo a dividendo</value></data>
+  <data name="Tax_Disclaimer" xml:space="preserve"><value>Valores preparados a partir dos seus dados para ajudar a preencher a declaração, &lt;strong&gt;não é aconselhamento fiscal&lt;/strong&gt;. Os montantes estão em euros ao câmbio de referência do BCE da data de pagamento (ou da última cotação anterior, art. 23.º do Código do IRS). Os dividendos usam o código E11 (sem retenção em Portugal), uma linha por país da fonte. Confirme com as instruções da declaração desse ano antes de submeter.</value></data>
+  <data name="Tax_DomesticText" xml:space="preserve"><value>{0} pagamentos, bruto {1}, imposto retido em Portugal {2} ({3}). Não são rendimentos do estrangeiro, por isso não entram no Anexo J. Uma taxa de 35 % é a que Portugal aplica quando o beneficiário não está identificado (contas globais), acima dos 28 % habituais. Declará-los é opcional (Anexo E, se optar pelo englobamento), e como recuperar a diferença é pergunta para um contabilista.</value></data>
+  <data name="Tax_DomesticTitle" xml:space="preserve"><value>Dividendos de empresas portuguesas</value></data>
+  <data name="Tax_EffectiveRate" xml:space="preserve"><value>Taxa retida</value></data>
+  <data name="Tax_Flag_GrossDerived" xml:space="preserve"><value>bruto calculado a partir do líquido</value></data>
+  <data name="Tax_Flag_HighWithholding" xml:space="preserve"><value>retenção acima de 15 %</value></data>
+  <data name="Tax_Flag_Mismatch" xml:space="preserve"><value>bruto − imposto ≠ líquido</value></data>
+  <data name="Tax_Flag_MissingRate" xml:space="preserve"><value>sem câmbio</value></data>
+  <data name="Tax_Flag_NoCountry" xml:space="preserve"><value>sem país da fonte (defina-o no ativo)</value></data>
+  <data name="Tax_Flag_ReturnOfCapital" xml:space="preserve"><value>devolução de capital, excluída</value></data>
+  <data name="Tax_Flag_WithholdingEstimated" xml:space="preserve"><value>retenção estimada (importe o CSV)</value></data>
+  <data name="Tax_GrossEur" xml:space="preserve"><value>Bruto EUR</value></data>
+  <data name="Tax_GrossIncome" xml:space="preserve"><value>Rendimento bruto</value></data>
+  <data name="Tax_GrossOriginal" xml:space="preserve"><value>Bruto (original)</value></data>
+  <data name="Tax_InterestCountry" xml:space="preserve"><value>País da entidade Trading 212 (para os juros)</value></data>
+  <data name="Tax_Line" xml:space="preserve"><value>Linha</value></data>
+  <data name="Tax_MissingRates" xml:space="preserve"><value>Faltam câmbios para:</value></data>
+  <data name="Tax_NetEur" xml:space="preserve"><value>Líquido EUR</value></data>
+  <data name="Tax_NoLines" xml:space="preserve"><value>Não há dividendos estrangeiros neste ano.</value></data>
+  <data name="Tax_OtherIncome" xml:space="preserve"><value>Juros e empréstimo de ações</value></data>
+  <data name="Tax_OtherIncomeHint" xml:space="preserve"><value>À parte; código a confirmar</value></data>
+  <data name="Tax_OtherIncomeNote" xml:space="preserve"><value>Não foi encontrada orientação oficial para o código e o país dos juros e do empréstimo de ações pagos pela Trading 212. O mais provável é E21 (juros sem retenção em Portugal) e o país da entidade Trading 212 da sua conta; confirme antes de declarar.</value></data>
+  <data name="Tax_OtherIncomeTitle" xml:space="preserve"><value>Juros e empréstimo de ações</value></data>
+  <data name="Tax_Print" xml:space="preserve"><value>Imprimir</value></data>
+  <data name="Tax_Quadro8A" xml:space="preserve"><value>Anexo J, quadro 8A</value></data>
+  <data name="Tax_Rate" xml:space="preserve"><value>Câmbio BCE (data)</value></data>
+  <data name="Tax_RatesFailed" xml:space="preserve"><value>Não foi possível obter os câmbios do BCE. Tente mais tarde.</value></data>
+  <data name="Tax_RefundsDeductedNote" xml:space="preserve"><value>Foram descontados {0} de devoluções de retenção deste ano ao imposto pago no estrangeiro (opção acima).</value></data>
+  <data name="Tax_RefundsTitle" xml:space="preserve"><value>Devoluções de retenção deste ano</value></data>
+  <data name="Tax_SourceCountry" xml:space="preserve"><value>País da fonte do rendimento</value></data>
+  <data name="Tax_SourceCountryColumn" xml:space="preserve"><value>País da fonte</value></data>
+  <data name="Tax_SourceCountryFromIsin" xml:space="preserve"><value>{0} (pelo ISIN)</value></data>
+  <data name="Tax_SourceCountryHint" xml:space="preserve"><value>Usado no relatório de IRS. O país do ISIN costuma estar certo; mude-o quando o rendimento vem de outro país.</value></data>
+  <data name="Tax_Subtitle" xml:space="preserve"><value>Dividendos estrangeiros para a declaração de IRS: Anexo J, quadro 8A</value></data>
+  <data name="Tax_SuggestedCode" xml:space="preserve"><value>Código sugerido</value></data>
+  <data name="Tax_TaxPaidAbroad" xml:space="preserve"><value>Imposto pago no estrangeiro</value></data>
+  <data name="Tax_TaxPaidAbroadColumn" xml:space="preserve"><value>Imposto pago no estrangeiro (país da fonte)</value></data>
+  <data name="Tax_Title" xml:space="preserve"><value>Relatório de IRS</value></data>
+  <data name="Tax_ToCheck" xml:space="preserve"><value>Dividendos a verificar</value></data>
+  <data name="Tax_ToCheckHint" xml:space="preserve"><value>Veja a coluna Verificação abaixo</value></data>
+  <data name="Tax_ToConfirm" xml:space="preserve"><value>a confirmar</value></data>
+  <data name="Tax_TreatyCapNote" xml:space="preserve"><value>Alguns países retiveram mais de 15 %. O crédito pelo imposto pago no estrangeiro está limitado à taxa da convenção para evitar a dupla tributação (art. 81.º do Código do IRS): confirme quanto declarar.</value></data>
+  <data name="Tax_UpdateRates" xml:space="preserve"><value>Atualizar câmbios</value></data>
+  <data name="Tax_WithheldEur" xml:space="preserve"><value>Retido EUR</value></data>
   <data name="Theme_Auto" xml:space="preserve"><value>Igual ao sistema</value></data>
   <data name="Theme_Dark" xml:space="preserve"><value>Escuro</value></data>
   <data name="Theme_Label" xml:space="preserve"><value>Tema</value></data>

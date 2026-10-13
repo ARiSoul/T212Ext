@@ -2,6 +2,7 @@
 @inherits AccountPage
 @inject AnalyticsQueries Analytics
 @inject DividendQueries DividendQueries
+@inject InstrumentSettings Settings
 
 <PageTitle>@Title · T212Ext</PageTitle>
 
@@ -47,6 +48,27 @@
     </div>
 }
 
+@if (_income?.Isin is { } isin)
+{
+    <div class="card mb-3">
+        <div class="card-body d-flex flex-wrap align-items-center gap-2">
+            <label class="fw-semibold me-1" for="source-country"><i class="bi bi-globe2 me-1"></i>@L["Tax_SourceCountry"]</label>
+            <select id="source-country" class="form-select form-select-sm w-auto" value="@(_sourceCountry ?? "")" @onchange="OnSourceCountryChanged">
+                <option value="">@string.Format(L["Tax_SourceCountryFromIsin"], Labels.Country(L, DividendAnalytics.CountryOf(isin)))</option>
+                @foreach (var country in Labels.KnownCountries.Where(c => c != DividendAnalytics.CountryOf(isin)).OrderBy(c => Labels.Country(L, c)))
+                {
+                    <option value="@country">@Labels.Country(L, country)</option>
+                }
+            </select>
+            @if (_saved)
+            {
+                <span class="small text-positive"><i class="bi bi-check-lg"></i> @L["Common_Saved"]</span>
+            }
+            <span class="small text-body-secondary w-100">@L["Tax_SourceCountryHint"]</span>
+        </div>
+    </div>
+}
+
 <DataGrid TItem="DividendRow" Items="_rows" Columns="Columns" StorageKey="instrument-payments" ExportFileName="@($"dividends-{Instrument}")"
           DefaultSortKey="paid" DefaultSortDescending="true" DefaultSummaries="DefaultSummaries" />
 
@@ -59,6 +81,9 @@
     private PositionIncome? _position;
     private IReadOnlyList<DividendRow>? _rows;
     private IReadOnlyList<DividendRow> _chronological = [];
+
+    private string? _sourceCountry;
+    private bool _saved;
 
     private string Title => _income?.Name ?? _income?.Ticker ?? Instrument;
 
@@ -93,7 +118,18 @@
         _income = _dashboard?.Instruments.FirstOrDefault(i => i.Isin == Instrument || i.Ticker == Instrument);
         _position = _dashboard?.Positions.FirstOrDefault(p => (p.Isin is not null && p.Isin == _income?.Isin) || p.Ticker == _income?.Ticker);
         _rows = await DividendQueries.GetDividendsAsync(AccountId, null, Instrument);
+        _sourceCountry = _income?.Isin is { } isin ? await Settings.GetSourceCountryAsync(isin) : null;
         _chronological = [.. _rows.OrderBy(r => r.PaidOn)];
+    }
+
+    private async Task OnSourceCountryChanged(ChangeEventArgs e)
+    {
+        if (_income?.Isin is not { } isin)
+            return;
+
+        _sourceCountry = string.IsNullOrEmpty(e.Value?.ToString()) ? null : e.Value!.ToString();
+        await Settings.SetSourceCountryAsync(isin, _sourceCountry);
+        _saved = true;
     }
 
     private static ApexChartOptions<DividendRow> PaymentOptions(bool dark, string currency)

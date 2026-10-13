@@ -13,6 +13,8 @@ public class T212ExtDbContext(DbContextOptions<T212ExtDbContext> options) : DbCo
     public DbSet<PortfolioSnapshot> Snapshots => Set<PortfolioSnapshot>();
     public DbSet<SyncState> SyncStates => Set<SyncState>();
     public DbSet<SyncRun> SyncRuns => Set<SyncRun>();
+    public DbSet<ExchangeRate> ExchangeRates => Set<ExchangeRate>();
+    public DbSet<InstrumentSetting> InstrumentSettings => Set<InstrumentSetting>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {

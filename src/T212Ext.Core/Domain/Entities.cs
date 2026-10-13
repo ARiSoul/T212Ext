@@ -77,8 +77,17 @@ public class Dividend
     public DateTimeOffset PaidOn { get; set; }
     public decimal Quantity { get; set; }
 
-    /// <summary>Gross amount per share, in <see cref="InstrumentCurrency"/>.</summary>
+    /// <summary>
+    /// Gross amount per share, in <see cref="InstrumentCurrency"/>. Exact from the API; for rows only
+    /// seen in a CSV report it is derived (net per share + withholding per share, rounded to cents).
+    /// </summary>
     public decimal? GrossAmountPerShare { get; set; }
+
+    /// <summary>
+    /// Net amount per share, in <see cref="InstrumentCurrency"/>: the "Price / share" of a CSV report,
+    /// which is the dividend after withholding. With the API's gross it gives the exact tax withheld.
+    /// </summary>
+    public decimal? NetAmountPerShare { get; set; }
 
     public string? InstrumentCurrency { get; set; }
 
@@ -175,7 +184,33 @@ public class CashTransaction
     public decimal Amount { get; set; }
     public required string Currency { get; set; }
     public DateTimeOffset DateTime { get; set; }
+
+    /// <summary>The note of the CSV row, e.g. "2024 US dividends withholding tax adjustment".</summary>
+    public string? Note { get; set; }
+
     public DateTimeOffset ImportedAt { get; set; }
+}
+
+/// <summary>A euro reference rate of the European Central Bank: units of <see cref="Currency"/> per 1 EUR.</summary>
+public class ExchangeRate
+{
+    public required string Currency { get; set; }
+    public DateOnly Date { get; set; }
+    public decimal PerEuro { get; set; }
+}
+
+/// <summary>What the person set for an instrument, by ISIN. Shared by all accounts.</summary>
+public class InstrumentSetting
+{
+    public required string Isin { get; set; }
+
+    /// <summary>
+    /// The country the income comes from, for the tax report, when the ISIN's country is not it
+    /// (ISO 3166 alpha-2, e.g. "US" for an ADR issued elsewhere). Null: the ISIN's country.
+    /// </summary>
+    public string? SourceCountry { get; set; }
+
+    public DateTimeOffset UpdatedAt { get; set; }
 }
 
 /// <summary>
@@ -238,6 +273,7 @@ public enum SyncJob
     Dividends,
     Orders,
     Transactions,
+    ExchangeRates,
 }
 
 /// <summary>Progress of one history job of one account.</summary>

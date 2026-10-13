@@ -26,7 +26,7 @@ The rules every change follows, for people and for coding assistants. Each rule 
    - The whole suite passes before a PR is opened.
    - Tests never call Trading 212.
    - Pure logic (analytics, grid engine) is tested without a database; `tests/T212Ext.Web.Tests` covers the web project's logic and the translations.
-   - A sandboxed tool (a coding assistant) may not reach the LocalDB instance another process started. It then uses its own instance through `T212EXT_TEST_SQL`, e.g. `Server=(localdb)\T212ExtClaude;...`.
+   - A sandboxed tool (a coding assistant) may not reach the LocalDB instance another process started, and `dotnet ef` commands start `MSSQLLocalDB` in the tool's own context: stop it afterwards (`sqllocaldb stop MSSQLLocalDB`) so the maintainer's app can start it. It then uses its own instance through `T212EXT_TEST_SQL`, e.g. `Server=(localdb)\T212ExtClaude;...`.
 6. **Merge only with CI green** and the branch up to date with `main`. Docs-only PRs can merge at once.
 7. **Language:** code, comments, docs, commits and PRs are in English. The maintainer is addressed in European Portuguese.
 
@@ -72,6 +72,11 @@ The rules every change follows, for people and for coding assistants. Each rule 
    - *Why:* the server runs with `pt-PT`, where `0.48` would be read as 48.
 9. **A stored row absorbs one CSV row at most, and remembers it (`CsvReference`).** Matching by value only considers rows no CSV row has claimed.
    - *Why:* share lending pays every day, often the same amount, and two days were once taken for one. *(2.1.0)*
+
+10. **Tax figures follow [TAX.md](TAX.md), and each rule there names its source.**
+    - The calculation lives in `Core/Tax/IrsReport.cs`, a pure function tested in `IrsReportTests`. A rule changes in TAX.md and in the code in the same PR.
+    - Anything not confirmed by an official source shows as "to confirm" on the page, never as fact.
+    - Money for the tax report is converted per payment with `RateTable` (the ECB rate of the date, else the last quote before it) and rounded to cents per payment.
 
 ## 4. App (`src/T212Ext.Web`)
 

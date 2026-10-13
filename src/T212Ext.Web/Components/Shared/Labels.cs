@@ -26,6 +26,13 @@ public static class Labels
 
     public static string Job(IStringLocalizer<SharedResource> l, SyncJob job) => l[$"SyncJob_{job}"];
 
+    /// <summary>The countries with a translated name (the usual ISIN countries), for pickers.</summary>
+    public static IReadOnlyList<string> KnownCountries { get; } =
+    [
+        "US", "IE", "GB", "DE", "FR", "NL", "CH", "LU", "BE", "ES", "PT", "IT", "AT", "DK", "SE", "NO", "FI",
+        "CA", "AU", "JP", "HK", "CN", "SG", "JE", "GG", "IM", "BM", "KY", "VG", "PA", "BR", "IL", "CY", "BG",
+    ];
+
     /// <summary>A country's name from its ISO code: translated for the usual ISIN countries, else the English name, else the code.</summary>
     public static string Country(IStringLocalizer<SharedResource> l, string? code)
     {

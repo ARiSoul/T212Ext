@@ -3,7 +3,9 @@ using Arisoul.T212Ext.Core.Accounts;
 using Arisoul.T212Ext.Core.Data;
 using Arisoul.T212Ext.Core.Import;
 using Arisoul.T212Ext.Core.Queries;
+using Arisoul.T212Ext.Core.Rates;
 using Arisoul.T212Ext.Core.Sync;
+using Arisoul.T212Ext.Core.Tax;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -39,6 +41,16 @@ public static class CoreServiceCollectionExtensions
         services.AddScoped<OverviewQueries>();
         services.AddScoped<AnalyticsQueries>();
         services.AddScoped<LedgerQueries>();
+        services.AddScoped<InstrumentSettings>();
+        services.AddScoped<TaxQueries>();
+
+        services.AddHttpClient(EcbRateSource.HttpClientName, client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(60);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("T212Ext (personal dividend tracker)");
+        });
+        services.TryAddSingleton<IExchangeRateSource, EcbRateSource>();
+        services.AddScoped<ExchangeRateUpdater>();
 
         return services;
     }

@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using Arisoul.T212Ext.Client;
 using Arisoul.T212Ext.Client.Models;
+using Arisoul.T212Ext.Core.Rates;
 
 namespace Arisoul.T212Ext.Core.Tests.Infrastructure;
 
@@ -127,4 +128,25 @@ public sealed class ManualTimeProvider(DateTimeOffset start) : TimeProvider
     public DateTimeOffset Now { get; set; } = start;
 
     public override DateTimeOffset GetUtcNow() => Now;
+}
+
+/// <summary>Rates from memory: every day from <see cref="From"/>, 1.1 units per euro unless set in <see cref="Rates"/>.</summary>
+public sealed class FakeRateSource : IExchangeRateSource
+{
+    public Dictionary<(string Currency, DateOnly Date), decimal> Rates { get; } = [];
+    public List<(string Currency, DateOnly From, DateOnly To)> Calls { get; } = [];
+
+    public Task<IReadOnlyList<(DateOnly Date, decimal PerEuro)>> GetDailyRatesAsync(string currency, DateOnly from, DateOnly to, CancellationToken cancellationToken)
+    {
+        Calls.Add((currency, from, to));
+        var days = new List<(DateOnly, decimal)>();
+        for (var day = from; day <= to; day = day.AddDays(1))
+        {
+            // Business days only, like the ECB.
+            if (day.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+                continue;
+            days.Add((day, Rates.GetValueOrDefault((currency, day), 1.1m)));
+        }
+        return Task.FromResult<IReadOnlyList<(DateOnly, decimal)>>(days);
+    }
 }

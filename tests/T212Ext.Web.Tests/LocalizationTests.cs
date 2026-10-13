@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Arisoul.T212Ext.Web.Components.Shared;
@@ -62,9 +63,10 @@ public partial class LocalizationTests
 
     private static string[] Placeholders(string text) => [.. Placeholder().Matches(text).Select(m => m.Value).Order()];
 
-    private static string RepositoryRoot()
+    // From this source file, not the binary: builds can put the binaries anywhere (--artifacts-path).
+    private static string RepositoryRoot([CallerFilePath] string sourceFile = "")
     {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        var directory = new DirectoryInfo(Path.GetDirectoryName(sourceFile)!);
         while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "T212Ext.slnx")))
             directory = directory.Parent;
         return directory?.FullName ?? throw new InvalidOperationException("Repository root not found.");

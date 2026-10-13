@@ -2,6 +2,7 @@ using System.Net;
 using Arisoul.T212Ext.Client;
 using Arisoul.T212Ext.Core.Accounts;
 using Arisoul.T212Ext.Core.Domain;
+using Arisoul.T212Ext.Core.Rates;
 using Arisoul.T212Ext.Core.Sync;
 using Arisoul.T212Ext.Core.Tests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,7 @@ public class SyncRunnerTests(DatabaseFixture database)
             _factory,
             new AccountSynchronizer(database, _time, NullLogger<AccountSynchronizer>.Instance),
             database,
+            new ExchangeRateUpdater(database, new FakeRateSource(), _time, NullLogger<ExchangeRateUpdater>.Instance),
             Options.Create(new SyncOptions { InstrumentsMaxAge = TimeSpan.FromDays(1) }),
             _time,
             NullLogger<SyncRunner>.Instance);

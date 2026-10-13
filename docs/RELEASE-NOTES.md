@@ -2,6 +2,30 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.2.0 — IRS report (2026-10-13)
+
+Phase 3: the figures for the Portuguese tax return, prepared from your dividends. To check, not tax advice. See [TAX.md](TAX.md).
+
+**New**
+- **IRS report** (menu "IRS report"), for any year:
+  - **Anexo J, quadro 8A:** code E11 and source country (Tabela X numeric code), with gross and tax paid abroad in euros, one line per country, numbered from 801;
+  - **Portuguese dividends** listed apart, with the 35% withheld in Portugal: they are not foreign income;
+  - **interest and share lending**, with a suggested code (E21) and the country of your Trading 212 entity, both to confirm;
+  - **withholding refunds** for the year (US "Dividend adjustment"), deducted from the tax paid unless you switch it off;
+  - **every dividend** with the exchange rate used and a check column (estimated or derived amounts, no rate, return of capital, no country, withholding above 15%);
+  - export to CSV, and a print-friendly page.
+- **ECB exchange rates:** stored and refreshed after each sync, or with "Update exchange rates". The rate is the payment date's, or the last quote before it.
+- **Source country per instrument:** on each instrument's page, for when the ISIN's country is not where the income comes from (ADRs, for example).
+
+**Changed**
+- CSV import keeps the report's net per share. With the API's gross per share, the tax withheld is now exact, where before it was rounded to cents.
+- Cash movements keep the report's note (e.g. "2024 US dividends withholding tax adjustment").
+
+**Fixed**
+- Rows imported only from CSV reports took the report's net per share as the gross. The gross now adds the withholding back.
+
+**After updating:** import your CSV reports once more. Nothing is duplicated, and it fills the net per share the exact withholding needs.
+
 ## 2.1.0 — Dividend dashboard (2026-10-13)
 
 Phase 2: see how your dividend income grows, in a new look, in three languages.

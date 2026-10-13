@@ -1,0 +1,279 @@
+@page "/tax"
+@inherits AccountPage
+@using Arisoul.T212Ext.Core.Rates
+@using Arisoul.T212Ext.Core.Tax
+@inject TaxQueries Tax
+@inject ExchangeRateUpdater RateUpdater
+@inject BrowserStorage Storage
+@inject IJSRuntime JS
+@inject ILogger<TaxReport> Logger
+
+<PageTitle>@L["Nav_Tax"] · T212Ext</PageTitle>
+
+<div class="page-header">
+    <div class="me-auto">
+        <h1>@L["Tax_Title"]</h1>
+        <p>@L["Tax_Subtitle"]</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2 d-print-none">
+        <select class="form-select form-select-sm w-auto" aria-label="@L["Common_Year"]" value="@_year" @onchange="OnYearChanged">
+            @foreach (var year in _years)
+            {
+                <option value="@year">@year</option>
+            }
+        </select>
+        <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="PrintAsync"><i class="bi bi-printer"></i> @L["Tax_Print"]</button>
+    </div>
+</div>
+
+<div class="alert alert-info d-flex gap-2 small">
+    <i class="bi bi-info-circle mt-1"></i>
+    <div>@((MarkupString)L["Tax_Disclaimer"].Value)</div>
+</div>
+
+<div class="card mb-3 d-print-none">
+    <div class="card-body d-flex flex-wrap align-items-center gap-3">
+        <label class="d-flex align-items-center gap-2 small">
+            <span>@L["Tax_InterestCountry"]</span>
+            <select class="form-select form-select-sm w-auto" value="@_interestCountry" @onchange="OnInterestCountryChanged">
+                @foreach (var country in Labels.KnownCountries.OrderBy(c => Labels.Country(L, c)))
+                {
+                    <option value="@country">@Labels.Country(L, country)</option>
+                }
+            </select>
+        </label>
+        <div class="form-check form-switch small mb-0">
+            <input class="form-check-input" type="checkbox" role="switch" id="deduct-refunds" checked="@_deductRefunds" @onchange="OnDeductRefundsChanged" />
+            <label class="form-check-label" for="deduct-refunds">@L["Tax_DeductRefunds"]</label>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary ms-auto" disabled="@_updatingRates" @onclick="UpdateRatesAsync">
+            @if (_updatingRates)
+            {
+                <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+            }
+            else
+            {
+                <i class="bi bi-currency-exchange me-1"></i>
+            }
+            @L["Tax_UpdateRates"]
+        </button>
+    </div>
+</div>
+
+@if (_rateError is not null)
+{
+    <div class="alert alert-danger">@_rateError</div>
+}
+
+@if (_report is null)
+{
+    <p class="text-body-secondary"><span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>@L["Common_Loading"]</p>
+}
+else
+{
+    var r = _report;
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-lg-3"><Stat Icon="bi-cash-stack" Label="@L["Tax_GrossIncome"]" Value="@Fmt.Money(r.TotalGross, "EUR")" Hint="@string.Format(L["Stat_Payments"], r.Lines.Sum(l => l.Count))" /></div>
+        <div class="col-6 col-lg-3"><Stat Icon="bi-bank2" Label="@L["Tax_TaxPaidAbroad"]" Value="@Fmt.Money(r.TotalTaxPaidAbroad, "EUR")"
+                                         Hint="@(r.TotalGross > 0 ? Fmt.Percent(r.TotalTaxPaidAbroad / r.TotalGross, 1) : null)" /></div>
+        <div class="col-6 col-lg-3"><Stat Icon="bi-percent" Label="@L["Tax_OtherIncome"]" Value="@Fmt.Money(r.OtherIncome.Sum(o => o.AmountEur), "EUR")" Hint="@L["Tax_OtherIncomeHint"]" /></div>
+        <div class="col-6 col-lg-3"><Stat Icon="bi-exclamation-triangle" Label="@L["Tax_ToCheck"]" Value="@r.FlaggedCount.ToString()"
+                                         ValueClass="@(r.FlaggedCount > 0 ? "text-negative" : "text-positive")" Hint="@L["Tax_ToCheckHint"]" /></div>
+    </div>
+
+    @if (r.MissingRates.Count > 0)
+    {
+        <div class="alert alert-warning">
+            <strong>@L["Tax_MissingRates"]</strong> @string.Join(", ", r.MissingRates.Take(12))@(r.MissingRates.Count > 12 ? "…" : "")
+        </div>
+    }
+
+    <h2 class="section-title">@L["Tax_Quadro8A"]</h2>
+    <DataGrid TItem="IrsLine" Items="r.Lines" Columns="LineColumns" StorageKey="tax-lines" ExportFileName="@($"irs-{_year}-anexo-j-quadro-8a")"
+              DefaultSortKey="number" DefaultPageSize="25" DefaultSummaries="LineSummaries" EmptyText="@L["Tax_NoLines"]" />
+    @if (r.Lines.Any(l => l.RefundsDeducted > 0))
+    {
+        <p class="small text-body-secondary mt-2">@string.Format(L["Tax_RefundsDeductedNote"], Fmt.Money(r.Lines.Sum(l => l.RefundsDeducted), "EUR"))</p>
+    }
+    @if (r.Lines.Any(l => l.Gross > 0 && l.TaxPaidAbroad / l.Gross > IrsReport.TreatyRateWarning))
+    {
+        <p class="small text-negative mt-2"><i class="bi bi-exclamation-triangle"></i> @L["Tax_TreatyCapNote"]</p>
+    }
+
+    @if (r.Domestic.Count > 0)
+    {
+        <h2 class="section-title">@L["Tax_DomesticTitle"]</h2>
+        <div class="alert alert-secondary small">
+            @string.Format(L["Tax_DomesticText"], r.Domestic.Count, Fmt.Money(r.Domestic.GrossEur, "EUR"), Fmt.Money(r.Domestic.WithheldEur, "EUR"),
+                r.Domestic.GrossEur > 0 ? Fmt.Percent(r.Domestic.WithheldEur / r.Domestic.GrossEur, 1) : "—")
+        </div>
+    }
+
+    @if (r.OtherIncome.Count > 0)
+    {
+        <h2 class="section-title">@L["Tax_OtherIncomeTitle"]</h2>
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr><th>@L["Col_Type"]</th><th>@L["Tax_SuggestedCode"]</th><th>@L["Col_Country"]</th><th class="text-end">@L["Col_Payments"]</th><th class="text-end">@L["Col_Amount"]</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var income in r.OtherIncome)
+                        {
+                            <tr>
+                                <td>@Labels.CashType(L, income.Type)</td>
+                                <td>@income.SuggestedCode <span class="badge text-bg-warning">@L["Tax_ToConfirm"]</span></td>
+                                <td>@CountryCodes.Format(income.CountryNumeric) · @Labels.Country(L, income.Country)</td>
+                                <td class="text-end">@income.Count</td>
+                                <td class="text-end">@Fmt.Money(income.AmountEur, "EUR")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <p class="small text-body-secondary mt-2">@L["Tax_OtherIncomeNote"]</p>
+    }
+
+    @if (r.Refunds.Count > 0)
+    {
+        <h2 class="section-title">@L["Tax_RefundsTitle"]</h2>
+        <ul class="small">
+            @foreach (var refund in r.Refunds)
+            {
+                <li>@Fmt.Date(refund.ReceivedOn): @Fmt.Money(refund.AmountEur, "EUR") — @refund.Note</li>
+            }
+        </ul>
+    }
+
+    <h2 class="section-title">@L["Tax_Detail"]</h2>
+    <DataGrid TItem="IrsDividend" Items="r.Dividends" Columns="DividendColumns" StorageKey="tax-dividends" ExportFileName="@($"irs-{_year}-dividends")"
+              DefaultSortKey="paid" DefaultSummaries="DividendSummaries" EmptyText="@L["Dividends_Empty"]" />
+}
+
+@code {
+    private const string InterestCountryKey = "t212ext.tax.interestCountry";
+    private const string DeductRefundsKey = "t212ext.tax.deductRefunds";
+
+    private IReadOnlyList<int> _years = [];
+    private int _year = DateTime.UtcNow.Year - 1;
+    private string _interestCountry = "CY";
+    private bool _deductRefunds = true;
+    private bool _optionsRead;
+    private IrsReportResult? _report;
+    private bool _updatingRates;
+    private string? _rateError;
+
+    private static readonly IReadOnlyDictionary<string, SummaryKind[]> LineSummaries = new Dictionary<string, SummaryKind[]>
+    {
+        ["gross"] = [SummaryKind.Sum],
+        ["tax"] = [SummaryKind.Sum],
+    };
+
+    private static readonly IReadOnlyDictionary<string, SummaryKind[]> DividendSummaries = new Dictionary<string, SummaryKind[]>
+    {
+        ["gross"] = [SummaryKind.Sum],
+        ["withheld"] = [SummaryKind.Sum],
+        ["net"] = [SummaryKind.Sum],
+    };
+
+    private IReadOnlyList<GridColumn<IrsLine>> LineColumns => [
+        new() { Key = "number", Title = L["Tax_Line"], Value = l => l.Number, MobileTitle = true },
+        new() { Key = "code", Title = L["Tax_Code"], Value = l => l.Code },
+        new() { Key = "country", Title = L["Tax_SourceCountryColumn"], Value = l => $"{CountryCodes.Format(l.CountryNumeric)} · {Labels.Country(L, l.Country)}" },
+        new() { Key = "count", Title = L["Col_Payments"], Value = l => l.Count, AlignEnd = true, HideBelow = "md" },
+        new() { Key = "gross", Title = L["Tax_GrossIncome"], Value = l => l.Gross, Text = l => Fmt.Money(l.Gross, "EUR"), AlignEnd = true,
+                Summaries = [SummaryKind.Sum], SummaryText = n => Fmt.Money(n, "EUR") },
+        new() { Key = "tax", Title = L["Tax_TaxPaidAbroadColumn"], Value = l => l.TaxPaidAbroad, Text = l => Fmt.Money(l.TaxPaidAbroad, "EUR"), AlignEnd = true,
+                Summaries = [SummaryKind.Sum], SummaryText = n => Fmt.Money(n, "EUR") },
+        new() { Key = "rate", Title = L["Tax_EffectiveRate"], Value = l => l.Gross > 0 ? l.TaxPaidAbroad / l.Gross : null,
+                Text = l => l.Gross > 0 ? Fmt.Percent(l.TaxPaidAbroad / l.Gross, 1) : "—", AlignEnd = true, HideBelow = "lg" },
+    ];
+
+    private IReadOnlyList<GridColumn<IrsDividend>> DividendColumns => [
+        new() { Key = "paid", Title = L["Col_Paid"], Value = d => d.Source.PaidOn, Text = d => Fmt.Date(d.Source.PaidOn) },
+        new() { Key = "instrument", Title = L["Col_Instrument"], Value = d => d.Source.Name ?? d.Source.Ticker, MobileTitle = true },
+        new() { Key = "country", Title = L["Col_Country"], Value = d => Labels.Country(L, d.Country), Filterable = true, HideBelow = "lg" },
+        new() { Key = "check", Title = L["Tax_Check"], Value = d => FlagsText(d.Flags), Filterable = true, FilterKey = d => d.Flags is IrsFlags.None ? L["Common_Ok"].Value : FlagsText(d.Flags),
+                Template = d => @<span class="@(d.Flags is IrsFlags.None ? "text-positive" : "text-negative") small">@(d.Flags is IrsFlags.None ? L["Common_Ok"].Value : FlagsText(d.Flags))</span> },
+        new() { Key = "grossOriginal", Title = L["Tax_GrossOriginal"], Value = d => d.GrossOriginal,
+                Text = d => d.GrossOriginal is null ? "—" : $"{Fmt.Number(Math.Round(d.GrossOriginal.Value, 4))} {d.Source.InstrumentCurrency}", AlignEnd = true, HideBelow = "xl", HideOnMobile = true },
+        new() { Key = "fx", Title = L["Tax_Rate"], Value = d => d.Rate, Text = d => d.Rate is null ? "—" : $"{Fmt.Number(d.Rate)} ({Fmt.Date(d.RateDate)})",
+                AlignEnd = true, HideBelow = "xl", HideOnMobile = true },
+        new() { Key = "gross", Title = L["Tax_GrossEur"], Value = d => d.GrossEur, Text = d => Fmt.Money(d.GrossEur, "EUR"), AlignEnd = true,
+                Summaries = GridColumn<IrsDividend>.Numeric, SummaryText = n => Fmt.Money(n, "EUR") },
+        new() { Key = "withheld", Title = L["Tax_WithheldEur"], Value = d => d.WithheldEur, Text = d => Fmt.Money(d.WithheldEur, "EUR"), AlignEnd = true,
+                Summaries = GridColumn<IrsDividend>.Numeric, SummaryText = n => Fmt.Money(n, "EUR") },
+        new() { Key = "net", Title = L["Tax_NetEur"], Value = d => d.NetEur, Text = d => Fmt.Money(d.NetEur, "EUR"), AlignEnd = true, HideBelow = "md",
+                Summaries = GridColumn<IrsDividend>.Numeric, SummaryText = n => Fmt.Money(n, "EUR") },
+        new() { Key = "effective", Title = L["Tax_EffectiveRate"], Value = d => d.EffectiveRate, Text = d => Fmt.Percent(d.EffectiveRate, 1), AlignEnd = true, HideBelow = "lg" },
+    ];
+
+    protected override async Task LoadAsync()
+    {
+        if (!_optionsRead)
+        {
+            _interestCountry = await Storage.GetAsync<string>(InterestCountryKey) ?? "CY";
+            _deductRefunds = await Storage.GetAsync<bool?>(DeductRefundsKey) ?? true;
+            _optionsRead = true;
+        }
+
+        _years = await Tax.GetYearsAsync(AccountId);
+        if (_years.Count > 0 && !_years.Contains(_year))
+            _year = _years.Contains(DateTime.UtcNow.Year - 1) ? DateTime.UtcNow.Year - 1 : _years[0];
+
+        await BuildAsync();
+    }
+
+    private async Task BuildAsync() =>
+        _report = await Tax.GetReportAsync(AccountId, _year, _interestCountry, _deductRefunds);
+
+    private async Task OnYearChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var year))
+            _year = year;
+        await BuildAsync();
+    }
+
+    private async Task OnInterestCountryChanged(ChangeEventArgs e)
+    {
+        _interestCountry = e.Value?.ToString() ?? "CY";
+        await Storage.SetAsync(InterestCountryKey, _interestCountry);
+        await BuildAsync();
+    }
+
+    private async Task OnDeductRefundsChanged(ChangeEventArgs e)
+    {
+        _deductRefunds = e.Value is true;
+        await Storage.SetAsync(DeductRefundsKey, _deductRefunds);
+        await BuildAsync();
+    }
+
+    private async Task UpdateRatesAsync()
+    {
+        _updatingRates = true;
+        _rateError = null;
+        try
+        {
+            await RateUpdater.UpdateAsync(CancellationToken.None);
+            await BuildAsync();
+        }
+        catch (Exception ex) when (ex is HttpRequestException or FormatException or TaskCanceledException)
+        {
+            Logger.LogWarning(ex, "Exchange rate update failed");
+            _rateError = L["Tax_RatesFailed"];
+        }
+        finally
+        {
+            _updatingRates = false;
+        }
+    }
+
+    private async Task PrintAsync() => await JS.InvokeVoidAsync("print");
+
+    private string FlagsText(IrsFlags flags) =>
+        flags is IrsFlags.None
+            ? ""
+            : string.Join(", ", Enum.GetValues<IrsFlags>().Where(f => f != IrsFlags.None && flags.HasFlag(f)).Select(f => L[$"Tax_Flag_{f}"].Value));
+}
