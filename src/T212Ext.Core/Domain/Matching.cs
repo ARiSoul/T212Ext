@@ -31,9 +31,13 @@ public static class DividendMatcher
 }
 
 /// <summary>Finds the same cash movement seen through the API and a CSV report: same type and amount, close in time.</summary>
+/// <remarks>
+/// Both sources give times in UTC, so the tolerance is short: share lending pays every day, often the
+/// same amount, and two days must never be taken for one.
+/// </remarks>
 public static class CashTransactionMatcher
 {
-    public static readonly TimeSpan DateTolerance = TimeSpan.FromDays(1);
+    public static readonly TimeSpan DateTolerance = TimeSpan.FromHours(1);
     public const decimal AmountTolerance = 0.005m;
 
     public static CashTransaction? FindMatch(IEnumerable<CashTransaction> candidates, string type, decimal amount, DateTimeOffset dateTime) =>

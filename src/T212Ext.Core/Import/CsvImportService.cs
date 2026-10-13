@@ -92,7 +92,8 @@ public sealed class CsvImportService(IDbContextFactory<T212ExtDbContext> dbFacto
             .Where(i => i.Isin != null && isins.Contains(i.Isin))
             .ToListAsync(cancellationToken);
 
-        // Each stored dividend can absorb one row of this file at most.
+        // Each stored dividend absorbs one CSV row at most: in this file (matched), and across
+        // files (CsvReference). Only rows no CSV row has claimed are matched by their values.
         var matched = new HashSet<Dividend>(ReferenceEqualityComparer.Instance);
         var now = time.GetUtcNow();
 
@@ -108,8 +109,8 @@ public sealed class CsvImportService(IDbContextFactory<T212ExtDbContext> dbFacto
             var quantity = row.Shares ?? 0;
             var amount = row.Total.Value;
 
-            var dividend = existing.FirstOrDefault(d => d.Reference == reference && !matched.Contains(d))
-                ?? DividendMatcher.FindMatch(existing.Where(d => !matched.Contains(d)), row.Isin, row.Ticker, row.Time, quantity, amount);
+            var dividend = existing.FirstOrDefault(d => (d.CsvReference == reference || d.Reference == reference) && !matched.Contains(d))
+                ?? DividendMatcher.FindMatch(existing.Where(d => d.CsvReference is null && !matched.Contains(d)), row.Isin, row.Ticker, row.Time, quantity, amount);
 
             if (dividend is null)
             {
@@ -117,6 +118,7 @@ public sealed class CsvImportService(IDbContextFactory<T212ExtDbContext> dbFacto
                 {
                     AccountId = account.Id,
                     Reference = reference,
+                    CsvReference = reference,
                     Sources = DataSources.Csv,
                     Ticker = ResolveTicker(instruments, row),
                     Isin = row.Isin,
@@ -138,6 +140,7 @@ public sealed class CsvImportService(IDbContextFactory<T212ExtDbContext> dbFacto
             else
             {
                 dividend.Sources |= DataSources.Csv;
+                dividend.CsvReference = reference;
                 result.DividendsMatched++;
             }
 
@@ -162,6 +165,7 @@ public sealed class CsvImportService(IDbContextFactory<T212ExtDbContext> dbFacto
             .Where(t => t.AccountId == account.Id && t.DateTime >= from && t.DateTime <= to)
             .ToListAsync(cancellationToken);
 
+        // As with dividends: one CSV row per movement, and value matching only for unclaimed rows.
         var matched = new HashSet<CashTransaction>(ReferenceEqualityComparer.Instance);
         var now = time.GetUtcNow();
 
@@ -176,8 +180,8 @@ public sealed class CsvImportService(IDbContextFactory<T212ExtDbContext> dbFacto
             var reference = row.Id ?? SyntheticReference(row);
             var amount = CashTransactionTypes.NormaliseSign(type, row.Total.Value);
 
-            var transaction = existing.FirstOrDefault(t => t.Reference == reference && !matched.Contains(t))
-                ?? CashTransactionMatcher.FindMatch(existing.Where(t => !matched.Contains(t)), type, amount, row.Time);
+            var transaction = existing.FirstOrDefault(t => (t.CsvReference == reference || t.Reference == reference) && !matched.Contains(t))
+                ?? CashTransactionMatcher.FindMatch(existing.Where(t => t.CsvReference is null && !matched.Contains(t)), type, amount, row.Time);
 
             if (transaction is null)
             {
@@ -185,6 +189,7 @@ public sealed class CsvImportService(IDbContextFactory<T212ExtDbContext> dbFacto
                 {
                     AccountId = account.Id,
                     Reference = reference,
+                    CsvReference = reference,
                     Sources = DataSources.Csv,
                     Type = type,
                     Amount = amount,
@@ -199,6 +204,7 @@ public sealed class CsvImportService(IDbContextFactory<T212ExtDbContext> dbFacto
             else
             {
                 transaction.Sources |= DataSources.Csv;
+                transaction.CsvReference = reference;
                 result.TransactionsMatched++;
             }
 

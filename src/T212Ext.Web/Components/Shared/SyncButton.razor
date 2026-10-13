@@ -1,36 +1,44 @@
 @implements IDisposable
+@inject IStringLocalizer<SharedResource> L
 @inject SyncCoordinator Coordinator
 
 <div class="d-flex flex-wrap align-items-center gap-2">
     @if (Coordinator.IsRunning)
     {
-        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-        <span class="text-body-secondary small">Syncing@(Coordinator.CurrentStep is { } step ? $" · {step}" : "")…</span>
+        <span class="spinner-border spinner-border-sm text-body-secondary" aria-hidden="true"></span>
+        <span class="text-body-secondary small d-none d-md-inline">@L["Sync_Running"]@(Coordinator.CurrentStep is { } step ? $" · {step}" : "")</span>
     }
-    else if (Coordinator.LastFinishedAt is { } finished)
+    else if (!Compact && Coordinator.LastFinishedAt is { } finished)
     {
-        <span class="text-body-secondary small">Last sync @Format.DateTime(finished)</span>
+        <span class="text-body-secondary small">@string.Format(L["Sync_Last"], Fmt.DateTime(finished))</span>
     }
-    <button class="btn btn-primary btn-sm" disabled="@Coordinator.IsRunning" @onclick="() => Coordinator.Request(new SyncRequest())">
-        Sync now
+    <button type="button" class="btn btn-sm @(Compact ? "btn-outline-secondary" : "btn-primary")" disabled="@Coordinator.IsRunning"
+            title="@Title" @onclick="() => Coordinator.Request(new SyncRequest())">
+        <i class="bi bi-arrow-repeat" aria-hidden="true"></i><span class="@(Compact ? "d-none d-sm-inline" : "") ms-1">@L["Sync_Now"]</span>
     </button>
     @if (ShowFullHistory)
     {
-        <button class="btn btn-outline-secondary btn-sm" disabled="@Coordinator.IsRunning"
-                title="Reads the whole history again instead of stopping at the first known page"
+        <button type="button" class="btn btn-sm btn-outline-secondary" disabled="@Coordinator.IsRunning" title="@L["Sync_FullHistoryHint"]"
                 @onclick="() => Coordinator.Request(new SyncRequest(FullHistory: true))">
-            Full history
+            @L["Sync_FullHistory"]
         </button>
     }
 </div>
 
 @code {
+    /// <summary>Top bar style: an outline button, no "last sync" text.</summary>
+    [Parameter] public bool Compact { get; set; }
+
     [Parameter] public bool ShowFullHistory { get; set; }
 
     /// <summary>Called when a sync ends, so the page can reload its data.</summary>
     [Parameter] public EventCallback Finished { get; set; }
 
     private bool _wasRunning;
+
+    private string Title => Coordinator.LastFinishedAt is { } last
+        ? string.Format(L["Sync_Last"], Fmt.DateTime(last))
+        : L["Sync_Now"];
 
     protected override void OnInitialized()
     {

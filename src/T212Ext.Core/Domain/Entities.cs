@@ -59,6 +59,12 @@ public class Dividend
 
     public DataSources Sources { get; set; }
 
+    /// <summary>
+    /// The CSV row this dividend was matched to (its ID, or a "csv:" hash when it has none). A row
+    /// matched once is never matched to another CSV row, and importing the same report again finds it here.
+    /// </summary>
+    public string? CsvReference { get; set; }
+
     /// <summary>Trading 212's ticker when known (from the API or the instruments list); otherwise the CSV's plain symbol.</summary>
     public required string Ticker { get; set; }
 
@@ -160,7 +166,10 @@ public class CashTransaction
     public required string Reference { get; set; }
     public DataSources Sources { get; set; }
 
-    /// <summary>WITHDRAW, DEPOSIT, FEE, TRANSFER, INTEREST_ON_FREE_CASH, LENDING_INTEREST.</summary>
+    /// <summary>The CSV row this movement was matched to; see <see cref="Dividend.CsvReference"/>.</summary>
+    public string? CsvReference { get; set; }
+
+    /// <summary>WITHDRAW, DEPOSIT, FEE, TRANSFER, INTEREST_ON_FREE_CASH, LENDING_INTEREST, DIVIDEND_ADJUSTMENT.</summary>
     public required string Type { get; set; }
 
     public decimal Amount { get; set; }

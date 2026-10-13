@@ -13,33 +13,41 @@ Trading 212's own app shows dividends one by one. T212Ext reads them through the
 
 ---
 
-## Features (2.0)
+## Features (2.1)
 
-- **Scheduled sync** of every configured account (Invest and Stocks ISA) every 6 hours:
-  - account summary and open positions, kept as one **snapshot per day**;
-  - **dividend**, **order** (with fills, FX rate and fees) and **cash movement** history.
-- **Incremental and resumable.** Each sync reads newest first and stops at the first page with nothing new. An interrupted first sync is completed by the next one.
-- **Rate limits handled.** It waits for Trading 212's limits from the response headers, and retries network errors and 5xx responses.
-- **CSV import** of Trading 212 reports:
-  - adds the **withholding tax** per dividend, which the API does not give;
-  - fills gaps the API leaves (its history pagination is known to skip data).
-  
-  Rows seen in both sources are merged, not duplicated. Importing the same file twice changes nothing.
-- **Dividends page:**
-  - totals by year, and by month for a chosen year;
-  - every payment with shares, gross per share, tax withheld and net amount.
+**Dividends, at a glance**
 - **Overview:**
-  - dividends for the last 12 months, this year and all time;
-  - per account: total value, invested, unrealised P/L and free cash.
-- **Sync log** with each job's result. "Full history" reads everything again.
+  - the last 12 months against the 12 before, and this year against the same period last year;
+  - an estimate for the next 12 months, yield on cost, the all-time total and the portfolio value;
+  - charts: dividends per month with the 12-month average, passive income (dividends, interest, share lending), top payers, and the portfolio over time.
+- **Dividends:** totals per year with their growth, one year against the one before month by month, and breakdowns by country and currency.
+- **Income by instrument:** what each instrument has paid, all time and in the last 12 months. Each instrument has its own page with its payments and dividend per share over time.
+- **Positions:** the latest snapshot, with dividends, yield on cost, current yield and the 12-month estimate per position.
+- **Cash movements and orders:** deposits, withdrawals, interest, share lending, withholding tax refunds, and buys and sells with fees and realised gains.
 
-The roadmap (dividend charts, yield on cost, an IRS Anexo J report, deployment, notifications…) is in [docs/BACKLOG.md](docs/BACKLOG.md).
+**Every list is a grid** with:
+- search, filters (year, country, type, account…) and sorting;
+- totals (sum, average, min, max, count) over all filtered rows;
+- paging and CSV export.
+
+The grids remember your choices.
+
+**Data, kept complete**
+- **Scheduled sync** of every configured account (Invest and Stocks ISA) every 6 hours. It reads the summary and positions (one snapshot per day), and the dividend, order and cash movement history.
+- **Incremental and resumable.** Each sync stops at the first page with nothing new, and an interrupted first sync is completed by the next one. It respects Trading 212's rate limits.
+- **CSV import** of Trading 212 reports, several at once. It adds the **withholding tax** per dividend, which the API does not give, and fills gaps in the API's history. Rows seen in both sources are merged, never duplicated.
+
+**Look and language**
+- A modern interface with **light, dark and automatic themes**, made for phone and desktop.
+- **Português, English, Español.**
+
+The next phase is the **IRS report** (Anexo J), then the deployment. See [docs/BACKLOG.md](docs/BACKLOG.md).
 
 ## Tech stack
 
 | Layer | Technology |
 |---|---|
-| **App** | ASP.NET Core 10, Blazor Web App (Interactive Server), Bootstrap 5 |
+| **App** | ASP.NET Core 10, Blazor Web App (Interactive Server), Bootstrap 5, Bootstrap Icons, Blazor-ApexCharts |
 | **Sync** | `BackgroundService` in the same process, typed `HttpClient` |
 | **Database** | SQL Server (LocalDB in development, Express in production), EF Core 10 with migrations |
 | **Tests** | xUnit; integration tests against a throwaway SQL Server database |
@@ -94,7 +102,7 @@ dotnet user-secrets set "T212:Accounts:1:ApiSecret" "<secret>"
 | `Sync:Interval` | `06:00:00` | Time between scheduled syncs. |
 | `Sync:RunOnStartup` | `true` | Sync once when the app starts. |
 | `Sync:InstrumentsMaxAge` | `1.00:00:00` | How old the instrument list may get before it is refreshed. |
-| `Ui:Culture` | `pt-PT` | Number and date format. |
+| `Ui:DefaultCulture` | `pt-PT` | Language until one is chosen in the app (`pt-PT`, `en-GB` or `es-ES`). |
 
 On a server, use environment variables instead of user secrets (`T212__Accounts__0__ApiKey=…`).
 
@@ -106,7 +114,7 @@ dotnet run --project src/T212Ext.Web
 
 Open http://localhost:5067. The first start creates the database, and a first sync runs straight away.
 
-> **Do not expose the app to the internet yet.** It has no sign-in until version 2.2 (see the [backlog](docs/BACKLOG.md#phase-3--deploy-next-to-traceon-22)).
+> **Do not expose the app to the internet yet.** It has no sign-in until the deployment phase (see the [backlog](docs/BACKLOG.md#phase-4--deploy-next-to-traceon-23)).
 
 **If startup fails with "LocalDB … SQL Server process failed to start"**, the LocalDB instance is running in a context your process cannot reach. This happens, for example, when a sandboxed tool or another session started it. Stop it, and let the app start it again:
 
@@ -125,9 +133,10 @@ dotnet test T212Ext.slnx
 ```
 
 - `tests/T212Ext.Client.Tests`: the API client against a stubbed HTTP handler. Covers authentication, pagination, rate limits, retries and errors.
-- `tests/T212Ext.Core.Tests`: sync, CSV parsing and import, merging between sources, and queries, against a real SQL Server.
+- `tests/T212Ext.Core.Tests`: sync, CSV parsing and import, merging between sources, analytics and queries, against a real SQL Server.
   - Each run creates a throwaway database and drops it at the end.
   - The server is LocalDB by default. Set `T212EXT_TEST_SQL` to use another one (a connection string without `Database`).
+- `tests/T212Ext.Web.Tests`: the grid engine (filters, sorting, totals, paging, export), languages, and that the three translations have the same keys.
 
 ## Project layout
 
@@ -136,11 +145,15 @@ T212Ext.slnx
 VERSION                       Version of the whole solution
 src/
   T212Ext.Client/             Trading 212 API client: models, auth, rate limits, paging
-  T212Ext.Core/               Entities, EF Core (Data/), sync (Sync/), CSV import (Import/), queries (Queries/)
+  T212Ext.Core/               Entities, EF Core (Data/), sync (Sync/), CSV import (Import/), analytics (Analytics/), queries (Queries/)
   T212Ext.Web/                Blazor app; hosts the sync worker
+    Components/Grid/          The DataGrid and its engine
+    Components/Charts/        Chart style (validated palette) and the themed chart card
+    Resources/                Texts in English, Portuguese and Spanish
 tests/
   T212Ext.Client.Tests/
   T212Ext.Core.Tests/
+  T212Ext.Web.Tests/
 docs/                         See docs/README.md
 ```
 

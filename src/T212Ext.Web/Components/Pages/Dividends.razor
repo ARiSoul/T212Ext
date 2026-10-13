@@ -1,136 +1,191 @@
 @page "/dividends"
-@using System.Globalization
-@inject OverviewQueries Overview
+@inherits AccountPage
+@inject AnalyticsQueries Analytics
 @inject DividendQueries DividendQueries
 
-<PageTitle>Dividends · T212Ext</PageTitle>
+<PageTitle>@L["Nav_Dividends"] · T212Ext</PageTitle>
 
-<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-    <h1 class="h3 mb-0 me-auto">Dividends</h1>
-    <SyncButton Finished="LoadAsync" />
-</div>
-
-<div class="d-flex flex-wrap gap-2 mb-3">
-    <select class="form-select w-auto" aria-label="Account" value="@_accountId" @onchange="OnAccountChanged">
-        <option value="">All accounts</option>
-        @foreach (var account in _accounts)
-        {
-            <option value="@account.Id">@account.Name</option>
-        }
-    </select>
-    <select class="form-select w-auto" aria-label="Year" value="@_year" @onchange="OnYearChanged">
-        <option value="">All years</option>
-        @foreach (var year in _years)
-        {
-            <option value="@year">@year</option>
-        }
-    </select>
-</div>
-
-@if (_rows is null)
-{
-    <p class="text-body-secondary">Loading…</p>
-}
-else if (_rows.Count == 0)
-{
-    <p class="text-body-secondary">No dividends yet. Run a sync or import a CSV report.</p>
-}
-else
-{
-    @foreach (var summary in _summaries)
-    {
-        var periods = _year is null ? summary.ByYear : summary.ByMonth.Where(m => m.Year == _year).ToList();
-        <div class="card mb-3">
-            <div class="card-header">@(_year is null ? "By year" : $"{_year} by month") · @summary.Currency</div>
-            <div class="table-responsive">
-                <table class="table table-sm mb-0">
-                    <thead>
-                        <tr><th>@(_year is null ? "Year" : "Month")</th><th class="text-end">Payments</th><th class="text-end">Net</th></tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var period in periods)
-                        {
-                            <tr>
-                                <td>@(period.Month is { } month ? CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month) : period.Year.ToString())</td>
-                                <td class="text-end">@period.Count</td>
-                                <td class="text-end">@Format.Money(period.Total, summary.Currency)</td>
-                            </tr>
-                        }
-                    </tbody>
-                    <tfoot>
-                        <tr class="fw-semibold">
-                            <td>Total</td>
-                            <td class="text-end">@periods.Sum(p => p.Count)</td>
-                            <td class="text-end">@Format.Money(periods.Sum(p => p.Total), summary.Currency)</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </div>
-    }
-
-    <div class="table-responsive">
-        <table class="table table-sm table-hover align-middle">
-            <thead>
-                <tr>
-                    <th>Paid</th>
-                    <th>Instrument</th>
-                    <th class="d-none d-md-table-cell">Type</th>
-                    <th class="text-end d-none d-sm-table-cell">Shares</th>
-                    <th class="text-end d-none d-lg-table-cell">Gross / share</th>
-                    <th class="text-end d-none d-lg-table-cell">Withheld</th>
-                    <th class="text-end">Net</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var row in _rows)
-                {
-                    <tr>
-                        <td class="text-nowrap">@Format.Date(row.PaidOn)</td>
-                        <td>
-                            <div>@(row.InstrumentName ?? row.Ticker)</div>
-                            <div class="small text-body-secondary">@row.Ticker@(_accountId is null && _accounts.Count > 1 ? $" · {row.AccountName}" : "")</div>
-                        </td>
-                        <td class="small d-none d-md-table-cell">@row.Type</td>
-                        <td class="text-end d-none d-sm-table-cell">@Format.Number(row.Quantity)</td>
-                        <td class="text-end d-none d-lg-table-cell">@Format.Number(row.GrossAmountPerShare) @row.InstrumentCurrency</td>
-                        <td class="text-end d-none d-lg-table-cell">@(row.WithholdingTax is null ? "—" : $"{Format.Number(row.WithholdingTax)} {row.WithholdingTaxCurrency}")</td>
-                        <td class="text-end text-nowrap">@Format.Money(row.Amount, row.Currency)</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+<div class="page-header">
+    <div class="me-auto">
+        <h1>@L["Nav_Dividends"]</h1>
+        <p>@L["Dividends_Subtitle"]</p>
     </div>
-    <p class="small text-body-secondary">Withheld tax comes only from CSV reports; the API does not give it.</p>
+</div>
+
+@if (_dashboard is not null)
+{
+    var d = _dashboard;
+    <div class="row g-3 mb-3">
+        <div class="col-12 col-xl-6">
+            <ThemedChart Title="@L["Chart_ByYear"]" IsEmpty="d.Years.Count == 0" EmptyText="@L["Chart_NoData"]">
+                <ChildContent>
+                    <ApexChart TItem="YearPoint" Options="YearOptions(context)" Height="280">
+                        <ApexPointSeries TItem="YearPoint" Items="d.Years" Name="@L["Chart_Dividends"]" SeriesType="SeriesType.Bar"
+                                         XValue="y => y.Year.ToString()" YValue="y => y.Amount" />
+                    </ApexChart>
+                </ChildContent>
+                <Footer>
+                    <div class="d-flex flex-wrap gap-3 small px-1">
+                        @foreach (var year in d.Years.Where(y => y.GrowthPercent is not null))
+                        {
+                            <span class="text-body-secondary">
+                                @year.Year@(year.IsCurrentYear ? "*" : ""):
+                                <span class="delta @Fmt.SignClass(year.GrowthPercent)">@Fmt.Percent(year.GrowthPercent / 100, 1)</span>
+                            </span>
+                        }
+                        @if (d.Years.Any(y => y.IsCurrentYear))
+                        {
+                            <span class="text-body-secondary">* @L["Chart_YearInProgress"]</span>
+                        }
+                    </div>
+                </Footer>
+            </ThemedChart>
+        </div>
+        <div class="col-12 col-xl-6">
+            <ThemedChart Title="@string.Format(L["Chart_YearVsYear"], _year, _year - 1)" IsEmpty="d.Months.Count == 0" EmptyText="@L["Chart_NoData"]">
+                <Actions>
+                    <select class="form-select form-select-sm w-auto" aria-label="@L["Common_Year"]" value="@_year" @onchange="OnYearChanged">
+                        @foreach (var year in d.Years.Select(y => y.Year).OrderDescending())
+                        {
+                            <option value="@year">@year</option>
+                        }
+                    </select>
+                </Actions>
+                <ChildContent>
+                    <ApexChart TItem="MonthCompare" Options="CompareOptions(context)" Height="280" @key="_year">
+                        <ApexPointSeries TItem="MonthCompare" Items="_compare" Name="@_year.ToString()" SeriesType="SeriesType.Bar"
+                                         XValue="m => Fmt.MonthName(m.Month)" YValue="m => m.Current" />
+                        <ApexPointSeries TItem="MonthCompare" Items="_compare" Name="@((_year - 1).ToString())" SeriesType="SeriesType.Bar"
+                                         XValue="m => Fmt.MonthName(m.Month)" YValue="m => m.Previous" />
+                    </ApexChart>
+                </ChildContent>
+            </ThemedChart>
+        </div>
+        <div class="col-12 col-md-6">
+            <ThemedChart Title="@L["Chart_ByCountry"]" IsEmpty="d.Countries.Count == 0" EmptyText="@L["Chart_NoData"]" Height="260">
+                <ApexChart TItem="Slice" Options="DonutOptions(context)" Height="260">
+                    <ApexPointSeries TItem="Slice" Items="d.Countries" Name="@L["Chart_Dividends"]" SeriesType="SeriesType.Donut"
+                                     XValue="s => CountryName(s)" YValue="s => s.Amount" />
+                </ApexChart>
+            </ThemedChart>
+        </div>
+        <div class="col-12 col-md-6">
+            <ThemedChart Title="@L["Chart_ByCurrency"]" IsEmpty="d.Currencies.Count == 0" EmptyText="@L["Chart_NoData"]" Height="260">
+                <ApexChart TItem="Slice" Options="DonutOptions(context)" Height="260">
+                    <ApexPointSeries TItem="Slice" Items="d.Currencies" Name="@L["Chart_Dividends"]" SeriesType="SeriesType.Donut"
+                                     XValue="s => CurrencyName(s)" YValue="s => s.Amount" />
+                </ApexChart>
+            </ThemedChart>
+        </div>
+    </div>
 }
+
+<h2 class="section-title">@L["Dividends_Payments"]</h2>
+<DataGrid TItem="DividendRow" Items="_rows" Columns="Columns" StorageKey="dividends" ExportFileName="dividends"
+          DefaultSortKey="paid" DefaultSortDescending="true" DefaultSummaries="DefaultSummaries" EmptyText="@L["Dividends_Empty"]" />
+<p class="small text-body-secondary mt-2">@L["Dividends_WithheldNote"]</p>
 
 @code {
-    private IReadOnlyList<AccountOverview> _accounts = [];
-    private IReadOnlyList<int> _years = [];
+    private DividendDashboard? _dashboard;
     private IReadOnlyList<DividendRow>? _rows;
-    private IReadOnlyList<DividendSummary> _summaries = [];
-    private int? _accountId;
-    private int? _year;
+    private int _year = DateTime.UtcNow.Year;
+    private IReadOnlyList<MonthCompare> _compare = [];
 
-    protected override Task OnInitializedAsync() => LoadAsync();
+    private sealed record MonthCompare(int Month, decimal Current, decimal Previous);
 
-    private async Task LoadAsync()
+    private static readonly IReadOnlyDictionary<string, SummaryKind[]> DefaultSummaries = new Dictionary<string, SummaryKind[]>
     {
-        _accounts = await Overview.GetAccountsAsync();
-        _years = await DividendQueries.GetYearsAsync(_accountId);
-        _rows = await DividendQueries.GetDividendsAsync(_accountId, _year);
-        _summaries = await DividendQueries.GetSummariesAsync(_accountId);
+        ["net"] = [SummaryKind.Sum],
+        ["withheld"] = [SummaryKind.Sum],
+    };
+
+    private IReadOnlyList<GridColumn<DividendRow>> Columns => WithAccount([
+        new() { Key = "paid", Title = L["Col_Paid"], Value = r => r.PaidOn, Text = r => Fmt.Date(r.PaidOn),
+                Filterable = true, FilterKey = r => r.PaidOn.UtcDateTime.Year.ToString(), FilterValuesDescending = true,
+                Summaries = [SummaryKind.Count] },
+        new() { Key = "instrument", Title = L["Col_Instrument"], Value = r => r.InstrumentName ?? r.Ticker, MobileTitle = true },
+        new() { Key = "ticker", Title = L["Col_Ticker"], Value = r => r.Ticker, HideBelow = "xxl" },
+        new() { Key = "country", Title = L["Col_Country"], Value = r => Labels.Country(L, DividendAnalytics.CountryOf(r.Isin)), Filterable = true, HideBelow = "xl" },
+        new() { Key = "type", Title = L["Col_Type"], Value = r => Labels.Humanize(r.Type), Filterable = true, HideBelow = "xl", HideOnMobile = true },
+        new() { Key = "shares", Title = L["Col_Shares"], Value = r => r.Quantity, Text = r => Fmt.Number(r.Quantity), AlignEnd = true, HideBelow = "xl",
+                Summaries = GridColumn<DividendRow>.Numeric },
+        new() { Key = "gross", Title = L["Col_GrossPerShare"], Value = r => r.GrossAmountPerShare,
+                Text = r => r.GrossAmountPerShare is null ? "—" : $"{Fmt.Number(r.GrossAmountPerShare)} {r.InstrumentCurrency}", AlignEnd = true, HideBelow = "xl", HideOnMobile = true },
+        new() { Key = "withheld", Title = L["Col_Withheld"], Value = r => r.WithholdingTax,
+                Text = r => r.WithholdingTax is null ? "—" : $"{Fmt.Number(r.WithholdingTax)} {r.WithholdingTaxCurrency}", AlignEnd = true, HideBelow = "md",
+                Summaries = GridColumn<DividendRow>.Numeric, SummaryText = n => Fmt.Number(Math.Round(n, 2)) },
+        new() { Key = "net", Title = L["Col_Net"], Value = r => r.Amount, Text = r => Fmt.Money(r.Amount, r.Currency), AlignEnd = true,
+                Summaries = GridColumn<DividendRow>.Numeric, SummaryText = n => Fmt.Money(n, _dashboard?.Currency) },
+    ]);
+
+    // With several accounts, an account column (filterable) goes after the instrument.
+    private List<GridColumn<DividendRow>> WithAccount(List<GridColumn<DividendRow>> columns)
+    {
+        if (SeveralAccounts)
+            columns.Insert(2, new() { Key = "account", Title = L["Common_Account"], Value = r => r.AccountName, Filterable = true, HideBelow = "lg" });
+        return columns;
     }
 
-    private Task OnAccountChanged(ChangeEventArgs e)
+    private string CountryName(Slice slice) => slice.Key == "*" ? L["Chart_Other"] : Labels.Country(L, slice.Key);
+
+    private string CurrencyName(Slice slice) => slice.Key == "*" ? L["Chart_Other"] : slice.Key;
+
+    protected override async Task LoadAsync()
     {
-        _accountId = int.TryParse(e.Value?.ToString(), out var id) ? id : null;
-        return LoadAsync();
+        _dashboard = await Analytics.GetDashboardAsync(AccountId);
+        _rows = await DividendQueries.GetDividendsAsync(AccountId, null);
+        if (_dashboard is not null && _dashboard.Years.Count > 0 && _dashboard.Years.All(y => y.Year != _year))
+            _year = _dashboard.Years[^1].Year;
+        BuildComparison();
     }
 
-    private Task OnYearChanged(ChangeEventArgs e)
+    private void OnYearChanged(ChangeEventArgs e)
     {
-        _year = int.TryParse(e.Value?.ToString(), out var year) ? year : null;
-        return LoadAsync();
+        if (int.TryParse(e.Value?.ToString(), out var year))
+            _year = year;
+        BuildComparison();
+    }
+
+    private void BuildComparison()
+    {
+        var months = _dashboard?.Months ?? [];
+        decimal Amount(int year, int month) => months.FirstOrDefault(m => m.Year == year && m.Month == month)?.Amount ?? 0;
+        _compare = [.. Enumerable.Range(1, 12).Select(m => new MonthCompare(m, Amount(_year, m), Amount(_year - 1, m)))];
+    }
+
+    private ApexChartOptions<YearPoint> YearOptions(bool dark)
+    {
+        var options = ChartStyle.Base<YearPoint>(dark);
+        options.PlotOptions = ChartStyle.Bars(width: "45%");
+        options.Legend = new Legend { Show = false };
+        options.Yaxis = [new YAxis { Labels = new YAxisLabels { Formatter = ChartStyle.AxisNumber } }];
+        options.Tooltip.Y = new TooltipY { Formatter = ChartStyle.Money(_dashboard!.Currency) };
+        return options;
+    }
+
+    private ApexChartOptions<MonthCompare> CompareOptions(bool dark)
+    {
+        var options = ChartStyle.Base<MonthCompare>(dark);
+        options.PlotOptions = ChartStyle.Bars(width: "70%");
+        options.Stroke = new Stroke { Width = 2, Colors = [ChartStyle.Surface(dark)] };
+        options.Yaxis = [new YAxis { Labels = new YAxisLabels { Formatter = ChartStyle.AxisNumber } }];
+        options.Tooltip.Shared = true;
+        options.Tooltip.Intersect = false;
+        options.Tooltip.Y = new TooltipY { Formatter = ChartStyle.Money(_dashboard!.Currency) };
+        return options;
+    }
+
+    private ApexChartOptions<Slice> DonutOptions(bool dark)
+    {
+        var options = ChartStyle.Base<Slice>(dark);
+        options.Legend = new Legend { Position = LegendPosition.Right, Formatter = ChartStyle.LegendShare, FontSize = "13px" };
+        options.Stroke = new Stroke { Width = 2, Colors = [ChartStyle.Surface(dark)] };
+        options.Tooltip.Y = new TooltipY { Formatter = ChartStyle.Money(_dashboard!.Currency) };
+        options.PlotOptions = new PlotOptions { Pie = new PlotOptionsPie { Donut = new PlotOptionsDonut { Size = "62%" } } };
+        options.Responsive =
+        [
+            new Responsive<Slice> { Breakpoint = 576, Options = new ApexChartOptions<Slice> { Legend = new Legend { Position = LegendPosition.Bottom } } },
+        ];
+        return options;
     }
 }

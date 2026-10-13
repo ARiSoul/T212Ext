@@ -1,102 +1,183 @@
 @page "/"
+@inherits AccountPage
+@inject AnalyticsQueries Analytics
 @inject OverviewQueries Overview
-@inject DividendQueries DividendQueries
+@inject NavigationManager Navigation
 
-<PageTitle>Overview · T212Ext</PageTitle>
+<PageTitle>@L["Nav_Overview"] · T212Ext</PageTitle>
 
-<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-    <h1 class="h3 mb-0 me-auto">Overview</h1>
-    <SyncButton Finished="LoadAsync" />
+<div class="page-header">
+    <div class="me-auto">
+        <h1>@L["Nav_Overview"]</h1>
+        @if (_dashboard is not null)
+        {
+            <p>@string.Format(L["Overview_Subtitle"], _dashboard.Currency)</p>
+        }
+    </div>
 </div>
 
-@if (_accounts is null)
+@if (Loading)
 {
-    <p class="text-body-secondary">Loading…</p>
+    <p class="text-body-secondary"><span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>@L["Common_Loading"]</p>
 }
-else if (_accounts.Count == 0)
+else if (_dashboard is null)
 {
-    <div class="alert alert-info">
-        No account is configured. Add one under <code>T212:Accounts</code> (see the README, "Configuration").
+    <div class="grid-empty">
+        <p class="mb-2">@L["Overview_NoData"]</p>
+        <a class="btn btn-primary btn-sm" href="import">@L["Nav_Import"]</a>
     </div>
 }
 else
 {
-    @if (_summaries is { Count: > 0 })
-    {
-        <h2 class="h5">Dividends</h2>
-        @foreach (var summary in _summaries)
-        {
-            <div class="row g-2 mb-3">
-                <div class="col-6 col-lg-3"><StatCard Label="Last 12 months" Value="@Format.Money(summary.Last12Months, summary.Currency)" /></div>
-                <div class="col-6 col-lg-3"><StatCard Label="This year" Value="@Format.Money(summary.YearToDate, summary.Currency)" /></div>
-                <div class="col-6 col-lg-3"><StatCard Label="All time" Value="@Format.Money(summary.AllTime, summary.Currency)" /></div>
-                <div class="col-6 col-lg-3"><StatCard Label="Payments" Value="@summary.Count.ToString()" /></div>
-            </div>
-        }
-    }
-
-    <h2 class="h5">Accounts</h2>
+    var d = _dashboard;
     <div class="row g-3">
-        @foreach (var account in _accounts)
-        {
-            var snapshot = account.LatestSnapshot;
-            <div class="col-12 col-xl-6">
-                <div class="card">
-                    <div class="card-header d-flex flex-wrap gap-2 align-items-center">
-                        <strong class="me-auto">@account.Name</strong>
-                        <span class="badge text-bg-secondary">@account.Environment</span>
-                        @if (account.Currency is not null)
-                        {
-                            <span class="badge text-bg-light">@account.Currency</span>
-                        }
-                    </div>
-                    <div class="card-body">
-                        @if (!account.HasCredentials)
-                        {
-                            <div class="alert alert-warning py-2 small">
-                                No API key: the sync skips this account. CSV import still works.
-                            </div>
-                        }
+        <div class="col-6 col-md-4 col-xxl-2">
+            <Stat Icon="bi-calendar3" Label="@L["Stat_Last12Months"]" Value="@Fmt.Money(d.Last12Months, d.Currency)"
+                  DeltaPercent="d.Last12MonthsGrowthPercent" DeltaLabel="@L["Stat_VsPrevious12"]" />
+        </div>
+        <div class="col-6 col-md-4 col-xxl-2">
+            <Stat Icon="bi-calendar-check" Label="@string.Format(L["Stat_ThisYear"], Now.Year)" Value="@Fmt.Money(d.YearToDate, d.Currency)"
+                  DeltaPercent="d.YearToDateGrowthPercent" DeltaLabel="@L["Stat_VsSamePeriod"]" />
+        </div>
+        <div class="col-6 col-md-4 col-xxl-2">
+            <Stat Icon="bi-graph-up-arrow" Label="@L["Stat_Forward"]" Value="@Fmt.Money(d.ForwardEstimate, d.Currency)" Hint="@L["Stat_ForwardHint"]" />
+        </div>
+        <div class="col-6 col-md-4 col-xxl-2">
+            <Stat Icon="bi-percent" Label="@L["Stat_YieldOnCost"]" Value="@Fmt.Percent(d.PortfolioYieldOnCost)" Hint="@L["Stat_YieldOnCostHint"]" />
+        </div>
+        <div class="col-6 col-md-4 col-xxl-2">
+            <Stat Icon="bi-collection" Label="@L["Stat_AllTime"]" Value="@Fmt.Money(d.AllTime, d.Currency)"
+                  Hint="@string.Format(L["Stat_Payments"], d.PaymentCount)" />
+        </div>
+        <div class="col-6 col-md-4 col-xxl-2">
+            <Stat Icon="bi-briefcase" Label="@L["Stat_PortfolioValue"]" Value="@Fmt.Money(_totalValue, d.Currency)"
+                  Hint="@(_unrealized is null ? null : string.Format(L["Stat_Unrealized"], Fmt.Money(_unrealized, d.Currency)))" />
+        </div>
+    </div>
 
-                        @if (snapshot is null)
-                        {
-                            <p class="text-body-secondary mb-2">No snapshot yet. It is taken on each sync.</p>
-                        }
-                        else
-                        {
-                            <div class="row g-2 mb-2">
-                                <div class="col-6 col-md-3"><StatCard Label="Total value" Value="@Format.Money(snapshot.TotalValue, snapshot.Currency)" /></div>
-                                <div class="col-6 col-md-3"><StatCard Label="Invested" Value="@Format.Money(snapshot.TotalCost, snapshot.Currency)" /></div>
-                                <div class="col-6 col-md-3">
-                                    <StatCard Label="Unrealised P/L" Value="@Format.Money(snapshot.UnrealizedProfitLoss, snapshot.Currency)"
-                                              ValueClass="@Format.SignClass(snapshot.UnrealizedProfitLoss)" />
-                                </div>
-                                <div class="col-6 col-md-3"><StatCard Label="Free cash" Value="@Format.Money(snapshot.CashAvailable, snapshot.Currency)" /></div>
-                            </div>
-                            <p class="small text-body-secondary mb-2">
-                                @snapshot.Positions.Count positions · snapshot of @Format.DateTime(snapshot.TakenAt)
-                            </p>
-                        }
-
-                        <p class="small text-body-secondary mb-0">
-                            Stored: @account.DividendCount dividends · @account.OrderCount orders · @account.TransactionCount cash movements
-                        </p>
+    <div class="row g-3 mt-0">
+        <div class="col-12 col-xl-8">
+            <ThemedChart Title="@L["Chart_MonthlyIncome"]" IsEmpty="_months.Count == 0" EmptyText="@L["Chart_NoData"]">
+                <ApexChart TItem="MonthPoint" Options="MonthlyOptions(context)" Height="300">
+                    <ApexPointSeries TItem="MonthPoint" Items="_months" Name="@L["Chart_Dividends"]" SeriesType="SeriesType.Bar"
+                                     XValue="m => Fmt.MonthShort(m.Year, m.Month)" YValue="m => m.Amount" />
+                    <ApexPointSeries TItem="MonthPoint" Items="_months" Name="@L["Chart_MovingAverage"]" SeriesType="SeriesType.Line"
+                                     XValue="m => Fmt.MonthShort(m.Year, m.Month)" YValue="m => m.MovingAverage12" />
+                </ApexChart>
+            </ThemedChart>
+        </div>
+        <div class="col-12 col-xl-4">
+            <ThemedChart Title="@L["Chart_PassiveIncome"]" IsEmpty="d.PassiveIncome.All(p => p.Dividends + p.Interest + p.Lending == 0)" EmptyText="@L["Chart_NoData"]">
+                <ChildContent>
+                <ApexChart TItem="PassiveIncomeMonth" Options="PassiveOptions(context)" Height="300">
+                    <ApexPointSeries TItem="PassiveIncomeMonth" Items="d.PassiveIncome" Name="@L["Chart_Dividends"]" SeriesType="SeriesType.Bar"
+                                     XValue="m => Fmt.MonthName(m.Month)" YValue="m => m.Dividends" />
+                    <ApexPointSeries TItem="PassiveIncomeMonth" Items="d.PassiveIncome" Name="@L["Chart_Interest"]" SeriesType="SeriesType.Bar"
+                                     XValue="m => Fmt.MonthName(m.Month)" YValue="m => m.Interest" />
+                    <ApexPointSeries TItem="PassiveIncomeMonth" Items="d.PassiveIncome" Name="@L["Chart_Lending"]" SeriesType="SeriesType.Bar"
+                                     XValue="m => Fmt.MonthName(m.Month)" YValue="m => m.Lending" />
+                </ApexChart>
+                </ChildContent>
+                <Footer>
+                    <div class="small text-body-secondary px-1">
+                        @string.Format(L["Chart_PassiveTotal"], Fmt.Money(d.PassiveIncome.Sum(p => p.Dividends + p.Interest + p.Lending), d.Currency))
                     </div>
-                </div>
-            </div>
-        }
+                </Footer>
+            </ThemedChart>
+        </div>
+
+        <div class="col-12 col-xl-6">
+            <ThemedChart Title="@L["Chart_TopPayers"]" IsEmpty="_topPayers.Count == 0" EmptyText="@L["Chart_NoData"]">
+                <ApexChart TItem="InstrumentIncome" Options="TopPayersOptions(context)" Height="320" OnDataPointSelection="OpenInstrument">
+                    <ApexPointSeries TItem="InstrumentIncome" Items="_topPayers" Name="@L["Stat_Last12Months"]" SeriesType="SeriesType.Bar"
+                                     XValue="i => i.Name ?? i.Ticker" YValue="i => i.Last12Months" />
+                </ApexChart>
+            </ThemedChart>
+        </div>
+        <div class="col-12 col-xl-6">
+            <ThemedChart Title="@L["Chart_PortfolioValue"]" IsEmpty="d.Portfolio.Count < 2" EmptyText="@L["Chart_SnapshotsBuilding"]">
+                <ApexChart TItem="SnapshotFact" Options="PortfolioOptions(context)" Height="320">
+                    <ApexPointSeries TItem="SnapshotFact" Items="d.Portfolio" Name="@L["Chart_Value"]" SeriesType="SeriesType.Line"
+                                     XValue="s => s.Date.ToDateTime(TimeOnly.MinValue)" YValue="s => s.TotalValue" />
+                    <ApexPointSeries TItem="SnapshotFact" Items="d.Portfolio" Name="@L["Chart_Invested"]" SeriesType="SeriesType.Line"
+                                     XValue="s => s.Date.ToDateTime(TimeOnly.MinValue)" YValue="s => s.TotalCost" />
+                </ApexChart>
+            </ThemedChart>
+        </div>
     </div>
 }
 
 @code {
-    private IReadOnlyList<AccountOverview>? _accounts;
-    private IReadOnlyList<DividendSummary>? _summaries;
+    private DividendDashboard? _dashboard;
+    private IReadOnlyList<MonthPoint> _months = [];
+    private IReadOnlyList<InstrumentIncome> _topPayers = [];
+    private decimal? _totalValue;
+    private decimal? _unrealized;
 
-    protected override Task OnInitializedAsync() => LoadAsync();
+    private static DateTime Now => DateTime.UtcNow;
 
-    private async Task LoadAsync()
+    protected override async Task LoadAsync()
     {
-        _accounts = await Overview.GetAccountsAsync();
-        _summaries = await DividendQueries.GetSummariesAsync(null);
+        _dashboard = await Analytics.GetDashboardAsync(AccountId);
+        _months = _dashboard?.Months.TakeLast(24).ToList() ?? [];
+        _topPayers = _dashboard?.Instruments.Where(i => i.Last12Months > 0).OrderByDescending(i => i.Last12Months).Take(8).ToList() ?? [];
+
+        var accounts = (await Overview.GetAccountsAsync())
+            .Where(a => (AccountId is null || a.Id == AccountId) && a.Currency == _dashboard?.Currency && a.LatestSnapshot is not null)
+            .ToList();
+        _totalValue = accounts.Count == 0 ? null : accounts.Sum(a => a.LatestSnapshot!.TotalValue ?? 0);
+        _unrealized = accounts.Count == 0 ? null : accounts.Sum(a => a.LatestSnapshot!.UnrealizedProfitLoss ?? 0);
+    }
+
+    private void OpenInstrument(SelectedData<InstrumentIncome> selected) =>
+        Navigation.NavigateTo($"income/{Uri.EscapeDataString(selected.DataPoint.Items.First().Isin ?? selected.DataPoint.Items.First().Ticker)}");
+
+    private ApexChartOptions<MonthPoint> MonthlyOptions(bool dark)
+    {
+        var options = ChartStyle.Base<MonthPoint>(dark);
+        options.PlotOptions = ChartStyle.Bars(width: "55%");
+        options.Stroke = new Stroke { Width = new Size(0, 2), Curve = Curve.Smooth };
+        options.Yaxis = [new YAxis { Labels = new YAxisLabels { Formatter = ChartStyle.AxisNumber } }];
+        options.Tooltip.Shared = true;
+        options.Tooltip.Intersect = false;
+        options.Tooltip.Y = new TooltipY { Formatter = ChartStyle.Money(_dashboard!.Currency) };
+        options.Xaxis = new XAxis { Labels = new XAxisLabels { Rotate = -45, HideOverlappingLabels = true } };
+        return options;
+    }
+
+    private ApexChartOptions<PassiveIncomeMonth> PassiveOptions(bool dark)
+    {
+        var options = ChartStyle.Base<PassiveIncomeMonth>(dark);
+        options.Chart.Stacked = true;
+        options.PlotOptions = ChartStyle.Bars(width: "60%");
+        options.Stroke = new Stroke { Width = 2, Colors = [ChartStyle.Surface(dark)] };
+        options.Yaxis = [new YAxis { Labels = new YAxisLabels { Formatter = ChartStyle.AxisNumber } }];
+        options.Xaxis = new XAxis { Labels = new XAxisLabels { Rotate = -45, HideOverlappingLabels = true } };
+        options.Tooltip.Shared = true;
+        options.Tooltip.Intersect = false;
+        options.Tooltip.Y = new TooltipY { Formatter = ChartStyle.Money(_dashboard!.Currency) };
+        return options;
+    }
+
+    private ApexChartOptions<InstrumentIncome> TopPayersOptions(bool dark)
+    {
+        var options = ChartStyle.Base<InstrumentIncome>(dark);
+        options.PlotOptions = ChartStyle.Bars(horizontal: true, width: "65%");
+        options.Legend = new Legend { Show = false };
+        options.Tooltip.Y = new TooltipY { Formatter = ChartStyle.Money(_dashboard!.Currency) };
+        options.Xaxis = new XAxis { Labels = new XAxisLabels { Formatter = ChartStyle.AxisNumber } };
+        return options;
+    }
+
+    private ApexChartOptions<SnapshotFact> PortfolioOptions(bool dark)
+    {
+        var options = ChartStyle.Base<SnapshotFact>(dark);
+        options.Stroke = new Stroke { Width = 2, Curve = Curve.Smooth };
+        options.Xaxis = new XAxis { Type = XAxisType.Datetime };
+        options.Yaxis = [new YAxis { Labels = new YAxisLabels { Formatter = ChartStyle.AxisNumber } }];
+        options.Tooltip.Shared = true;
+        options.Tooltip.X = new TooltipX { Format = "dd MMM yyyy" };
+        options.Tooltip.Y = new TooltipY { Formatter = ChartStyle.Money(_dashboard!.Currency) };
+        return options;
     }
 }

@@ -1,0 +1,478 @@
+@typeparam TItem
+@inject IStringLocalizer<SharedResource> L
+@inject BrowserStorage Storage
+@inject IJSRuntime JS
+
+<div class="data-grid">
+    @if (_openMenu is not null)
+    {
+        <div class="grid-backdrop" @onclick="CloseMenu"></div>
+    }
+
+    <div class="grid-toolbar">
+        <div class="grid-search">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input type="search" class="form-control form-control-sm" placeholder="@L["Grid_Search"]" aria-label="@L["Grid_Search"]"
+                   value="@_state.Search" @oninput="OnSearch" />
+        </div>
+
+        @foreach (var column in Columns.Where(c => c.Filterable))
+        {
+            var selected = _state.Filters.GetValueOrDefault(column.Key) ?? [];
+            var menuKey = "filter:" + column.Key;
+            <div class="grid-menu-anchor">
+                <button type="button" class="btn btn-sm @(selected.Count > 0 ? "btn-primary" : "btn-outline-secondary")" @onclick="() => ToggleMenu(menuKey)">
+                    <i class="bi bi-funnel" aria-hidden="true"></i>
+                    @column.Title@(selected.Count == 1 ? $": {selected[0]}" : selected.Count > 1 ? $" ({selected.Count})" : "")
+                </button>
+                @if (_openMenu == menuKey)
+                {
+                    <div class="grid-menu">
+                        @foreach (var value in GridEngine.FilterValues(Items ?? [], column))
+                        {
+                            <label class="grid-menu-option">
+                                <input type="checkbox" class="form-check-input" checked="@selected.Contains(value)" @onchange="() => ToggleFilterAsync(column.Key, value)" />
+                                <span>@value</span>
+                            </label>
+                        }
+                        @if (selected.Count > 0)
+                        {
+                            <button type="button" class="btn btn-link btn-sm px-0" @onclick="() => ClearFilterAsync(column.Key)">@L["Grid_ClearFilter"]</button>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        @Toolbar
+
+        <div class="ms-auto d-flex gap-2">
+            @if (Columns.Any(c => c.Summaries.Count > 0))
+            {
+                <div class="grid-menu-anchor">
+                    <button type="button" class="btn btn-sm @(_state.Summaries.Count > 0 ? "btn-primary" : "btn-outline-secondary")" @onclick="@(() => ToggleMenu("totals"))">
+                        <i class="bi bi-calculator" aria-hidden="true"></i> <span class="d-none d-sm-inline">@L["Grid_Summaries"]</span>
+                    </button>
+                    @if (_openMenu == "totals")
+                    {
+                        <div class="grid-menu grid-menu-wide grid-menu-end">
+                            @foreach (var column in Columns.Where(c => c.Summaries.Count > 0))
+                            {
+                                <div class="grid-menu-group">
+                                    <div class="grid-menu-title">@column.Title</div>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @foreach (var kind in column.Summaries)
+                                        {
+                                            <button type="button" class="btn btn-sm py-0 @(IsSummaryOn(column.Key, kind) ? "btn-primary" : "btn-outline-secondary")"
+                                                    aria-pressed="@IsSummaryOn(column.Key, kind)" @onclick="() => ToggleSummaryAsync(column.Key, kind)">
+                                                @SummaryLabel(kind)
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+            @if (IsChanged)
+            {
+                <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="ResetAsync" title="@L["Grid_Reset"]">
+                    <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span class="d-none d-sm-inline ms-1">@L["Grid_Reset"]</span>
+                </button>
+            }
+            @if (ExportFileName is not null && _view?.Filtered.Count > 0)
+            {
+                <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="ExportAsync" title="@L["Grid_Export"]">
+                    <i class="bi bi-download" aria-hidden="true"></i><span class="d-none d-sm-inline ms-1">@L["Grid_Export"]</span>
+                </button>
+            }
+        </div>
+    </div>
+
+    @if (Items is null || _view is null)
+    {
+        <div class="grid-empty"><span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>@L["Common_Loading"]</div>
+    }
+    else if (_view.Filtered.Count == 0)
+    {
+        <div class="grid-empty">@(Items.Count == 0 ? EmptyText ?? L["Grid_Empty"] : L["Grid_NoMatches"])</div>
+    }
+    else
+    {
+        @* Table, from md up *@
+        <div class="table-responsive d-none d-md-block">
+            <table class="table table-hover align-middle mb-0 grid-table">
+                <thead>
+                    <tr>
+                        @foreach (var column in Columns)
+                        {
+                            <th class="@HeaderClass(column)">
+                                <div class="grid-th">
+                                    @if (column.Sortable)
+                                    {
+                                        <button type="button" class="grid-sort" @onclick="() => SortAsync(column.Key)">
+                                            @column.Title
+                                            <i class="bi @SortIcon(column.Key)" aria-hidden="true"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span>@column.Title</span>
+                                    }
+                                </div>
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in _view.Page)
+                    {
+                        <tr class="@(RowClick.HasDelegate ? "grid-row-link" : "")" @onclick="() => OnRowClick(item)">
+                            @foreach (var column in Columns)
+                            {
+                                <td class="@CellClass(column)">@Cell(column, item)</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+                @if (_view.Summaries.Count > 0)
+                {
+                    <tfoot>
+                        <tr class="grid-summary-row">
+                            @foreach (var column in Columns)
+                            {
+                                <td class="@CellClass(column)">
+                                    @if (_view.Summaries.TryGetValue(column.Key, out var values))
+                                    {
+                                        @foreach (var value in values)
+                                        {
+                                            <div class="grid-summary"><span>@SummaryLabel(value.Kind)</span> @value.Text</div>
+                                        }
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    </tfoot>
+                }
+            </table>
+        </div>
+
+        @* Cards, below md *@
+        <div class="d-md-none">
+            <div class="d-flex gap-2 mb-2">
+                <select class="form-select form-select-sm" aria-label="@L["Grid_SortBy"]" value="@(_state.SortKey ?? "")" @onchange="OnMobileSort">
+                    @foreach (var column in Columns.Where(c => c.Sortable))
+                    {
+                        <option value="@column.Key">@L["Grid_SortBy"]: @column.Title</option>
+                    }
+                </select>
+                <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="@L["Grid_SortDirection"]" @onclick="ToggleDirectionAsync">
+                    <i class="bi @(_state.SortDescending ? "bi-sort-down" : "bi-sort-up")" aria-hidden="true"></i>
+                </button>
+            </div>
+            @foreach (var item in _view.Page)
+            {
+                var title = Columns.FirstOrDefault(c => c.MobileTitle);
+                <div class="card grid-card mb-2 @(RowClick.HasDelegate ? "grid-row-link" : "")" @onclick="() => OnRowClick(item)">
+                    <div class="card-body py-2 px-3">
+                        @if (title is not null)
+                        {
+                            <div class="fw-semibold mb-1">@Cell(title, item)</div>
+                        }
+                        @foreach (var column in Columns.Where(c => !c.MobileTitle && !c.HideOnMobile))
+                        {
+                            <div class="d-flex justify-content-between gap-3 small py-1 grid-card-field">
+                                <span class="text-body-secondary">@column.Title</span>
+                                <span class="text-end">@Cell(column, item)</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            @if (_view.Summaries.Count > 0)
+            {
+                <div class="card grid-card mb-2">
+                    <div class="card-body py-2 px-3 small">
+                        @foreach (var column in Columns.Where(c => _view.Summaries.ContainsKey(c.Key)))
+                        {
+                            <div class="d-flex justify-content-between gap-3 py-1">
+                                <span class="text-body-secondary">@column.Title</span>
+                                <span class="text-end">@string.Join(" · ", _view.Summaries[column.Key].Select(v => $"{SummaryLabel(v.Kind)} {v.Text}"))</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="grid-footer">
+            <span class="text-body-secondary small">
+                @string.Format(L["Grid_Showing"], First, Last, _view.Filtered.Count)
+                @if (_view.Filtered.Count != Items.Count)
+                {
+                    <span>@string.Format(L["Grid_OfTotal"], Items.Count)</span>
+                }
+            </span>
+            @if (_view.PageCount > 1)
+            {
+                <nav aria-label="@L["Grid_Pages"]">
+                    <ul class="pagination pagination-sm mb-0">
+                        <li class="page-item @(_view.PageNumber == 1 ? "disabled" : "")">
+                            <button type="button" class="page-link" aria-label="@L["Grid_FirstPage"]" @onclick="() => GoToAsync(1)"><i class="bi bi-chevron-double-left"></i></button>
+                        </li>
+                        <li class="page-item @(_view.PageNumber == 1 ? "disabled" : "")">
+                            <button type="button" class="page-link" aria-label="@L["Grid_PreviousPage"]" @onclick="() => GoToAsync(_view.PageNumber - 1)"><i class="bi bi-chevron-left"></i></button>
+                        </li>
+                        @foreach (var number in PageNumbers())
+                        {
+                            <li class="page-item @(number == _view.PageNumber ? "active" : "")">
+                                <button type="button" class="page-link" @onclick="() => GoToAsync(number)">@number</button>
+                            </li>
+                        }
+                        <li class="page-item @(_view.PageNumber == _view.PageCount ? "disabled" : "")">
+                            <button type="button" class="page-link" aria-label="@L["Grid_NextPage"]" @onclick="() => GoToAsync(_view.PageNumber + 1)"><i class="bi bi-chevron-right"></i></button>
+                        </li>
+                        <li class="page-item @(_view.PageNumber == _view.PageCount ? "disabled" : "")">
+                            <button type="button" class="page-link" aria-label="@L["Grid_LastPage"]" @onclick="() => GoToAsync(_view.PageCount)"><i class="bi bi-chevron-double-right"></i></button>
+                        </li>
+                    </ul>
+                </nav>
+            }
+            <select class="form-select form-select-sm w-auto" aria-label="@L["Grid_PageSize"]" value="@_state.PageSize" @onchange="OnPageSize">
+                @foreach (var size in PageSizes)
+                {
+                    <option value="@size">@string.Format(L["Grid_PerPage"], size)</option>
+                }
+            </select>
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>The rows; null while loading.</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<TItem>? Items { get; set; }
+
+    [Parameter, EditorRequired] public IReadOnlyList<GridColumn<TItem>> Columns { get; set; } = [];
+
+    /// <summary>Saves search, filters, sort, page size and summaries in the browser under this name.</summary>
+    [Parameter, EditorRequired] public string StorageKey { get; set; } = "";
+
+    [Parameter] public string? DefaultSortKey { get; set; }
+    [Parameter] public bool DefaultSortDescending { get; set; }
+
+    /// <summary>Summaries shown until the person changes them, e.g. the sum of an amount column.</summary>
+    [Parameter] public IReadOnlyDictionary<string, SummaryKind[]>? DefaultSummaries { get; set; }
+
+    [Parameter] public int DefaultPageSize { get; set; } = 25;
+
+    /// <summary>Extra controls in the toolbar (an account filter, say).</summary>
+    [Parameter] public RenderFragment? Toolbar { get; set; }
+
+    [Parameter] public EventCallback<TItem> RowClick { get; set; }
+
+    /// <summary>Shows "Export" (CSV of the filtered rows) when set.</summary>
+    [Parameter] public string? ExportFileName { get; set; }
+
+    [Parameter] public string? EmptyText { get; set; }
+
+    private static readonly int[] PageSizes = [10, 25, 50, 100];
+
+    private GridState _state = new();
+    private GridView<TItem>? _view;
+    private string? _openMenu;
+    private bool _restored;
+
+    private string StorageName => $"t212ext.grid.{StorageKey}";
+    private int First => _view is null || _view.Filtered.Count == 0 ? 0 : (_view.PageNumber - 1) * _state.PageSize + 1;
+    private int Last => _view is null ? 0 : Math.Min(_view.PageNumber * _state.PageSize, _view.Filtered.Count);
+
+    private bool IsChanged =>
+        !string.IsNullOrEmpty(_state.Search)
+        || _state.Filters.Count > 0
+        || _state.SortKey != DefaultSortKey
+        || _state.SortDescending != DefaultSortDescending
+        || _state.PageSize != DefaultPageSize
+        || !SameSummaries(_state.Summaries, DefaultState().Summaries);
+
+    protected override void OnInitialized() => _state = DefaultState();
+
+    protected override void OnParametersSet() => Recompute();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        var saved = await Storage.GetAsync<GridState>(StorageName);
+        if (saved is not null)
+        {
+            saved.Filters = saved.Filters.Where(f => Columns.Any(c => c.Key == f.Key && c.Filterable)).ToDictionary();
+            saved.Summaries = saved.Summaries.Where(s => Columns.Any(c => c.Key == s.Key)).ToDictionary();
+            if (!PageSizes.Contains(saved.PageSize))
+                saved.PageSize = DefaultPageSize;
+            _state = saved;
+        }
+
+        _restored = true;
+        Recompute();
+        StateHasChanged();
+    }
+
+    private GridState DefaultState() => new()
+    {
+        SortKey = DefaultSortKey,
+        SortDescending = DefaultSortDescending,
+        PageSize = DefaultPageSize,
+        Summaries = DefaultSummaries?.ToDictionary(s => s.Key, s => s.Value.ToList()) ?? [],
+    };
+
+    private void Recompute() => _view = Items is null ? null : GridEngine.Apply(Items, Columns, _state);
+
+    private async Task ChangedAsync(bool backToFirstPage = true)
+    {
+        if (backToFirstPage)
+            _state.Page = 1;
+        Recompute();
+        if (_restored)
+            await Storage.SetAsync(StorageName, _state);
+    }
+
+    private Task OnSearch(ChangeEventArgs e)
+    {
+        _state.Search = e.Value?.ToString();
+        return ChangedAsync();
+    }
+
+    private Task ToggleFilterAsync(string key, string value)
+    {
+        var values = _state.Filters.GetValueOrDefault(key) ?? [];
+        if (!values.Remove(value))
+            values.Add(value);
+
+        if (values.Count == 0)
+            _state.Filters.Remove(key);
+        else
+            _state.Filters[key] = values;
+
+        return ChangedAsync();
+    }
+
+    private Task ClearFilterAsync(string key)
+    {
+        _state.Filters.Remove(key);
+        _openMenu = null;
+        return ChangedAsync();
+    }
+
+    private Task SortAsync(string key)
+    {
+        if (_state.SortKey == key)
+            _state.SortDescending = !_state.SortDescending;
+        else
+            (_state.SortKey, _state.SortDescending) = (key, false);
+        return ChangedAsync();
+    }
+
+    private Task OnMobileSort(ChangeEventArgs e)
+    {
+        _state.SortKey = e.Value?.ToString();
+        return ChangedAsync();
+    }
+
+    private Task ToggleDirectionAsync()
+    {
+        _state.SortDescending = !_state.SortDescending;
+        return ChangedAsync();
+    }
+
+    private Task GoToAsync(int page)
+    {
+        _state.Page = page;
+        return ChangedAsync(backToFirstPage: false);
+    }
+
+    private Task OnPageSize(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var size))
+            _state.PageSize = size;
+        return ChangedAsync();
+    }
+
+    private bool IsSummaryOn(string key, SummaryKind kind) =>
+        _state.Summaries.TryGetValue(key, out var kinds) && kinds.Contains(kind);
+
+    private Task ToggleSummaryAsync(string key, SummaryKind kind)
+    {
+        var kinds = _state.Summaries.GetValueOrDefault(key) ?? [];
+        if (!kinds.Remove(kind))
+            kinds.Add(kind);
+
+        if (kinds.Count == 0)
+            _state.Summaries.Remove(key);
+        else
+            _state.Summaries[key] = kinds;
+
+        return ChangedAsync(backToFirstPage: false);
+    }
+
+    private async Task ResetAsync()
+    {
+        _state = DefaultState();
+        _openMenu = null;
+        await Storage.RemoveAsync(StorageName);
+        Recompute();
+    }
+
+    private async Task ExportAsync()
+    {
+        if (_view is null || ExportFileName is null)
+            return;
+
+        var csv = GridEngine.ToCsv(_view.Filtered, Columns);
+        await JS.InvokeVoidAsync("t212ext.downloadText", $"{ExportFileName}-{DateTime.Now:yyyy-MM-dd}.csv", csv, "text/csv;charset=utf-8");
+    }
+
+    private async Task OnRowClick(TItem item)
+    {
+        if (RowClick.HasDelegate)
+            await RowClick.InvokeAsync(item);
+    }
+
+    private void ToggleMenu(string key) => _openMenu = _openMenu == key ? null : key;
+
+    private void CloseMenu() => _openMenu = null;
+
+    private IEnumerable<int> PageNumbers()
+    {
+        if (_view is null)
+            yield break;
+
+        var start = Math.Max(1, _view.PageNumber - 2);
+        var end = Math.Min(_view.PageCount, start + 4);
+        start = Math.Max(1, end - 4);
+        for (var i = start; i <= end; i++)
+            yield return i;
+    }
+
+    private string SortIcon(string key) =>
+        _state.SortKey != key ? "bi-arrow-down-up grid-sort-idle" : _state.SortDescending ? "bi-sort-down" : "bi-sort-up";
+
+    private static string HeaderClass(GridColumn<TItem> column) => CellClass(column);
+
+    private static string CellClass(GridColumn<TItem> column) =>
+        string.Join(' ', new[] { column.AlignEnd ? "text-end" : null, column.HideBelow is { } bp ? $"d-none d-{bp}-table-cell" : null }.OfType<string>());
+
+    private static RenderFragment Cell(GridColumn<TItem> column, TItem item) => builder =>
+    {
+        if (column.Template is not null)
+            builder.AddContent(0, column.Template(item));
+        else
+            builder.AddContent(0, column.CellText(item));
+    };
+
+    private string SummaryLabel(SummaryKind kind) => L[$"Grid_Summary_{kind}"];
+
+    private static bool SameSummaries(Dictionary<string, List<SummaryKind>> a, Dictionary<string, List<SummaryKind>> b) =>
+        a.Count == b.Count && a.All(kv => b.TryGetValue(kv.Key, out var other) && kv.Value.Order().SequenceEqual(other.Order()));
+}

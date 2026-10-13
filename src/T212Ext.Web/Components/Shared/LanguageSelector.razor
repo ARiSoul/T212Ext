@@ -1,0 +1,38 @@
+@using System.Globalization
+@inject IStringLocalizer<SharedResource> L
+@inject NavigationManager Navigation
+
+<div class="grid-menu-anchor">
+    @if (_open)
+    {
+        <div class="grid-backdrop" @onclick="() => _open = false"></div>
+    }
+    <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="@L["Language_Label"]" title="@L["Language_Label"]" @onclick="() => _open = !_open">
+        <i class="bi bi-translate" aria-hidden="true"></i> @Current.Code
+    </button>
+    @if (_open)
+    {
+        <div class="grid-menu grid-menu-end">
+            @foreach (var language in Languages.All)
+            {
+                <button type="button" class="grid-menu-option w-100 border-0 bg-transparent text-start @(language == Current ? "fw-semibold" : "")" @onclick="() => Choose(language)">
+                    <span class="badge badge-soft">@language.Code</span> @language.NativeName
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private bool _open;
+
+    private static Languages.Language Current =>
+        Languages.All.FirstOrDefault(l => l.Culture == CultureInfo.CurrentUICulture.Name) ?? Languages.All[0];
+
+    // The language lives in a cookie, read when the page loads: set it on the server, then reload.
+    private void Choose(Languages.Language language)
+    {
+        var returnUrl = "/" + Navigation.ToBaseRelativePath(Navigation.Uri);
+        Navigation.NavigateTo($"/language?culture={Uri.EscapeDataString(language.Culture)}&returnUrl={Uri.EscapeDataString(returnUrl)}", forceLoad: true);
+    }
+}

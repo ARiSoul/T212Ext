@@ -1,0 +1,36 @@
+<div class="stat">
+    <div class="stat-label">
+        @if (Icon is not null)
+        {
+            <i class="bi @Icon" aria-hidden="true"></i>
+        }
+        @Label
+    </div>
+    <div class="stat-value @ValueClass">@Value</div>
+    @if (DeltaPercent is { } delta)
+    {
+        <div class="stat-hint">
+            <span class="delta @(delta >= 0 ? "text-positive" : "text-negative")">
+                <i class="bi @(delta >= 0 ? "bi-arrow-up-right" : "bi-arrow-down-right")" aria-hidden="true"></i>@Fmt.Percent(delta / 100, 1)
+            </span>
+            @DeltaLabel
+        </div>
+    }
+    else if (Hint is not null)
+    {
+        <div class="stat-hint">@Hint</div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter, EditorRequired] public string Value { get; set; } = "";
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public string? ValueClass { get; set; }
+    [Parameter] public string? Hint { get; set; }
+
+    /// <summary>Change in percent (12.5 = +12.5 %), shown with an arrow and <see cref="DeltaLabel"/>.</summary>
+    [Parameter] public decimal? DeltaPercent { get; set; }
+
+    [Parameter] public string? DeltaLabel { get; set; }
+}

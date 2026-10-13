@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="CashType_DEPOSIT" xml:space="preserve"><value>Depósitos</value></data>
+  <data name="CashType_DIVIDEND_ADJUSTMENT" xml:space="preserve"><value>Devoluções de retenção</value></data>
+  <data name="CashType_FEE" xml:space="preserve"><value>Comissões</value></data>
+  <data name="CashType_INTEREST_ON_FREE_CASH" xml:space="preserve"><value>Juros sobre dinheiro</value></data>
+  <data name="CashType_LENDING_INTEREST" xml:space="preserve"><value>Empréstimo de ações</value></data>
+  <data name="CashType_TRANSFER" xml:space="preserve"><value>Transferências</value></data>
+  <data name="CashType_WITHDRAW" xml:space="preserve"><value>Levantamentos</value></data>
+  <data name="Cash_Empty" xml:space="preserve"><value>Ainda não há movimentos.</value></data>
+  <data name="Cash_Movements" xml:space="preserve"><value>{0} movimentos</value></data>
+  <data name="Cash_Subtitle" xml:space="preserve"><value>Depósitos, levantamentos, juros, empréstimo de ações e devoluções de imposto</value></data>
+  <data name="Chart_ByCountry" xml:space="preserve"><value>Por país</value></data>
+  <data name="Chart_ByCurrency" xml:space="preserve"><value>Por moeda</value></data>
+  <data name="Chart_ByYear" xml:space="preserve"><value>Dividendos por ano</value></data>
+  <data name="Chart_Dividends" xml:space="preserve"><value>Dividendos</value></data>
+  <data name="Chart_GrossPerShare" xml:space="preserve"><value>Dividendo bruto por ação</value></data>
+  <data name="Chart_Interest" xml:space="preserve"><value>Juros</value></data>
+  <data name="Chart_Invested" xml:space="preserve"><value>Investido</value></data>
+  <data name="Chart_Lending" xml:space="preserve"><value>Empréstimo de ações</value></data>
+  <data name="Chart_MonthlyIncome" xml:space="preserve"><value>Dividendos por mês</value></data>
+  <data name="Chart_MovingAverage" xml:space="preserve"><value>Média de 12 meses</value></data>
+  <data name="Chart_NoData" xml:space="preserve"><value>Ainda sem dados.</value></data>
+  <data name="Chart_Other" xml:space="preserve"><value>Outros</value></data>
+  <data name="Chart_PassiveIncome" xml:space="preserve"><value>Rendimento passivo, últimos 12 meses</value></data>
+  <data name="Chart_PassiveTotal" xml:space="preserve"><value>Total: {0}</value></data>
+  <data name="Chart_PaymentsOverTime" xml:space="preserve"><value>Pagamentos</value></data>
+  <data name="Chart_PortfolioValue" xml:space="preserve"><value>Evolução da carteira</value></data>
+  <data name="Chart_SnapshotsBuilding" xml:space="preserve"><value>Em cada sincronização fica guardada uma fotografia da carteira, uma por dia. Este gráfico vai-se preenchendo com elas.</value></data>
+  <data name="Chart_TopPayers" xml:space="preserve"><value>Quem mais pagou, últimos 12 meses</value></data>
+  <data name="Chart_TopPayersAllTime" xml:space="preserve"><value>Os 10 que mais pagaram, desde sempre</value></data>
+  <data name="Chart_Value" xml:space="preserve"><value>Valor</value></data>
+  <data name="Chart_YearInProgress" xml:space="preserve"><value>ano em curso</value></data>
+  <data name="Chart_YearVsYear" xml:space="preserve"><value>{0} vs {1}, por mês</value></data>
+  <data name="Col_Added" xml:space="preserve"><value>Novos</value></data>
+  <data name="Col_Amount" xml:space="preserve"><value>Valor</value></data>
+  <data name="Col_Cost" xml:space="preserve"><value>Investido</value></data>
+  <data name="Col_Country" xml:space="preserve"><value>País</value></data>
+  <data name="Col_Currency" xml:space="preserve"><value>Moeda</value></data>
+  <data name="Col_CurrentYield" xml:space="preserve"><value>Yield atual</value></data>
+  <data name="Col_Date" xml:space="preserve"><value>Data</value></data>
+  <data name="Col_Dividends12" xml:space="preserve"><value>Dividendos (12 m)</value></data>
+  <data name="Col_Duration" xml:space="preserve"><value>Duração</value></data>
+  <data name="Col_Fees" xml:space="preserve"><value>Custos</value></data>
+  <data name="Col_FirstPaid" xml:space="preserve"><value>Primeiro pagamento</value></data>
+  <data name="Col_Forward" xml:space="preserve"><value>Próx. 12 m (est.)</value></data>
+  <data name="Col_FxRate" xml:space="preserve"><value>Câmbio</value></data>
+  <data name="Col_GrossPerShare" xml:space="preserve"><value>Bruto por ação</value></data>
+  <data name="Col_Held" xml:space="preserve"><value>Em carteira</value></data>
+  <data name="Col_Instrument" xml:space="preserve"><value>Ativo</value></data>
+  <data name="Col_Job" xml:space="preserve"><value>Tarefa</value></data>
+  <data name="Col_LastPaid" xml:space="preserve"><value>Último pagamento</value></data>
+  <data name="Col_Net" xml:space="preserve"><value>Líquido</value></data>
+  <data name="Col_NetValue" xml:space="preserve"><value>Valor líquido</value></data>
+  <data name="Col_Origin" xml:space="preserve"><value>Origem</value></data>
+  <data name="Col_Paid" xml:space="preserve"><value>Pago em</value></data>
+  <data name="Col_Payments" xml:space="preserve"><value>Pagamentos</value></data>
+  <data name="Col_Price" xml:space="preserve"><value>Preço</value></data>
+  <data name="Col_RealisedPL" xml:space="preserve"><value>Ganho/perda realizado</value></data>
+  <data name="Col_Reference" xml:space="preserve"><value>Referência</value></data>
+  <data name="Col_Result" xml:space="preserve"><value>Resultado</value></data>
+  <data name="Col_Share" xml:space="preserve"><value>Peso</value></data>
+  <data name="Col_Shares" xml:space="preserve"><value>Ações</value></data>
+  <data name="Col_Side" xml:space="preserve"><value>Sentido</value></data>
+  <data name="Col_Source" xml:space="preserve"><value>Origem</value></data>
+  <data name="Col_Started" xml:space="preserve"><value>Início</value></data>
+  <data name="Col_Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="Col_Ticker" xml:space="preserve"><value>Ticker</value></data>
+  <data name="Col_Total" xml:space="preserve"><value>Total</value></data>
+  <data name="Col_Type" xml:space="preserve"><value>Tipo</value></data>
+  <data name="Col_Unrealized" xml:space="preserve"><value>Ganho/perda não realizado</value></data>
+  <data name="Col_Updated" xml:space="preserve"><value>Atualizados</value></data>
+  <data name="Col_Value" xml:space="preserve"><value>Valor atual</value></data>
+  <data name="Col_Withheld" xml:space="preserve"><value>Imposto retido</value></data>
+  <data name="Col_YieldOnCost" xml:space="preserve"><value>Yield sobre custo</value></data>
+  <data name="Common_Account" xml:space="preserve"><value>Conta</value></data>
+  <data name="Common_AllAccounts" xml:space="preserve"><value>Todas as contas</value></data>
+  <data name="Common_Failed" xml:space="preserve"><value>Falhou</value></data>
+  <data name="Common_Loading" xml:space="preserve"><value>A carregar…</value></data>
+  <data name="Common_No" xml:space="preserve"><value>Não</value></data>
+  <data name="Common_Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="Common_TryAgain" xml:space="preserve"><value>Tentar de novo</value></data>
+  <data name="Common_Year" xml:space="preserve"><value>Ano</value></data>
+  <data name="Common_Yes" xml:space="preserve"><value>Sim</value></data>
+  <data name="Country_AT" xml:space="preserve"><value>Áustria</value></data>
+  <data name="Country_AU" xml:space="preserve"><value>Austrália</value></data>
+  <data name="Country_BE" xml:space="preserve"><value>Bélgica</value></data>
+  <data name="Country_BM" xml:space="preserve"><value>Bermudas</value></data>
+  <data name="Country_BR" xml:space="preserve"><value>Brasil</value></data>
+  <data name="Country_CA" xml:space="preserve"><value>Canadá</value></data>
+  <data name="Country_CH" xml:space="preserve"><value>Suíça</value></data>
+  <data name="Country_CN" xml:space="preserve"><value>China</value></data>
+  <data name="Country_DE" xml:space="preserve"><value>Alemanha</value></data>
+  <data name="Country_DK" xml:space="preserve"><value>Dinamarca</value></data>
+  <data name="Country_ES" xml:space="preserve"><value>Espanha</value></data>
+  <data name="Country_FI" xml:space="preserve"><value>Finlândia</value></data>
+  <data name="Country_FR" xml:space="preserve"><value>França</value></data>
+  <data name="Country_GB" xml:space="preserve"><value>Reino Unido</value></data>
+  <data name="Country_GG" xml:space="preserve"><value>Guernsey</value></data>
+  <data name="Country_HK" xml:space="preserve"><value>Hong Kong</value></data>
+  <data name="Country_IE" xml:space="preserve"><value>Irlanda</value></data>
+  <data name="Country_IL" xml:space="preserve"><value>Israel</value></data>
+  <data name="Country_IM" xml:space="preserve"><value>Ilha de Man</value></data>
+  <data name="Country_IT" xml:space="preserve"><value>Itália</value></data>
+  <data name="Country_JE" xml:space="preserve"><value>Jersey</value></data>
+  <data name="Country_JP" xml:space="preserve"><value>Japão</value></data>
+  <data name="Country_KY" xml:space="preserve"><value>Ilhas Caimão</value></data>
+  <data name="Country_LU" xml:space="preserve"><value>Luxemburgo</value></data>
+  <data name="Country_NL" xml:space="preserve"><value>Países Baixos</value></data>
+  <data name="Country_NO" xml:space="preserve"><value>Noruega</value></data>
+  <data name="Country_PA" xml:space="preserve"><value>Panamá</value></data>
+  <data name="Country_PT" xml:space="preserve"><value>Portugal</value></data>
+  <data name="Country_SE" xml:space="preserve"><value>Suécia</value></data>
+  <data name="Country_SG" xml:space="preserve"><value>Singapura</value></data>
+  <data name="Country_US" xml:space="preserve"><value>Estados Unidos</value></data>
+  <data name="Country_VG" xml:space="preserve"><value>Ilhas Virgens Britânicas</value></data>
+  <data name="Country_XS" xml:space="preserve"><value>Internacional (XS)</value></data>
+  <data name="Dividends_Empty" xml:space="preserve"><value>Ainda não há dividendos. Sincronize ou importe um relatório CSV.</value></data>
+  <data name="Dividends_Payments" xml:space="preserve"><value>Pagamentos</value></data>
+  <data name="Dividends_Subtitle" xml:space="preserve"><value>Todos os pagamentos, por ano, mês, país e moeda</value></data>
+  <data name="Dividends_WithheldNote" xml:space="preserve"><value>O imposto retido vem só dos relatórios CSV; a API não o dá.</value></data>
+  <data name="Error_PageFailed" xml:space="preserve"><value>Não foi possível carregar esta página.</value></data>
+  <data name="Error_Text" xml:space="preserve"><value>Ocorreu um erro ao processar o pedido.</value></data>
+  <data name="Error_Title" xml:space="preserve"><value>Algo correu mal</value></data>
+  <data name="Grid_ClearFilter" xml:space="preserve"><value>Limpar</value></data>
+  <data name="Grid_Empty" xml:space="preserve"><value>Ainda não há nada aqui.</value></data>
+  <data name="Grid_Export" xml:space="preserve"><value>Exportar</value></data>
+  <data name="Grid_FirstPage" xml:space="preserve"><value>Primeira página</value></data>
+  <data name="Grid_LastPage" xml:space="preserve"><value>Última página</value></data>
+  <data name="Grid_NextPage" xml:space="preserve"><value>Página seguinte</value></data>
+  <data name="Grid_NoMatches" xml:space="preserve"><value>Nenhuma linha corresponde à pesquisa ou aos filtros.</value></data>
+  <data name="Grid_OfTotal" xml:space="preserve"><value>(filtradas de {0})</value></data>
+  <data name="Grid_PageSize" xml:space="preserve"><value>Linhas por página</value></data>
+  <data name="Grid_Pages" xml:space="preserve"><value>Páginas</value></data>
+  <data name="Grid_PerPage" xml:space="preserve"><value>{0} por página</value></data>
+  <data name="Grid_PreviousPage" xml:space="preserve"><value>Página anterior</value></data>
+  <data name="Grid_Reset" xml:space="preserve"><value>Repor</value></data>
+  <data name="Grid_Search" xml:space="preserve"><value>Pesquisar</value></data>
+  <data name="Grid_Showing" xml:space="preserve"><value>{0}–{1} de {2}</value></data>
+  <data name="Grid_SortBy" xml:space="preserve"><value>Ordenar por</value></data>
+  <data name="Grid_SortDirection" xml:space="preserve"><value>Sentido da ordenação</value></data>
+  <data name="Grid_Summaries" xml:space="preserve"><value>Totais</value></data>
+  <data name="Grid_Summary_Avg" xml:space="preserve"><value>Média</value></data>
+  <data name="Grid_Summary_Count" xml:space="preserve"><value>Contagem</value></data>
+  <data name="Grid_Summary_Max" xml:space="preserve"><value>Máx.</value></data>
+  <data name="Grid_Summary_Min" xml:space="preserve"><value>Mín.</value></data>
+  <data name="Grid_Summary_Sum" xml:space="preserve"><value>Soma</value></data>
+  <data name="Import_Cash" xml:space="preserve"><value>Movimentos de dinheiro: {0} novos, {1} já conhecidos</value></data>
+  <data name="Import_Dividends" xml:space="preserve"><value>Dividendos: {0} novos, {1} já conhecidos</value></data>
+  <data name="Import_Failed" xml:space="preserve"><value>A importação falhou. Veja o registo do servidor.</value></data>
+  <data name="Import_LineError" xml:space="preserve"><value>Linha {0}: {1}</value></data>
+  <data name="Import_NoAccount" xml:space="preserve"><value>Não há nenhuma conta configurada.</value></data>
+  <data name="Import_NotAReport" xml:space="preserve"><value>Isto não é um relatório CSV da Trading 212.</value></data>
+  <data name="Import_OrdersSkipped" xml:space="preserve"><value>Compras e vendas ignoradas: {0} (as ordens vêm da API)</value></data>
+  <data name="Import_OtherSkipped" xml:space="preserve"><value>Outras linhas ignoradas:</value></data>
+  <data name="Import_Step1" xml:space="preserve"><value>Na app da Trading 212: &lt;strong&gt;Histórico → Exportar&lt;/strong&gt;, no máximo um ano por relatório, com dividendos, juros e transações.</value></data>
+  <data name="Import_Step2" xml:space="preserve"><value>Escolha todos os relatórios de uma vez; períodos sobrepostos não são problema.</value></data>
+  <data name="Import_Step3" xml:space="preserve"><value>Veja abaixo o resultado de cada ficheiro.</value></data>
+  <data name="Import_Subtitle" xml:space="preserve"><value>Acrescenta o imposto retido em cada dividendo (a API não o dá) e preenche falhas no histórico da API. Importar o mesmo ficheiro duas vezes não muda nada.</value></data>
+  <data name="Import_Summary" xml:space="preserve"><value>{0} ficheiros: {1} dividendos novos ({2} já conhecidos), {3} movimentos novos ({4} já conhecidos).</value></data>
+  <data name="Import_Title" xml:space="preserve"><value>Importar relatórios CSV</value></data>
+  <data name="Import_TooMany" xml:space="preserve"><value>Escolha no máximo {0} ficheiros de cada vez.</value></data>
+  <data name="Income_NotHeld" xml:space="preserve"><value>Não está em carteira</value></data>
+  <data name="Income_SharesHeld" xml:space="preserve"><value>{0} ações em carteira</value></data>
+  <data name="Income_Subtitle" xml:space="preserve"><value>O que cada ativo já lhe pagou. Escolha um para ver o histórico.</value></data>
+  <data name="Language_Label" xml:space="preserve"><value>Língua</value></data>
+  <data name="Nav_Cash" xml:space="preserve"><value>Movimentos de dinheiro</value></data>
+  <data name="Nav_Data" xml:space="preserve"><value>Dados</value></data>
+  <data name="Nav_Dividends" xml:space="preserve"><value>Dividendos</value></data>
+  <data name="Nav_Import" xml:space="preserve"><value>Importar CSV</value></data>
+  <data name="Nav_Income" xml:space="preserve"><value>Rendimento por ativo</value></data>
+  <data name="Nav_Menu" xml:space="preserve"><value>Menu</value></data>
+  <data name="Nav_Orders" xml:space="preserve"><value>Ordens</value></data>
+  <data name="Nav_Overview" xml:space="preserve"><value>Visão geral</value></data>
+  <data name="Nav_Positions" xml:space="preserve"><value>Posições</value></data>
+  <data name="Nav_SyncLog" xml:space="preserve"><value>Registo de sincronização</value></data>
+  <data name="NotFound_Text" xml:space="preserve"><value>A página que procura não existe.</value></data>
+  <data name="NotFound_Title" xml:space="preserve"><value>Página não encontrada</value></data>
+  <data name="Order_Buy" xml:space="preserve"><value>Compra</value></data>
+  <data name="Order_Sell" xml:space="preserve"><value>Venda</value></data>
+  <data name="Orders_Empty" xml:space="preserve"><value>Ainda não há ordens. Chegam com a sincronização.</value></data>
+  <data name="Orders_Subtitle" xml:space="preserve"><value>Compras e vendas, com custos e ganhos realizados</value></data>
+  <data name="Overview_NoData" xml:space="preserve"><value>Ainda não há dividendos. Sincronize, ou importe os relatórios CSV da Trading 212.</value></data>
+  <data name="Overview_Subtitle" xml:space="preserve"><value>Rendimento de dividendos em {0}</value></data>
+  <data name="Positions_Count" xml:space="preserve"><value>{0} posições</value></data>
+  <data name="Positions_Empty" xml:space="preserve"><value>Ainda não há posições. Chegam com a primeira sincronização.</value></data>
+  <data name="Positions_Note" xml:space="preserve"><value>Os yields usam os dividendos líquidos dos últimos 12 meses. A estimativa para os próximos 12 meses assume que cada ativo paga por ação o mesmo que nos últimos 12.</value></data>
+  <data name="Positions_SnapshotOf" xml:space="preserve"><value>Posições abertas em {0}</value></data>
+  <data name="Positions_Subtitle" xml:space="preserve"><value>Posições abertas da última fotografia</value></data>
+  <data name="Positions_YieldOnCost" xml:space="preserve"><value>Yield sobre custo {0}</value></data>
+  <data name="Reconnect_Failed" xml:space="preserve"><value>Não foi possível ligar. Tente de novo ou recarregue a página.</value></data>
+  <data name="Reconnect_Paused" xml:space="preserve"><value>A sessão foi pausada pelo servidor.</value></data>
+  <data name="Reconnect_Rejoining" xml:space="preserve"><value>A ligar de novo ao servidor…</value></data>
+  <data name="Reconnect_Resume" xml:space="preserve"><value>Retomar</value></data>
+  <data name="Reconnect_ResumeFailed" xml:space="preserve"><value>Não foi possível retomar a sessão. Tente de novo ou recarregue a página.</value></data>
+  <data name="Reconnect_Retry" xml:space="preserve"><value>Tentar de novo</value></data>
+  <data name="Reconnect_RetryIn" xml:space="preserve"><value>Não foi possível ligar. Nova tentativa dentro de</value></data>
+  <data name="Source_Api" xml:space="preserve"><value>API</value></data>
+  <data name="Source_Both" xml:space="preserve"><value>API + CSV</value></data>
+  <data name="Source_Csv" xml:space="preserve"><value>CSV</value></data>
+  <data name="Stat_AllTime" xml:space="preserve"><value>Desde sempre</value></data>
+  <data name="Stat_Forward" xml:space="preserve"><value>Próximos 12 meses (estimativa)</value></data>
+  <data name="Stat_ForwardHint" xml:space="preserve"><value>Últimos 12 meses por ação × ações em carteira hoje</value></data>
+  <data name="Stat_Last12Months" xml:space="preserve"><value>Últimos 12 meses</value></data>
+  <data name="Stat_Payments" xml:space="preserve"><value>{0} pagamentos</value></data>
+  <data name="Stat_PortfolioValue" xml:space="preserve"><value>Valor da carteira</value></data>
+  <data name="Stat_ThisYear" xml:space="preserve"><value>{0} até agora</value></data>
+  <data name="Stat_Unrealized" xml:space="preserve"><value>Não realizado {0}</value></data>
+  <data name="Stat_VsPrevious12" xml:space="preserve"><value>face aos 12 meses anteriores</value></data>
+  <data name="Stat_VsSamePeriod" xml:space="preserve"><value>face ao mesmo período do ano passado</value></data>
+  <data name="Stat_YieldOnCost" xml:space="preserve"><value>Yield sobre custo</value></data>
+  <data name="Stat_YieldOnCostHint" xml:space="preserve"><value>Últimos 12 meses das posições atuais ÷ investido</value></data>
+  <data name="SyncJob_Dividends" xml:space="preserve"><value>Dividendos</value></data>
+  <data name="SyncJob_Instruments" xml:space="preserve"><value>Instrumentos</value></data>
+  <data name="SyncJob_Orders" xml:space="preserve"><value>Ordens</value></data>
+  <data name="SyncJob_Snapshot" xml:space="preserve"><value>Fotografia diária</value></data>
+  <data name="SyncJob_Transactions" xml:space="preserve"><value>Movimentos de dinheiro</value></data>
+  <data name="SyncLog_Empty" xml:space="preserve"><value>Ainda não correu nenhuma sincronização.</value></data>
+  <data name="SyncLog_Subtitle" xml:space="preserve"><value>Cada sincronização lê a conta e as posições, depois o histórico, do mais recente para trás, até uma página não trazer nada de novo. Use "Histórico completo" quando a Trading 212 corrigir histórico em falta.</value></data>
+  <data name="Sync_FullHistory" xml:space="preserve"><value>Histórico completo</value></data>
+  <data name="Sync_FullHistoryHint" xml:space="preserve"><value>Lê o histórico todo outra vez, em vez de parar na primeira página já conhecida</value></data>
+  <data name="Sync_Last" xml:space="preserve"><value>Última sincronização {0}</value></data>
+  <data name="Sync_Now" xml:space="preserve"><value>Sincronizar</value></data>
+  <data name="Sync_Running" xml:space="preserve"><value>A sincronizar</value></data>
+  <data name="Theme_Auto" xml:space="preserve"><value>Igual ao sistema</value></data>
+  <data name="Theme_Dark" xml:space="preserve"><value>Escuro</value></data>
+  <data name="Theme_Label" xml:space="preserve"><value>Tema</value></data>
+  <data name="Theme_Light" xml:space="preserve"><value>Claro</value></data>
+</root>

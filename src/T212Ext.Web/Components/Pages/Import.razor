@@ -2,41 +2,53 @@
 @using Arisoul.T212Ext.Core.Import
 @inject OverviewQueries Overview
 @inject CsvImportService ImportService
+@inject IStringLocalizer<SharedResource> L
 @inject ILogger<Import> Logger
 
-<PageTitle>Import CSV · T212Ext</PageTitle>
+<PageTitle>@L["Nav_Import"] · T212Ext</PageTitle>
 
-<h1 class="h3 mb-3">Import CSV reports</h1>
+<div class="page-header">
+    <div class="me-auto">
+        <h1>@L["Import_Title"]</h1>
+        <p>@L["Import_Subtitle"]</p>
+    </div>
+</div>
 
-<p>
-    In the Trading 212 app: <strong>Menu → History → Export</strong>, pick the period (one year at most per
-    report), and include dividends, interest and transactions. Choose all the reports at once; overlapping
-    periods are fine. Importing adds the tax withheld on each dividend (the API does not give it) and fills
-    gaps the API leaves. Importing the same file twice changes nothing.
-</p>
+<div class="card mb-3">
+    <div class="card-body">
+        <ol class="mb-3 ps-3">
+            <li>@((MarkupString)L["Import_Step1"].Value)</li>
+            <li>@L["Import_Step2"]</li>
+            <li>@L["Import_Step3"]</li>
+        </ol>
 
-@if (_accounts.Count == 0)
-{
-    <div class="alert alert-info">No account is configured.</div>
-}
-else
-{
-    <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
-        <select class="form-select w-auto" aria-label="Account" @bind="_accountId" disabled="@_busy">
-            @foreach (var account in _accounts)
-            {
-                <option value="@account.Id">@account.Name</option>
-            }
-        </select>
-        <InputFile class="form-control flex-grow-1" style="min-width: 0; max-width: 28rem" accept=".csv" multiple
-                   OnChange="OnFilesChosen" disabled="@_busy" />
-        @if (_busy)
+        @if (_accounts.Count == 0)
         {
-            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-            <span class="small text-body-secondary">@_progress</span>
+            <div class="alert alert-info mb-0">@L["Import_NoAccount"]</div>
+        }
+        else
+        {
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                @if (_accounts.Count > 1)
+                {
+                    <select class="form-select form-select-sm w-auto" aria-label="@L["Common_Account"]" @bind="_accountId" disabled="@_busy">
+                        @foreach (var account in _accounts)
+                        {
+                            <option value="@account.Id">@account.Name</option>
+                        }
+                    </select>
+                }
+                <InputFile class="form-control form-control-sm flex-grow-1" style="min-width: 0; max-width: 28rem" accept=".csv" multiple
+                           OnChange="OnFilesChosen" disabled="@_busy" />
+                @if (_busy)
+                {
+                    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                    <span class="small text-body-secondary">@_progress</span>
+                }
+            </div>
         }
     </div>
-}
+</div>
 
 @if (_error is not null)
 {
@@ -46,15 +58,15 @@ else
 @if (_results.Count > 1)
 {
     <div class="alert alert-success">
-        @_results.Count files: @_results.Sum(r => r.Result?.DividendsAdded ?? 0) new dividends,
-        @_results.Sum(r => r.Result?.TransactionsAdded ?? 0) new cash movements.
+        @string.Format(L["Import_Summary"], _results.Count, _results.Sum(r => r.Result?.DividendsAdded ?? 0), _results.Sum(r => r.Result?.DividendsMatched ?? 0),
+            _results.Sum(r => r.Result?.TransactionsAdded ?? 0), _results.Sum(r => r.Result?.TransactionsMatched ?? 0))
     </div>
 }
 
 @foreach (var (fileName, result, error) in _results)
 {
     <div class="card mb-3">
-        <div class="card-header">@fileName</div>
+        <div class="card-header"><i class="bi bi-filetype-csv me-1"></i>@fileName</div>
         @if (error is not null)
         {
             <div class="card-body text-danger">@error</div>
@@ -62,18 +74,16 @@ else
         else if (result is not null)
         {
             <ul class="list-group list-group-flush">
-                <li class="list-group-item">Dividends: @result.DividendsAdded new, @result.DividendsMatched already known</li>
-                <li class="list-group-item">Cash movements: @result.TransactionsAdded new, @result.TransactionsMatched already known</li>
-                <li class="list-group-item">Buys and sells skipped: @result.OrdersSkipped (orders come from the API)</li>
+                <li class="list-group-item">@string.Format(L["Import_Dividends"], result.DividendsAdded, result.DividendsMatched)</li>
+                <li class="list-group-item">@string.Format(L["Import_Cash"], result.TransactionsAdded, result.TransactionsMatched)</li>
+                <li class="list-group-item">@string.Format(L["Import_OrdersSkipped"], result.OrdersSkipped)</li>
                 @if (result.OtherSkipped.Count > 0)
                 {
-                    <li class="list-group-item">
-                        Other lines skipped: @string.Join(", ", result.OtherSkipped.Select(o => $"{o.Key} ({o.Value})"))
-                    </li>
+                    <li class="list-group-item">@L["Import_OtherSkipped"] @string.Join(", ", result.OtherSkipped.Select(o => $"{o.Key} ({o.Value})"))</li>
                 }
                 @foreach (var line in result.Errors)
                 {
-                    <li class="list-group-item list-group-item-warning">Line @line.LineNumber: @line.Message</li>
+                    <li class="list-group-item list-group-item-warning">@string.Format(L["Import_LineError"], line.LineNumber, line.Message)</li>
                 }
             </ul>
         }
@@ -107,15 +117,14 @@ else
         {
             if (e.FileCount > MaxFiles)
             {
-                _error = $"Choose at most {MaxFiles} files at a time.";
+                _error = string.Format(L["Import_TooMany"], MaxFiles);
                 return;
             }
 
-            // Oldest period first reads naturally in the results; the import itself does not depend on order.
             var files = e.GetMultipleFiles(MaxFiles).OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase).ToList();
             for (var i = 0; i < files.Count; i++)
             {
-                _progress = $"{i + 1} of {files.Count}: {files[i].Name}";
+                _progress = $"{i + 1} / {files.Count}: {files[i].Name}";
                 StateHasChanged();
                 _results.Add(await ImportAsync(files[i]));
             }
@@ -139,14 +148,18 @@ else
 
             return (file.Name, await ImportService.ImportAsync(_accountId, buffer), null);
         }
-        catch (Exception ex) when (ex is FormatException or IOException)
+        catch (FormatException)
+        {
+            return (file.Name, null, L["Import_NotAReport"]);
+        }
+        catch (IOException ex)
         {
             return (file.Name, null, ex.Message);
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "CSV import of {File} failed", file.Name);
-            return (file.Name, null, "The import failed. See the server log for details.");
+            return (file.Name, null, L["Import_Failed"]);
         }
     }
 }
