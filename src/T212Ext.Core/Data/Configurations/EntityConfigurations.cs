@@ -49,6 +49,7 @@ internal sealed class DividendConfiguration : IEntityTypeConfiguration<Dividend>
     public void Configure(EntityTypeBuilder<Dividend> builder)
     {
         builder.Property(d => d.Reference).HasMaxLength(Lengths.Reference);
+        builder.Property(d => d.CsvReference).HasMaxLength(Lengths.Reference);
         builder.Property(d => d.Ticker).HasMaxLength(Lengths.Ticker);
         builder.Property(d => d.Isin).HasMaxLength(Lengths.Isin);
         builder.Property(d => d.InstrumentName).HasMaxLength(Lengths.Name);
@@ -60,6 +61,7 @@ internal sealed class DividendConfiguration : IEntityTypeConfiguration<Dividend>
         builder.HasIndex(d => new { d.AccountId, d.Reference }).IsUnique();
         builder.HasIndex(d => new { d.AccountId, d.PaidOn });
         builder.HasIndex(d => new { d.AccountId, d.Isin });
+        builder.HasIndex(d => new { d.AccountId, d.CsvReference });
     }
 }
 
@@ -99,11 +101,13 @@ internal sealed class CashTransactionConfiguration : IEntityTypeConfiguration<Ca
     public void Configure(EntityTypeBuilder<CashTransaction> builder)
     {
         builder.Property(t => t.Reference).HasMaxLength(Lengths.Reference);
+        builder.Property(t => t.CsvReference).HasMaxLength(Lengths.Reference);
         builder.Property(t => t.Type).HasMaxLength(Lengths.Code);
         builder.Property(t => t.Currency).HasMaxLength(Lengths.Currency);
         builder.HasOne(t => t.Account).WithMany().HasForeignKey(t => t.AccountId);
         builder.HasIndex(t => new { t.AccountId, t.Reference }).IsUnique();
         builder.HasIndex(t => new { t.AccountId, t.DateTime });
+        builder.HasIndex(t => new { t.AccountId, t.CsvReference });
     }
 }
 

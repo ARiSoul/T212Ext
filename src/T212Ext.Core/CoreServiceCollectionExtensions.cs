@@ -37,6 +37,8 @@ public static class CoreServiceCollectionExtensions
         services.AddScoped<CsvImportService>();
         services.AddScoped<DividendQueries>();
         services.AddScoped<OverviewQueries>();
+        services.AddScoped<AnalyticsQueries>();
+        services.AddScoped<LedgerQueries>();
 
         return services;
     }

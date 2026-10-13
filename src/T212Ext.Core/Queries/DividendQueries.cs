@@ -10,6 +10,7 @@ public sealed record DividendRow(
     DateTimeOffset PaidOn,
     string Ticker,
     string? InstrumentName,
+    string? Isin,
     string Type,
     decimal Quantity,
     decimal? GrossAmountPerShare,
@@ -35,10 +36,14 @@ public sealed record DividendSummary(
 /// <summary>Read side of dividends for the UI. Aggregation is done in memory: a lifetime of dividends is a few thousand rows.</summary>
 public sealed class DividendQueries(IDbContextFactory<T212ExtDbContext> dbFactory, TimeProvider time)
 {
-    public async Task<IReadOnlyList<DividendRow>> GetDividendsAsync(int? accountId, int? year, CancellationToken cancellationToken = default)
+    /// <param name="instrument">An ISIN or a ticker: only that instrument's dividends.</param>
+    public async Task<IReadOnlyList<DividendRow>> GetDividendsAsync(int? accountId, int? year, string? instrument = null, CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var query = db.Dividends.AsNoTracking().Where(d => accountId == null || d.AccountId == accountId);
+
+        if (!string.IsNullOrEmpty(instrument))
+            query = query.Where(d => d.Isin == instrument || d.Ticker == instrument);
 
         if (year is not null)
         {
@@ -50,7 +55,7 @@ public sealed class DividendQueries(IDbContextFactory<T212ExtDbContext> dbFactor
         return await query
             .OrderByDescending(d => d.PaidOn).ThenBy(d => d.Id)
             .Select(d => new DividendRow(
-                d.Id, d.Account!.Name, d.PaidOn, d.Ticker, d.InstrumentName, d.Type, d.Quantity, d.GrossAmountPerShare,
+                d.Id, d.Account!.Name, d.PaidOn, d.Ticker, d.InstrumentName, d.Isin, d.Type, d.Quantity, d.GrossAmountPerShare,
                 d.InstrumentCurrency, d.Amount, d.Currency, d.WithholdingTax, d.WithholdingTaxCurrency, d.Sources))
             .ToListAsync(cancellationToken);
     }

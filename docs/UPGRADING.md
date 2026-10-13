@@ -2,7 +2,7 @@
 
 Deploy steps for the versions that are not yet in production.
 
-**No production server yet.** T212Ext runs locally until phase 3 ([BACKLOG.md](BACKLOG.md#phase-3--deploy-next-to-traceon-22)). That phase adds the deploy command, `docs/DEPLOYMENT.md`, and the first section here.
+**No production server yet.** T212Ext runs locally until the deployment phase ([BACKLOG.md](BACKLOG.md#phase-4--deploy-next-to-traceon-23)). That phase adds the deploy command, `docs/DEPLOYMENT.md`, and the first section here.
 
 ## How this file works
 

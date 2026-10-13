@@ -1,0 +1,72 @@
+@page "/cash"
+@inherits AccountPage
+@inject LedgerQueries Ledger
+
+<PageTitle>@L["Nav_Cash"] · T212Ext</PageTitle>
+
+<div class="page-header">
+    <div class="me-auto">
+        <h1>@L["Nav_Cash"]</h1>
+        <p>@L["Cash_Subtitle"]</p>
+    </div>
+</div>
+
+@if (_rows is { Count: > 0 })
+{
+    <div class="row g-3 mb-3">
+        @foreach (var (type, icon) in Tiles)
+        {
+            var rows = _rows.Where(r => r.Type == type).ToList();
+            <div class="col-6 col-lg">
+                <Stat Icon="@icon" Label="@Labels.CashType(L, type)" Value="@Fmt.Money(rows.Sum(r => r.Amount), _currency)"
+                      Hint="@string.Format(L["Cash_Movements"], rows.Count)" />
+            </div>
+        }
+    </div>
+}
+
+<DataGrid TItem="CashRow" Items="_rows" Columns="Columns" StorageKey="cash" ExportFileName="cash-movements"
+          DefaultSortKey="date" DefaultSortDescending="true" DefaultSummaries="DefaultSummaries" EmptyText="@L["Cash_Empty"]" />
+
+@code {
+    private IReadOnlyList<CashRow>? _rows;
+    private string? _currency;
+
+    private static readonly (string Type, string Icon)[] Tiles =
+    [
+        (CashTransactionTypes.Deposit, "bi-box-arrow-in-down"),
+        (CashTransactionTypes.Withdraw, "bi-box-arrow-up"),
+        (CashTransactionTypes.InterestOnFreeCash, "bi-bank"),
+        (CashTransactionTypes.LendingInterest, "bi-arrow-left-right"),
+        (CashTransactionTypes.DividendAdjustment, "bi-receipt"),
+    ];
+
+    private static readonly IReadOnlyDictionary<string, SummaryKind[]> DefaultSummaries = new Dictionary<string, SummaryKind[]>
+    {
+        ["amount"] = [SummaryKind.Sum],
+    };
+
+    private IReadOnlyList<GridColumn<CashRow>> Columns => WithAccount([
+        new() { Key = "date", Title = L["Col_Date"], Value = r => r.DateTime, Text = r => Fmt.DateTime(r.DateTime), MobileTitle = true,
+                Filterable = true, FilterKey = r => r.DateTime.UtcDateTime.Year.ToString(), FilterValuesDescending = true },
+        new() { Key = "type", Title = L["Col_Type"], Value = r => Labels.CashType(L, r.Type), Filterable = true },
+        new() { Key = "amount", Title = L["Col_Amount"], Value = r => r.Amount, Text = r => Fmt.Money(r.Amount, r.Currency), AlignEnd = true,
+                Template = r => @<span class="@Fmt.SignClass(r.Amount)">@Fmt.Money(r.Amount, r.Currency)</span>,
+                Summaries = GridColumn<CashRow>.Numeric, SummaryText = n => Fmt.Money(n, _currency) },
+        new() { Key = "source", Title = L["Col_Source"], Value = r => Labels.Sources(L, r.Sources), Filterable = true, HideBelow = "lg", HideOnMobile = true },
+        new() { Key = "reference", Title = L["Col_Reference"], Value = r => r.Reference, HideBelow = "xl", HideOnMobile = true, Sortable = false },
+    ]);
+
+    private List<GridColumn<CashRow>> WithAccount(List<GridColumn<CashRow>> columns)
+    {
+        if (SeveralAccounts)
+            columns.Insert(2, new() { Key = "account", Title = L["Common_Account"], Value = r => r.AccountName, Filterable = true, HideBelow = "lg" });
+        return columns;
+    }
+
+    protected override async Task LoadAsync()
+    {
+        _rows = await Ledger.GetCashAsync(AccountId);
+        _currency = _rows.GroupBy(r => r.Currency).OrderByDescending(g => g.Count()).Select(g => g.Key).FirstOrDefault();
+    }
+}

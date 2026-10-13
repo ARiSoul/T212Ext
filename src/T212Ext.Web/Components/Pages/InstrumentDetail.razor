@@ -1,0 +1,123 @@
+@page "/income/{Instrument}"
+@inherits AccountPage
+@inject AnalyticsQueries Analytics
+@inject DividendQueries DividendQueries
+
+<PageTitle>@Title · T212Ext</PageTitle>
+
+<div class="page-header">
+    <div class="me-auto">
+        <a class="small text-decoration-none" href="income"><i class="bi bi-arrow-left"></i> @L["Nav_Income"]</a>
+        <h1 class="mt-1">@Title</h1>
+        @if (_income is not null)
+        {
+            <p>@_income.Ticker@(_income.Isin is null ? "" : $" · {_income.Isin}")@(_income.Country is null ? "" : $" · {Labels.Country(L, _income.Country)}")</p>
+        }
+    </div>
+</div>
+
+@if (_income is not null)
+{
+    var currency = _dashboard!.Currency;
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-lg-3"><Stat Icon="bi-collection" Label="@L["Col_Total"]" Value="@Fmt.Money(_income.Total, currency)" Hint="@string.Format(L["Stat_Payments"], _income.Count)" /></div>
+        <div class="col-6 col-lg-3"><Stat Icon="bi-calendar3" Label="@L["Stat_Last12Months"]" Value="@Fmt.Money(_income.Last12Months, currency)" /></div>
+        <div class="col-6 col-lg-3"><Stat Icon="bi-percent" Label="@L["Stat_YieldOnCost"]" Value="@Fmt.Percent(_position?.YieldOnCost)"
+                                         Hint="@(_position is null ? L["Income_NotHeld"] : string.Format(L["Income_SharesHeld"], Fmt.Number(_position.Quantity)))" /></div>
+        <div class="col-6 col-lg-3"><Stat Icon="bi-graph-up-arrow" Label="@L["Stat_Forward"]" Value="@Fmt.Money(_position?.ForwardEstimate ?? 0, currency)" Hint="@L["Stat_ForwardHint"]" /></div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-12 col-xl-6">
+            <ThemedChart Title="@L["Chart_PaymentsOverTime"]">
+                <ApexChart TItem="DividendRow" Options="PaymentOptions(context, currency)" Height="280">
+                    <ApexPointSeries TItem="DividendRow" Items="_chronological" Name="@L["Col_Net"]" SeriesType="SeriesType.Bar"
+                                     XValue="r => r.PaidOn.UtcDateTime" YValue="r => r.Amount" />
+                </ApexChart>
+            </ThemedChart>
+        </div>
+        <div class="col-12 col-xl-6">
+            <ThemedChart Title="@L["Chart_GrossPerShare"]" IsEmpty="_chronological.All(r => r.GrossAmountPerShare is null)" EmptyText="@L["Chart_NoData"]">
+                <ApexChart TItem="DividendRow" Options="PerShareOptions(context)" Height="280">
+                    <ApexPointSeries TItem="DividendRow" Items="_chronological.Where(r => r.GrossAmountPerShare is not null)" Name="@L["Col_GrossPerShare"]" SeriesType="SeriesType.Line"
+                                     XValue="r => r.PaidOn.UtcDateTime" YValue="r => r.GrossAmountPerShare" />
+                </ApexChart>
+            </ThemedChart>
+        </div>
+    </div>
+}
+
+<DataGrid TItem="DividendRow" Items="_rows" Columns="Columns" StorageKey="instrument-payments" ExportFileName="@($"dividends-{Instrument}")"
+          DefaultSortKey="paid" DefaultSortDescending="true" DefaultSummaries="DefaultSummaries" />
+
+@code {
+    /// <summary>The instrument's ISIN, or its ticker when it has none.</summary>
+    [Parameter] public string Instrument { get; set; } = "";
+
+    private DividendDashboard? _dashboard;
+    private InstrumentIncome? _income;
+    private PositionIncome? _position;
+    private IReadOnlyList<DividendRow>? _rows;
+    private IReadOnlyList<DividendRow> _chronological = [];
+
+    private string Title => _income?.Name ?? _income?.Ticker ?? Instrument;
+
+    private static readonly IReadOnlyDictionary<string, SummaryKind[]> DefaultSummaries = new Dictionary<string, SummaryKind[]>
+    {
+        ["net"] = [SummaryKind.Sum],
+    };
+
+    private IReadOnlyList<GridColumn<DividendRow>> Columns => [
+        new() { Key = "paid", Title = L["Col_Paid"], Value = r => r.PaidOn, Text = r => Fmt.Date(r.PaidOn), MobileTitle = true,
+                Filterable = true, FilterKey = r => r.PaidOn.UtcDateTime.Year.ToString(), FilterValuesDescending = true },
+        new() { Key = "type", Title = L["Col_Type"], Value = r => Labels.Humanize(r.Type), Filterable = true, HideBelow = "lg" },
+        new() { Key = "shares", Title = L["Col_Shares"], Value = r => r.Quantity, Text = r => Fmt.Number(r.Quantity), AlignEnd = true },
+        new() { Key = "gross", Title = L["Col_GrossPerShare"], Value = r => r.GrossAmountPerShare,
+                Text = r => r.GrossAmountPerShare is null ? "—" : $"{Fmt.Number(r.GrossAmountPerShare)} {r.InstrumentCurrency}", AlignEnd = true },
+        new() { Key = "withheld", Title = L["Col_Withheld"], Value = r => r.WithholdingTax,
+                Text = r => r.WithholdingTax is null ? "—" : $"{Fmt.Number(r.WithholdingTax)} {r.WithholdingTaxCurrency}", AlignEnd = true,
+                Summaries = GridColumn<DividendRow>.Numeric, SummaryText = n => Fmt.Number(Math.Round(n, 2)) },
+        new() { Key = "net", Title = L["Col_Net"], Value = r => r.Amount, Text = r => Fmt.Money(r.Amount, r.Currency), AlignEnd = true,
+                Summaries = GridColumn<DividendRow>.Numeric, SummaryText = n => Fmt.Money(n, _dashboard?.Currency) },
+    ];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (AccountContext.IsReady && _rows is not null)
+            await ReloadAsync();
+    }
+
+    protected override async Task LoadAsync()
+    {
+        _dashboard = await Analytics.GetDashboardAsync(AccountId);
+        _income = _dashboard?.Instruments.FirstOrDefault(i => i.Isin == Instrument || i.Ticker == Instrument);
+        _position = _dashboard?.Positions.FirstOrDefault(p => (p.Isin is not null && p.Isin == _income?.Isin) || p.Ticker == _income?.Ticker);
+        _rows = await DividendQueries.GetDividendsAsync(AccountId, null, Instrument);
+        _chronological = [.. _rows.OrderBy(r => r.PaidOn)];
+    }
+
+    private static ApexChartOptions<DividendRow> PaymentOptions(bool dark, string currency)
+    {
+        var options = ChartStyle.Base<DividendRow>(dark);
+        options.PlotOptions = ChartStyle.Bars(width: "60%");
+        options.Legend = new Legend { Show = false };
+        options.Xaxis = new XAxis { Type = XAxisType.Datetime };
+        options.Yaxis = [new YAxis { Labels = new YAxisLabels { Formatter = ChartStyle.Money(currency) } }];
+        options.Tooltip.X = new TooltipX { Format = "dd MMM yyyy" };
+        options.Tooltip.Y = new TooltipY { Formatter = ChartStyle.Money(currency) };
+        return options;
+    }
+
+    private ApexChartOptions<DividendRow> PerShareOptions(bool dark)
+    {
+        var options = ChartStyle.Base<DividendRow>(dark);
+        options.Colors = [ChartStyle.Series(1, dark)];
+        options.Legend = new Legend { Show = false };
+        options.Stroke = new Stroke { Width = 2, Curve = Curve.Stepline };
+        options.Markers = new Markers { Size = 4, StrokeWidth = 2, StrokeColors = ChartStyle.Surface(dark) };
+        options.Xaxis = new XAxis { Type = XAxisType.Datetime };
+        options.Tooltip.X = new TooltipX { Format = "dd MMM yyyy" };
+        options.Tooltip.Y = new TooltipY { Formatter = ChartStyle.Money(_income?.InstrumentCurrency ?? "") };
+        return options;
+    }
+}

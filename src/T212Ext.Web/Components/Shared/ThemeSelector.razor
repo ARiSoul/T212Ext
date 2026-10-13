@@ -1,0 +1,28 @@
+@implements IDisposable
+@inject IStringLocalizer<SharedResource> L
+@inject ThemeService Theme
+
+<div class="btn-group" role="group" aria-label="@L["Theme_Label"]">
+    @foreach (var (choice, icon, label) in Choices)
+    {
+        <button type="button" class="btn btn-sm @(Theme.Choice == choice ? "btn-primary" : "btn-outline-secondary")"
+                title="@L[label]" aria-label="@L[label]" aria-pressed="@(Theme.Choice == choice)" @onclick="() => Theme.SetAsync(choice)">
+            <i class="bi @icon" aria-hidden="true"></i>
+        </button>
+    }
+</div>
+
+@code {
+    private static readonly (ThemeChoice Choice, string Icon, string Label)[] Choices =
+    [
+        (ThemeChoice.Light, "bi-sun", "Theme_Light"),
+        (ThemeChoice.Dark, "bi-moon-stars", "Theme_Dark"),
+        (ThemeChoice.Auto, "bi-circle-half", "Theme_Auto"),
+    ];
+
+    protected override void OnInitialized() => Theme.Changed += OnChanged;
+
+    private void OnChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Theme.Changed -= OnChanged;
+}

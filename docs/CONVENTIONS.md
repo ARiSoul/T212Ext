@@ -25,6 +25,8 @@ The rules every change follows, for people and for coding assistants. Each rule 
    - Every fix and every new rule gets a test that fails without it.
    - The whole suite passes before a PR is opened.
    - Tests never call Trading 212.
+   - Pure logic (analytics, grid engine) is tested without a database; `tests/T212Ext.Web.Tests` covers the web project's logic and the translations.
+   - A sandboxed tool (a coding assistant) may not reach the LocalDB instance another process started. It then uses its own instance through `T212EXT_TEST_SQL`, e.g. `Server=(localdb)\T212ExtClaude;...`.
 6. **Merge only with CI green** and the branch up to date with `main`. Docs-only PRs can merge at once.
 7. **Language:** code, comments, docs, commits and PRs are in English. The maintainer is addressed in European Portuguese.
 
@@ -68,10 +70,35 @@ The rules every change follows, for people and for coding assistants. Each rule 
 7. **Credentials are never stored in the database.** `BrokerAccount` holds only the configuration key, name, environment and what the API says about the account.
 8. **Text read from files is parsed with `CultureInfo.InvariantCulture`**, and synthetic references use invariant formatting.
    - *Why:* the server runs with `pt-PT`, where `0.48` would be read as 48.
+9. **A stored row absorbs one CSV row at most, and remembers it (`CsvReference`).** Matching by value only considers rows no CSV row has claimed.
+   - *Why:* share lending pays every day, often the same amount, and two days were once taken for one. *(2.1.0)*
 
 ## 4. App (`src/T212Ext.Web`)
 
-1. **Mobile first.** Every page works at 375 px wide and on desktop: Bootstrap breakpoints, `flex-wrap`, `table-responsive`, columns hidden with `d-none d-md-table-cell` rather than squeezed. Both widths are checked before the PR.
-2. **Pages read through the query classes** (`Core/Queries`), never through `DbContext` directly. Queries use `AsNoTracking`.
-3. **UI text is English for now; numbers and dates follow `Ui:Culture`** (`pt-PT` by default). Localisation is in the backlog.
-4. **Long work runs in the worker, not in a page.** A page asks `SyncCoordinator.Request` and listens to `StateChanged`.
+1. **Every text a person reads is translated.**
+   - It goes through `IStringLocalizer<SharedResource>` (`L["Key"]`), with the texts in `Resources/SharedResource.resx` (English), `.pt.resx` (European Portuguese) and `.es.resx` (Spanish).
+   - This includes `title`, `aria-*` and placeholders. Only logs are exempt.
+   - Every key exists in the three files with the same `{0}` placeholders; `LocalizationTests` checks it, and that every `L["Key"]` used exists.
+   - Codes from Trading 212 that have no translation go through `Labels.Humanize`, so new codes still read well.
+   - The language is a cookie set by `/language`; the page reloads to apply it. `/language` only redirects to local URLs.
+2. **Every list is a `DataGrid`** (`Components/Grid`), with search, filters, sorting, totals, paging and CSV export.
+   - Columns give a raw `Value` (for sorting and totals) and the `Text` shown.
+   - Filters go on columns with few distinct values (year, type, country, account).
+   - Totals cover every filtered row, not only the page.
+   - The filter, sort and totals logic lives in `GridEngine`, tested in `GridEngineTests`; the component only renders it.
+   - Each grid has its own `StorageKey`; its state is saved in the browser.
+3. **Colours come from the tokens in `wwwroot/app.css`** (`--app-*`), defined for light and dark. No hard-coded colours in components.
+   - The accent is the app's green, not Bootstrap's blue.
+   - Positive and negative amounts use `text-positive` and `text-negative`.
+4. **Charts use `ChartStyle` and `ThemedChart`.**
+   - Series colours come from the validated palette, in its fixed order (`ChartStyle.Series(slot)`). A series keeps its colour; it is never picked by rank.
+   - One y-axis per chart: two measures of different units are two charts.
+   - Every chart has its numbers in a tooltip and in a grid or table on the same page (some light colours are under 3:1 against white).
+   - `ThemedChart` waits for the theme and rebuilds the chart when it changes.
+5. **Mobile first.** Every page works at 375 px wide and on desktop.
+   - Grids switch to cards below `md`; table columns are hidden with `HideBelow`, not squeezed.
+   - No page scrolls sideways; wide tables scroll inside their card.
+   - Both widths are checked before the PR.
+6. **Pages read through the query classes** (`Core/Queries`), never through `DbContext` directly. Queries use `AsNoTracking`. Pages that depend on the chosen account inherit `AccountPage`.
+7. **No prerendering** (`App.razor`): pages load their data once, and JS interop (theme, saved grid state) works from the first render.
+8. **Long work runs in the worker, not in a page.** A page asks `SyncCoordinator.Request` and listens to `StateChanged`.

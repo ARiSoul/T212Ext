@@ -7,5 +7,6 @@
   <Folder Name="/tests/">
     <Project Path="tests/T212Ext.Client.Tests/T212Ext.Client.Tests.csproj" />
     <Project Path="tests/T212Ext.Core.Tests/T212Ext.Core.Tests.csproj" />
+    <Project Path="tests/T212Ext.Web.Tests/T212Ext.Web.Tests.csproj" />
   </Folder>
 </Solution>

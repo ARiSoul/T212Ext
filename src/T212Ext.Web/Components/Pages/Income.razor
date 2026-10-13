@@ -1,0 +1,76 @@
+@page "/income"
+@inherits AccountPage
+@inject AnalyticsQueries Analytics
+@inject NavigationManager Navigation
+
+<PageTitle>@L["Nav_Income"] · T212Ext</PageTitle>
+
+<div class="page-header">
+    <div class="me-auto">
+        <h1>@L["Nav_Income"]</h1>
+        <p>@L["Income_Subtitle"]</p>
+    </div>
+</div>
+
+@if (_dashboard is not null && _top.Count > 0)
+{
+    <div class="mb-3">
+        <ThemedChart Title="@L["Chart_TopPayersAllTime"]">
+            <ApexChart TItem="InstrumentIncome" Options="TopOptions(context)" Height="@(Math.Max(220, _top.Count * 34))" OnDataPointSelection="OpenFromChart">
+                <ApexPointSeries TItem="InstrumentIncome" Items="_top" Name="@L["Col_Total"]" SeriesType="SeriesType.Bar"
+                                 XValue="i => i.Name ?? i.Ticker" YValue="i => i.Total" />
+            </ApexChart>
+        </ThemedChart>
+    </div>
+}
+
+<DataGrid TItem="InstrumentIncome" Items="_dashboard?.Instruments ?? (Loading ? null : [])" Columns="Columns" StorageKey="income" ExportFileName="income-by-instrument"
+          DefaultSortKey="total" DefaultSortDescending="true" DefaultSummaries="DefaultSummaries" RowClick="Open" EmptyText="@L["Dividends_Empty"]" />
+
+@code {
+    private DividendDashboard? _dashboard;
+    private IReadOnlyList<InstrumentIncome> _top = [];
+
+    private static readonly IReadOnlyDictionary<string, SummaryKind[]> DefaultSummaries = new Dictionary<string, SummaryKind[]>
+    {
+        ["total"] = [SummaryKind.Sum],
+        ["last12"] = [SummaryKind.Sum],
+    };
+
+    private IReadOnlyList<GridColumn<InstrumentIncome>> Columns => [
+        new() { Key = "instrument", Title = L["Col_Instrument"], Value = i => i.Name ?? i.Ticker, MobileTitle = true },
+        new() { Key = "ticker", Title = L["Col_Ticker"], Value = i => i.Ticker, HideBelow = "lg" },
+        new() { Key = "country", Title = L["Col_Country"], Value = i => Labels.Country(L, i.Country), Filterable = true, HideBelow = "xl" },
+        new() { Key = "currency", Title = L["Col_Currency"], Value = i => i.InstrumentCurrency ?? "—", Filterable = true, HideBelow = "xl", HideOnMobile = true },
+        new() { Key = "held", Title = L["Col_Held"], Value = i => i.Held ? L["Common_Yes"].Value : L["Common_No"].Value, Filterable = true, HideBelow = "lg" },
+        new() { Key = "count", Title = L["Col_Payments"], Value = i => i.Count, AlignEnd = true, Summaries = GridColumn<InstrumentIncome>.Numeric, SummaryText = n => Fmt.Number(Math.Round(n, 1)) },
+        new() { Key = "last12", Title = L["Stat_Last12Months"], Value = i => i.Last12Months, Text = i => Fmt.Money(i.Last12Months, _dashboard?.Currency), AlignEnd = true,
+                Summaries = GridColumn<InstrumentIncome>.Numeric, SummaryText = n => Fmt.Money(n, _dashboard?.Currency) },
+        new() { Key = "total", Title = L["Col_Total"], Value = i => i.Total, Text = i => Fmt.Money(i.Total, _dashboard?.Currency), AlignEnd = true,
+                Summaries = GridColumn<InstrumentIncome>.Numeric, SummaryText = n => Fmt.Money(n, _dashboard?.Currency) },
+        new() { Key = "share", Title = L["Col_Share"], Value = i => i.ShareOfTotal, Text = i => Fmt.Percent(i.ShareOfTotal, 1), AlignEnd = true, HideBelow = "md" },
+        new() { Key = "first", Title = L["Col_FirstPaid"], Value = i => i.FirstPaid, Text = i => Fmt.Date(i.FirstPaid), HideBelow = "xl", HideOnMobile = true },
+        new() { Key = "last", Title = L["Col_LastPaid"], Value = i => i.LastPaid, Text = i => Fmt.Date(i.LastPaid), HideBelow = "lg" },
+    ];
+
+    protected override async Task LoadAsync()
+    {
+        _dashboard = await Analytics.GetDashboardAsync(AccountId);
+        _top = _dashboard?.Instruments.Take(10).ToList() ?? [];
+    }
+
+    private void Open(InstrumentIncome instrument) =>
+        Navigation.NavigateTo($"income/{Uri.EscapeDataString(instrument.Isin ?? instrument.Ticker)}");
+
+    private void OpenFromChart(SelectedData<InstrumentIncome> selected) => Open(selected.DataPoint.Items.First());
+
+    private ApexChartOptions<InstrumentIncome> TopOptions(bool dark)
+    {
+        var options = ChartStyle.Base<InstrumentIncome>(dark);
+        options.PlotOptions = ChartStyle.Bars(horizontal: true, width: "65%");
+        options.Legend = new Legend { Show = false };
+        options.Tooltip.Y = new TooltipY { Formatter = ChartStyle.Money(_dashboard!.Currency) };
+        options.Xaxis = new XAxis { Labels = new XAxisLabels { Formatter = ChartStyle.AxisNumber } };
+        return options;
+    }
+}

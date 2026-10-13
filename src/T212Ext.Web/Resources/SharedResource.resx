@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="CashType_DEPOSIT" xml:space="preserve"><value>Deposits</value></data>
+  <data name="CashType_DIVIDEND_ADJUSTMENT" xml:space="preserve"><value>Withholding tax refunds</value></data>
+  <data name="CashType_FEE" xml:space="preserve"><value>Fees</value></data>
+  <data name="CashType_INTEREST_ON_FREE_CASH" xml:space="preserve"><value>Interest on cash</value></data>
+  <data name="CashType_LENDING_INTEREST" xml:space="preserve"><value>Share lending</value></data>
+  <data name="CashType_TRANSFER" xml:space="preserve"><value>Transfers</value></data>
+  <data name="CashType_WITHDRAW" xml:space="preserve"><value>Withdrawals</value></data>
+  <data name="Cash_Empty" xml:space="preserve"><value>No cash movements yet.</value></data>
+  <data name="Cash_Movements" xml:space="preserve"><value>{0} movements</value></data>
+  <data name="Cash_Subtitle" xml:space="preserve"><value>Deposits, withdrawals, interest, share lending and tax refunds</value></data>
+  <data name="Chart_ByCountry" xml:space="preserve"><value>By country</value></data>
+  <data name="Chart_ByCurrency" xml:space="preserve"><value>By currency</value></data>
+  <data name="Chart_ByYear" xml:space="preserve"><value>Dividends per year</value></data>
+  <data name="Chart_Dividends" xml:space="preserve"><value>Dividends</value></data>
+  <data name="Chart_GrossPerShare" xml:space="preserve"><value>Gross dividend per share</value></data>
+  <data name="Chart_Interest" xml:space="preserve"><value>Interest</value></data>
+  <data name="Chart_Invested" xml:space="preserve"><value>Invested</value></data>
+  <data name="Chart_Lending" xml:space="preserve"><value>Share lending</value></data>
+  <data name="Chart_MonthlyIncome" xml:space="preserve"><value>Dividend income per month</value></data>
+  <data name="Chart_MovingAverage" xml:space="preserve"><value>12-month average</value></data>
+  <data name="Chart_NoData" xml:space="preserve"><value>No data yet.</value></data>
+  <data name="Chart_Other" xml:space="preserve"><value>Other</value></data>
+  <data name="Chart_PassiveIncome" xml:space="preserve"><value>Passive income, last 12 months</value></data>
+  <data name="Chart_PassiveTotal" xml:space="preserve"><value>Total: {0}</value></data>
+  <data name="Chart_PaymentsOverTime" xml:space="preserve"><value>Payments</value></data>
+  <data name="Chart_PortfolioValue" xml:space="preserve"><value>Portfolio value over time</value></data>
+  <data name="Chart_SnapshotsBuilding" xml:space="preserve"><value>A snapshot is taken on every sync, one per day. This chart fills in as they build up.</value></data>
+  <data name="Chart_TopPayers" xml:space="preserve"><value>Top payers, last 12 months</value></data>
+  <data name="Chart_TopPayersAllTime" xml:space="preserve"><value>Top 10 payers, all time</value></data>
+  <data name="Chart_Value" xml:space="preserve"><value>Value</value></data>
+  <data name="Chart_YearInProgress" xml:space="preserve"><value>year in progress</value></data>
+  <data name="Chart_YearVsYear" xml:space="preserve"><value>{0} vs {1}, by month</value></data>
+  <data name="Col_Added" xml:space="preserve"><value>Added</value></data>
+  <data name="Col_Amount" xml:space="preserve"><value>Amount</value></data>
+  <data name="Col_Cost" xml:space="preserve"><value>Invested</value></data>
+  <data name="Col_Country" xml:space="preserve"><value>Country</value></data>
+  <data name="Col_Currency" xml:space="preserve"><value>Currency</value></data>
+  <data name="Col_CurrentYield" xml:space="preserve"><value>Current yield</value></data>
+  <data name="Col_Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Col_Dividends12" xml:space="preserve"><value>Dividends (12 m)</value></data>
+  <data name="Col_Duration" xml:space="preserve"><value>Duration</value></data>
+  <data name="Col_Fees" xml:space="preserve"><value>Fees</value></data>
+  <data name="Col_FirstPaid" xml:space="preserve"><value>First payment</value></data>
+  <data name="Col_Forward" xml:space="preserve"><value>Next 12 m (est.)</value></data>
+  <data name="Col_FxRate" xml:space="preserve"><value>FX rate</value></data>
+  <data name="Col_GrossPerShare" xml:space="preserve"><value>Gross per share</value></data>
+  <data name="Col_Held" xml:space="preserve"><value>Held</value></data>
+  <data name="Col_Instrument" xml:space="preserve"><value>Instrument</value></data>
+  <data name="Col_Job" xml:space="preserve"><value>Job</value></data>
+  <data name="Col_LastPaid" xml:space="preserve"><value>Last payment</value></data>
+  <data name="Col_Net" xml:space="preserve"><value>Net</value></data>
+  <data name="Col_NetValue" xml:space="preserve"><value>Net value</value></data>
+  <data name="Col_Origin" xml:space="preserve"><value>Placed from</value></data>
+  <data name="Col_Paid" xml:space="preserve"><value>Paid</value></data>
+  <data name="Col_Payments" xml:space="preserve"><value>Payments</value></data>
+  <data name="Col_Price" xml:space="preserve"><value>Price</value></data>
+  <data name="Col_RealisedPL" xml:space="preserve"><value>Realised P/L</value></data>
+  <data name="Col_Reference" xml:space="preserve"><value>Reference</value></data>
+  <data name="Col_Result" xml:space="preserve"><value>Result</value></data>
+  <data name="Col_Share" xml:space="preserve"><value>Share</value></data>
+  <data name="Col_Shares" xml:space="preserve"><value>Shares</value></data>
+  <data name="Col_Side" xml:space="preserve"><value>Side</value></data>
+  <data name="Col_Source" xml:space="preserve"><value>Source</value></data>
+  <data name="Col_Started" xml:space="preserve"><value>Started</value></data>
+  <data name="Col_Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Col_Ticker" xml:space="preserve"><value>Ticker</value></data>
+  <data name="Col_Total" xml:space="preserve"><value>Total</value></data>
+  <data name="Col_Type" xml:space="preserve"><value>Type</value></data>
+  <data name="Col_Unrealized" xml:space="preserve"><value>Unrealised P/L</value></data>
+  <data name="Col_Updated" xml:space="preserve"><value>Updated</value></data>
+  <data name="Col_Value" xml:space="preserve"><value>Value</value></data>
+  <data name="Col_Withheld" xml:space="preserve"><value>Tax withheld</value></data>
+  <data name="Col_YieldOnCost" xml:space="preserve"><value>Yield on cost</value></data>
+  <data name="Common_Account" xml:space="preserve"><value>Account</value></data>
+  <data name="Common_AllAccounts" xml:space="preserve"><value>All accounts</value></data>
+  <data name="Common_Failed" xml:space="preserve"><value>Failed</value></data>
+  <data name="Common_Loading" xml:space="preserve"><value>Loading…</value></data>
+  <data name="Common_No" xml:space="preserve"><value>No</value></data>
+  <data name="Common_Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="Common_TryAgain" xml:space="preserve"><value>Try again</value></data>
+  <data name="Common_Year" xml:space="preserve"><value>Year</value></data>
+  <data name="Common_Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="Country_AT" xml:space="preserve"><value>Austria</value></data>
+  <data name="Country_AU" xml:space="preserve"><value>Australia</value></data>
+  <data name="Country_BE" xml:space="preserve"><value>Belgium</value></data>
+  <data name="Country_BM" xml:space="preserve"><value>Bermuda</value></data>
+  <data name="Country_BR" xml:space="preserve"><value>Brazil</value></data>
+  <data name="Country_CA" xml:space="preserve"><value>Canada</value></data>
+  <data name="Country_CH" xml:space="preserve"><value>Switzerland</value></data>
+  <data name="Country_CN" xml:space="preserve"><value>China</value></data>
+  <data name="Country_DE" xml:space="preserve"><value>Germany</value></data>
+  <data name="Country_DK" xml:space="preserve"><value>Denmark</value></data>
+  <data name="Country_ES" xml:space="preserve"><value>Spain</value></data>
+  <data name="Country_FI" xml:space="preserve"><value>Finland</value></data>
+  <data name="Country_FR" xml:space="preserve"><value>France</value></data>
+  <data name="Country_GB" xml:space="preserve"><value>United Kingdom</value></data>
+  <data name="Country_GG" xml:space="preserve"><value>Guernsey</value></data>
+  <data name="Country_HK" xml:space="preserve"><value>Hong Kong</value></data>
+  <data name="Country_IE" xml:space="preserve"><value>Ireland</value></data>
+  <data name="Country_IL" xml:space="preserve"><value>Israel</value></data>
+  <data name="Country_IM" xml:space="preserve"><value>Isle of Man</value></data>
+  <data name="Country_IT" xml:space="preserve"><value>Italy</value></data>
+  <data name="Country_JE" xml:space="preserve"><value>Jersey</value></data>
+  <data name="Country_JP" xml:space="preserve"><value>Japan</value></data>
+  <data name="Country_KY" xml:space="preserve"><value>Cayman Islands</value></data>
+  <data name="Country_LU" xml:space="preserve"><value>Luxembourg</value></data>
+  <data name="Country_NL" xml:space="preserve"><value>Netherlands</value></data>
+  <data name="Country_NO" xml:space="preserve"><value>Norway</value></data>
+  <data name="Country_PA" xml:space="preserve"><value>Panama</value></data>
+  <data name="Country_PT" xml:space="preserve"><value>Portugal</value></data>
+  <data name="Country_SE" xml:space="preserve"><value>Sweden</value></data>
+  <data name="Country_SG" xml:space="preserve"><value>Singapore</value></data>
+  <data name="Country_US" xml:space="preserve"><value>United States</value></data>
+  <data name="Country_VG" xml:space="preserve"><value>British Virgin Islands</value></data>
+  <data name="Country_XS" xml:space="preserve"><value>International (XS)</value></data>
+  <data name="Dividends_Empty" xml:space="preserve"><value>No dividends yet. Run a sync or import a CSV report.</value></data>
+  <data name="Dividends_Payments" xml:space="preserve"><value>Payments</value></data>
+  <data name="Dividends_Subtitle" xml:space="preserve"><value>Every payment, by year, month, country and currency</value></data>
+  <data name="Dividends_WithheldNote" xml:space="preserve"><value>Tax withheld comes from the CSV reports only; the API does not give it.</value></data>
+  <data name="Error_PageFailed" xml:space="preserve"><value>This page could not be loaded.</value></data>
+  <data name="Error_Text" xml:space="preserve"><value>An error occurred while processing your request.</value></data>
+  <data name="Error_Title" xml:space="preserve"><value>Something went wrong</value></data>
+  <data name="Grid_ClearFilter" xml:space="preserve"><value>Clear</value></data>
+  <data name="Grid_Empty" xml:space="preserve"><value>Nothing here yet.</value></data>
+  <data name="Grid_Export" xml:space="preserve"><value>Export</value></data>
+  <data name="Grid_FirstPage" xml:space="preserve"><value>First page</value></data>
+  <data name="Grid_LastPage" xml:space="preserve"><value>Last page</value></data>
+  <data name="Grid_NextPage" xml:space="preserve"><value>Next page</value></data>
+  <data name="Grid_NoMatches" xml:space="preserve"><value>No rows match the search or filters.</value></data>
+  <data name="Grid_OfTotal" xml:space="preserve"><value>(filtered from {0})</value></data>
+  <data name="Grid_PageSize" xml:space="preserve"><value>Rows per page</value></data>
+  <data name="Grid_Pages" xml:space="preserve"><value>Pages</value></data>
+  <data name="Grid_PerPage" xml:space="preserve"><value>{0} per page</value></data>
+  <data name="Grid_PreviousPage" xml:space="preserve"><value>Previous page</value></data>
+  <data name="Grid_Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="Grid_Search" xml:space="preserve"><value>Search</value></data>
+  <data name="Grid_Showing" xml:space="preserve"><value>{0}–{1} of {2}</value></data>
+  <data name="Grid_SortBy" xml:space="preserve"><value>Sort by</value></data>
+  <data name="Grid_SortDirection" xml:space="preserve"><value>Sort direction</value></data>
+  <data name="Grid_Summaries" xml:space="preserve"><value>Totals</value></data>
+  <data name="Grid_Summary_Avg" xml:space="preserve"><value>Average</value></data>
+  <data name="Grid_Summary_Count" xml:space="preserve"><value>Count</value></data>
+  <data name="Grid_Summary_Max" xml:space="preserve"><value>Max</value></data>
+  <data name="Grid_Summary_Min" xml:space="preserve"><value>Min</value></data>
+  <data name="Grid_Summary_Sum" xml:space="preserve"><value>Sum</value></data>
+  <data name="Import_Cash" xml:space="preserve"><value>Cash movements: {0} new, {1} already known</value></data>
+  <data name="Import_Dividends" xml:space="preserve"><value>Dividends: {0} new, {1} already known</value></data>
+  <data name="Import_Failed" xml:space="preserve"><value>The import failed. See the server log for details.</value></data>
+  <data name="Import_LineError" xml:space="preserve"><value>Line {0}: {1}</value></data>
+  <data name="Import_NoAccount" xml:space="preserve"><value>No account is configured.</value></data>
+  <data name="Import_NotAReport" xml:space="preserve"><value>This is not a Trading 212 CSV report.</value></data>
+  <data name="Import_OrdersSkipped" xml:space="preserve"><value>Buys and sells skipped: {0} (orders come from the API)</value></data>
+  <data name="Import_OtherSkipped" xml:space="preserve"><value>Other lines skipped:</value></data>
+  <data name="Import_Step1" xml:space="preserve"><value>In the Trading 212 app: &lt;strong&gt;History → Export&lt;/strong&gt;, one year at most per report, with dividends, interest and transactions.</value></data>
+  <data name="Import_Step2" xml:space="preserve"><value>Choose all the reports at once; overlapping periods are fine.</value></data>
+  <data name="Import_Step3" xml:space="preserve"><value>Check the result of each file below.</value></data>
+  <data name="Import_Subtitle" xml:space="preserve"><value>Adds the tax withheld on each dividend (the API does not give it) and fills gaps in the API's history. Importing the same file twice changes nothing.</value></data>
+  <data name="Import_Summary" xml:space="preserve"><value>{0} files: {1} new dividends ({2} already known), {3} new cash movements ({4} already known).</value></data>
+  <data name="Import_Title" xml:space="preserve"><value>Import CSV reports</value></data>
+  <data name="Import_TooMany" xml:space="preserve"><value>Choose at most {0} files at a time.</value></data>
+  <data name="Income_NotHeld" xml:space="preserve"><value>Not held today</value></data>
+  <data name="Income_SharesHeld" xml:space="preserve"><value>{0} shares held</value></data>
+  <data name="Income_Subtitle" xml:space="preserve"><value>What each instrument has paid you. Choose one to see its history.</value></data>
+  <data name="Language_Label" xml:space="preserve"><value>Language</value></data>
+  <data name="Nav_Cash" xml:space="preserve"><value>Cash movements</value></data>
+  <data name="Nav_Data" xml:space="preserve"><value>Data</value></data>
+  <data name="Nav_Dividends" xml:space="preserve"><value>Dividends</value></data>
+  <data name="Nav_Import" xml:space="preserve"><value>Import CSV</value></data>
+  <data name="Nav_Income" xml:space="preserve"><value>Income by instrument</value></data>
+  <data name="Nav_Menu" xml:space="preserve"><value>Menu</value></data>
+  <data name="Nav_Orders" xml:space="preserve"><value>Orders</value></data>
+  <data name="Nav_Overview" xml:space="preserve"><value>Overview</value></data>
+  <data name="Nav_Positions" xml:space="preserve"><value>Positions</value></data>
+  <data name="Nav_SyncLog" xml:space="preserve"><value>Sync log</value></data>
+  <data name="NotFound_Text" xml:space="preserve"><value>The page you are looking for does not exist.</value></data>
+  <data name="NotFound_Title" xml:space="preserve"><value>Page not found</value></data>
+  <data name="Order_Buy" xml:space="preserve"><value>Buy</value></data>
+  <data name="Order_Sell" xml:space="preserve"><value>Sell</value></data>
+  <data name="Orders_Empty" xml:space="preserve"><value>No orders yet. They come with the sync.</value></data>
+  <data name="Orders_Subtitle" xml:space="preserve"><value>Buys and sells, with fees and realised gains</value></data>
+  <data name="Overview_NoData" xml:space="preserve"><value>No dividends yet. Run a sync, or import your Trading 212 CSV reports.</value></data>
+  <data name="Overview_Subtitle" xml:space="preserve"><value>Dividend income in {0}</value></data>
+  <data name="Positions_Count" xml:space="preserve"><value>{0} positions</value></data>
+  <data name="Positions_Empty" xml:space="preserve"><value>No positions yet. They come with the first sync.</value></data>
+  <data name="Positions_Note" xml:space="preserve"><value>Yields use the net dividends of the last 12 months. The estimate for the next 12 months assumes each holding pays per share what it paid in the last 12.</value></data>
+  <data name="Positions_SnapshotOf" xml:space="preserve"><value>Open positions on {0}</value></data>
+  <data name="Positions_Subtitle" xml:space="preserve"><value>Open positions from the latest snapshot</value></data>
+  <data name="Positions_YieldOnCost" xml:space="preserve"><value>Yield on cost {0}</value></data>
+  <data name="Reconnect_Failed" xml:space="preserve"><value>Could not reconnect. Try again or reload the page.</value></data>
+  <data name="Reconnect_Paused" xml:space="preserve"><value>The session was paused by the server.</value></data>
+  <data name="Reconnect_Rejoining" xml:space="preserve"><value>Reconnecting to the server…</value></data>
+  <data name="Reconnect_Resume" xml:space="preserve"><value>Resume</value></data>
+  <data name="Reconnect_ResumeFailed" xml:space="preserve"><value>Could not resume the session. Try again or reload the page.</value></data>
+  <data name="Reconnect_Retry" xml:space="preserve"><value>Try again</value></data>
+  <data name="Reconnect_RetryIn" xml:space="preserve"><value>Could not reconnect. Trying again in</value></data>
+  <data name="Source_Api" xml:space="preserve"><value>API</value></data>
+  <data name="Source_Both" xml:space="preserve"><value>API + CSV</value></data>
+  <data name="Source_Csv" xml:space="preserve"><value>CSV</value></data>
+  <data name="Stat_AllTime" xml:space="preserve"><value>All time</value></data>
+  <data name="Stat_Forward" xml:space="preserve"><value>Next 12 months (estimate)</value></data>
+  <data name="Stat_ForwardHint" xml:space="preserve"><value>Last 12 months per share × shares held today</value></data>
+  <data name="Stat_Last12Months" xml:space="preserve"><value>Last 12 months</value></data>
+  <data name="Stat_Payments" xml:space="preserve"><value>{0} payments</value></data>
+  <data name="Stat_PortfolioValue" xml:space="preserve"><value>Portfolio value</value></data>
+  <data name="Stat_ThisYear" xml:space="preserve"><value>{0} so far</value></data>
+  <data name="Stat_Unrealized" xml:space="preserve"><value>Unrealised {0}</value></data>
+  <data name="Stat_VsPrevious12" xml:space="preserve"><value>vs the 12 months before</value></data>
+  <data name="Stat_VsSamePeriod" xml:space="preserve"><value>vs the same period last year</value></data>
+  <data name="Stat_YieldOnCost" xml:space="preserve"><value>Yield on cost</value></data>
+  <data name="Stat_YieldOnCostHint" xml:space="preserve"><value>Last 12 months of current holdings ÷ invested</value></data>
+  <data name="SyncJob_Dividends" xml:space="preserve"><value>Dividends</value></data>
+  <data name="SyncJob_Instruments" xml:space="preserve"><value>Instruments</value></data>
+  <data name="SyncJob_Orders" xml:space="preserve"><value>Orders</value></data>
+  <data name="SyncJob_Snapshot" xml:space="preserve"><value>Snapshot</value></data>
+  <data name="SyncJob_Transactions" xml:space="preserve"><value>Cash movements</value></data>
+  <data name="SyncLog_Empty" xml:space="preserve"><value>No sync has run yet.</value></data>
+  <data name="SyncLog_Subtitle" xml:space="preserve"><value>Each sync reads the account and positions, then the history, newest first, until a page brings nothing new. Use "Full history" after Trading 212 fixes history it had missed.</value></data>
+  <data name="Sync_FullHistory" xml:space="preserve"><value>Full history</value></data>
+  <data name="Sync_FullHistoryHint" xml:space="preserve"><value>Reads the whole history again instead of stopping at the first known page</value></data>
+  <data name="Sync_Last" xml:space="preserve"><value>Last sync {0}</value></data>
+  <data name="Sync_Now" xml:space="preserve"><value>Sync now</value></data>
+  <data name="Sync_Running" xml:space="preserve"><value>Syncing</value></data>
+  <data name="Theme_Auto" xml:space="preserve"><value>Same as the system</value></data>
+  <data name="Theme_Dark" xml:space="preserve"><value>Dark</value></data>
+  <data name="Theme_Label" xml:space="preserve"><value>Theme</value></data>
+  <data name="Theme_Light" xml:space="preserve"><value>Light</value></data>
+</root>

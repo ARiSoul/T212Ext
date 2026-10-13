@@ -1,0 +1,83 @@
+@page "/positions"
+@inherits AccountPage
+@inject AnalyticsQueries Analytics
+@inject OverviewQueries Overview
+@inject NavigationManager Navigation
+
+<PageTitle>@L["Nav_Positions"] · T212Ext</PageTitle>
+
+<div class="page-header">
+    <div class="me-auto">
+        <h1>@L["Nav_Positions"]</h1>
+        <p>@(_takenAt is null ? L["Positions_Subtitle"] : string.Format(L["Positions_SnapshotOf"], Fmt.DateTime(_takenAt)))</p>
+    </div>
+</div>
+
+@if (_dashboard is { Positions.Count: > 0 } d)
+{
+    var value = d.Positions.Sum(p => p.CurrentValue ?? 0);
+    var cost = d.Positions.Sum(p => p.TotalCost ?? 0);
+    var pl = d.Positions.Sum(p => p.UnrealizedProfitLoss ?? 0);
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-lg-3"><Stat Icon="bi-briefcase" Label="@L["Col_Value"]" Value="@Fmt.Money(value, d.Currency)" Hint="@string.Format(L["Positions_Count"], d.Positions.Count)" /></div>
+        <div class="col-6 col-lg-3"><Stat Icon="bi-piggy-bank" Label="@L["Col_Cost"]" Value="@Fmt.Money(cost, d.Currency)" /></div>
+        <div class="col-6 col-lg-3"><Stat Icon="bi-activity" Label="@L["Col_Unrealized"]" Value="@Fmt.Money(pl, d.Currency)" ValueClass="@Fmt.SignClass(pl)"
+                                         Hint="@(cost > 0 ? Fmt.Percent(pl / cost, 1) : null)" /></div>
+        <div class="col-6 col-lg-3"><Stat Icon="bi-graph-up-arrow" Label="@L["Stat_Forward"]" Value="@Fmt.Money(d.ForwardEstimate, d.Currency)"
+                                         Hint="@string.Format(L["Positions_YieldOnCost"], Fmt.Percent(d.PortfolioYieldOnCost))" /></div>
+    </div>
+}
+
+<DataGrid TItem="PositionIncome" Items="_dashboard?.Positions ?? (Loading ? null : [])" Columns="Columns" StorageKey="positions" ExportFileName="positions"
+          DefaultSortKey="value" DefaultSortDescending="true" DefaultSummaries="DefaultSummaries" RowClick="Open" EmptyText="@L["Positions_Empty"]" />
+<p class="small text-body-secondary mt-2">@L["Positions_Note"]</p>
+
+@code {
+    private DividendDashboard? _dashboard;
+    private DateTimeOffset? _takenAt;
+
+    private static readonly IReadOnlyDictionary<string, SummaryKind[]> DefaultSummaries = new Dictionary<string, SummaryKind[]>
+    {
+        ["value"] = [SummaryKind.Sum],
+        ["cost"] = [SummaryKind.Sum],
+        ["pl"] = [SummaryKind.Sum],
+        ["last12"] = [SummaryKind.Sum],
+        ["forward"] = [SummaryKind.Sum],
+    };
+
+    private string? Currency => _dashboard?.Currency;
+
+    private IReadOnlyList<GridColumn<PositionIncome>> Columns => [
+        new() { Key = "instrument", Title = L["Col_Instrument"], Value = p => p.Name ?? p.Ticker, MobileTitle = true },
+        new() { Key = "ticker", Title = L["Col_Ticker"], Value = p => p.Ticker, HideBelow = "xl" },
+        new() { Key = "country", Title = L["Col_Country"], Value = p => Labels.Country(L, DividendAnalytics.CountryOf(p.Isin)), Filterable = true, HideBelow = "xl", HideOnMobile = true },
+        new() { Key = "shares", Title = L["Col_Shares"], Value = p => p.Quantity, Text = p => Fmt.Number(p.Quantity), AlignEnd = true, HideBelow = "lg" },
+        new() { Key = "value", Title = L["Col_Value"], Value = p => p.CurrentValue, Text = p => Fmt.Money(p.CurrentValue, Currency), AlignEnd = true,
+                Summaries = GridColumn<PositionIncome>.Numeric, SummaryText = n => Fmt.Money(n, Currency) },
+        new() { Key = "cost", Title = L["Col_Cost"], Value = p => p.TotalCost, Text = p => Fmt.Money(p.TotalCost, Currency), AlignEnd = true, HideBelow = "lg",
+                Summaries = GridColumn<PositionIncome>.Numeric, SummaryText = n => Fmt.Money(n, Currency) },
+        new() { Key = "pl", Title = L["Col_Unrealized"], Value = p => p.UnrealizedProfitLoss, Text = p => Fmt.Money(p.UnrealizedProfitLoss, Currency), AlignEnd = true,
+                Template = p => @<span class="@Fmt.SignClass(p.UnrealizedProfitLoss)">@Fmt.Money(p.UnrealizedProfitLoss, Currency)</span>,
+                Summaries = GridColumn<PositionIncome>.Numeric, SummaryText = n => Fmt.Money(n, Currency) },
+        new() { Key = "last12", Title = L["Col_Dividends12"], Value = p => p.Last12Months, Text = p => Fmt.Money(p.Last12Months, Currency), AlignEnd = true, HideBelow = "md",
+                Summaries = GridColumn<PositionIncome>.Numeric, SummaryText = n => Fmt.Money(n, Currency) },
+        new() { Key = "yoc", Title = L["Col_YieldOnCost"], Value = p => p.YieldOnCost, Text = p => Fmt.Percent(p.YieldOnCost), AlignEnd = true,
+                Summaries = [SummaryKind.Avg, SummaryKind.Min, SummaryKind.Max], SummaryText = n => Fmt.Percent(n) },
+        new() { Key = "yield", Title = L["Col_CurrentYield"], Value = p => p.CurrentYield, Text = p => Fmt.Percent(p.CurrentYield), AlignEnd = true, HideBelow = "xl", HideOnMobile = true,
+                Summaries = [SummaryKind.Avg, SummaryKind.Min, SummaryKind.Max], SummaryText = n => Fmt.Percent(n) },
+        new() { Key = "forward", Title = L["Col_Forward"], Value = p => p.ForwardEstimate, Text = p => Fmt.Money(p.ForwardEstimate, Currency), AlignEnd = true, HideBelow = "lg",
+                Summaries = GridColumn<PositionIncome>.Numeric, SummaryText = n => Fmt.Money(n, Currency) },
+    ];
+
+    protected override async Task LoadAsync()
+    {
+        _dashboard = await Analytics.GetDashboardAsync(AccountId);
+        _takenAt = (await Overview.GetAccountsAsync())
+            .Where(a => AccountId is null || a.Id == AccountId)
+            .Select(a => a.LatestSnapshot?.TakenAt)
+            .Max();
+    }
+
+    private void Open(PositionIncome position) =>
+        Navigation.NavigateTo($"income/{Uri.EscapeDataString(position.Isin ?? position.Ticker)}");
+}

@@ -1,72 +1,48 @@
 @page "/sync"
 @inject OverviewQueries Overview
+@inject IStringLocalizer<SharedResource> L
 
-<PageTitle>Sync log · T212Ext</PageTitle>
+<PageTitle>@L["Nav_SyncLog"] · T212Ext</PageTitle>
 
-<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-    <h1 class="h3 mb-0 me-auto">Sync log</h1>
+<div class="page-header">
+    <div class="me-auto">
+        <h1>@L["Nav_SyncLog"]</h1>
+        <p>@L["SyncLog_Subtitle"]</p>
+    </div>
     <SyncButton ShowFullHistory="true" Finished="LoadAsync" />
 </div>
 
-<p class="small text-body-secondary">
-    A sync reads the account summary and positions, then the dividend, order and transaction history, newest
-    first, until a page brings nothing new. "Full history" reads everything again; use it after Trading 212
-    fixes history it had missed.
-</p>
-
-@if (_runs is null)
-{
-    <p class="text-body-secondary">Loading…</p>
-}
-else if (_runs.Count == 0)
-{
-    <p class="text-body-secondary">No sync has run yet.</p>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-sm align-middle">
-            <thead>
-                <tr>
-                    <th>Started</th>
-                    <th>Account</th>
-                    <th>Job</th>
-                    <th class="text-end">Added</th>
-                    <th class="text-end d-none d-sm-table-cell">Updated</th>
-                    <th>Result</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var run in _runs)
-                {
-                    <tr>
-                        <td class="text-nowrap">@Format.DateTime(run.StartedAt)</td>
-                        <td>@(run.AccountName ?? "—")</td>
-                        <td>@run.Job</td>
-                        <td class="text-end">@run.ItemsAdded</td>
-                        <td class="text-end d-none d-sm-table-cell">@run.ItemsUpdated</td>
-                        <td>
-                            @if (run.Succeeded)
-                            {
-                                <span class="badge text-bg-success">OK</span>
-                            }
-                            else
-                            {
-                                <span class="badge text-bg-danger">Failed</span>
-                                <div class="small text-danger text-break">@run.Error</div>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-}
+<DataGrid TItem="SyncRunRow" Items="_runs" Columns="Columns" StorageKey="sync-log" ExportFileName="sync-log"
+          DefaultSortKey="started" DefaultSortDescending="true" EmptyText="@L["SyncLog_Empty"]" />
 
 @code {
     private IReadOnlyList<SyncRunRow>? _runs;
 
+    private IReadOnlyList<GridColumn<SyncRunRow>> Columns => [
+        new() { Key = "started", Title = L["Col_Started"], Value = r => r.StartedAt, Text = r => Fmt.DateTime(r.StartedAt), MobileTitle = true,
+                Filterable = true, FilterKey = r => r.StartedAt.ToLocalTime().ToString("d"), FilterValuesDescending = true },
+        new() { Key = "account", Title = L["Common_Account"], Value = r => r.AccountName ?? "—", Filterable = true, HideBelow = "md" },
+        new() { Key = "job", Title = L["Col_Job"], Value = r => Labels.Job(L, r.Job), Filterable = true },
+        new() { Key = "added", Title = L["Col_Added"], Value = r => r.ItemsAdded, AlignEnd = true, Summaries = GridColumn<SyncRunRow>.Numeric, SummaryText = n => Fmt.Number(Math.Round(n, 1)) },
+        new() { Key = "updated", Title = L["Col_Updated"], Value = r => r.ItemsUpdated, AlignEnd = true, HideBelow = "lg", Summaries = GridColumn<SyncRunRow>.Numeric, SummaryText = n => Fmt.Number(Math.Round(n, 1)) },
+        new() { Key = "duration", Title = L["Col_Duration"], Value = r => r.FinishedAt is { } f ? (decimal)(f - r.StartedAt).TotalSeconds : null,
+                Text = r => r.FinishedAt is { } f ? $"{(f - r.StartedAt).TotalSeconds:N1} s" : "—", AlignEnd = true, HideBelow = "xl", HideOnMobile = true,
+                Summaries = [SummaryKind.Sum, SummaryKind.Avg, SummaryKind.Max], SummaryText = n => $"{n:N1} s" },
+        new() { Key = "result", Title = L["Col_Result"], Value = r => r.Succeeded ? L["Common_Ok"].Value : L["Common_Failed"].Value, Filterable = true,
+                Template = r => @<div>
+                    @if (r.Succeeded)
+                    {
+                        <span class="badge text-bg-success"><i class="bi bi-check-lg"></i> @L["Common_Ok"]</span>
+                    }
+                    else
+                    {
+                        <span class="badge text-bg-danger"><i class="bi bi-x-lg"></i> @L["Common_Failed"]</span>
+                        <div class="small text-danger text-break mt-1">@r.Error</div>
+                    }
+                </div> },
+    ];
+
     protected override Task OnInitializedAsync() => LoadAsync();
 
-    private async Task LoadAsync() => _runs = await Overview.GetRecentRunsAsync(100);
+    private async Task LoadAsync() => _runs = await Overview.GetRecentRunsAsync(500);
 }

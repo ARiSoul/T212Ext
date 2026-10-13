@@ -2,6 +2,32 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.1.0 — Dividend dashboard (2026-10-13)
+
+Phase 2: see how your dividend income grows, in a new look, in three languages.
+
+**New**
+- **Overview:**
+  - the last 12 months against the 12 before;
+  - this year against the same period last year;
+  - an estimate for the next 12 months;
+  - yield on cost, all-time total and portfolio value;
+  - charts: dividends per month (with the 12-month average), passive income (dividends, interest, share lending), top payers and the portfolio over time.
+- **Dividends:**
+  - dividends per year with the growth of each year;
+  - one year against the one before, month by month;
+  - breakdowns by country and by currency.
+- **Income by instrument:** what each instrument has paid, all time and in the last 12 months, with its share of the total. Each instrument has a page with its payments and its dividend per share over time.
+- **Positions:** the latest snapshot, with the dividends of the last 12 months, yield on cost, current yield and the estimate for the next 12 months.
+- **Cash movements** and **Orders** pages.
+- **Every list is a grid** with search, filters (year, country, type, account…), sorting, totals (sum, average, min, max, count over all filtered rows), paging and CSV export. The grids remember your choices in the browser.
+- **New look**, with a light theme, a dark theme, or the system's.
+- **Languages:** Portuguese (default), English and Spanish, from the menu at the top.
+- With several accounts, an account selector at the top filters every page.
+
+**Fixed**
+- Importing reports one after another could take two days of share lending with the same amount for one movement, and drop one. Each movement now remembers the CSV row it came from, and only movements no CSV row has claimed are matched by value, within one hour.
+
 ## 2.0.0 — The rewrite (2026-10-13)
 
 T212Ext is now a web app that runs on a server and collects your Trading 212 data on its own, instead of a phone app that only synced while a page was open.
@@ -36,5 +62,5 @@ T212Ext is now a web app that runs on a server and collects your Trading 212 dat
 - The .NET MAUI app (1.x). Its code stays in git history.
 
 **Known limitations**
-- No sign-in yet: do not expose the app to the internet (planned for 2.2).
+- No sign-in yet: do not expose the app to the internet (planned for the deployment phase).
 - Orders are not imported from CSV reports yet.

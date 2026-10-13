@@ -78,6 +78,10 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                         .HasPrecision(28, 10)
                         .HasColumnType("decimal(28,10)");
 
+                    b.Property<string>("CsvReference")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("Currency")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -103,6 +107,8 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AccountId", "CsvReference");
 
                     b.HasIndex("AccountId", "DateTime");
 
@@ -130,6 +136,10 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                     b.Property<decimal?>("AmountInEuro")
                         .HasPrecision(28, 10)
                         .HasColumnType("decimal(28,10)");
+
+                    b.Property<string>("CsvReference")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Currency")
                         .IsRequired()
@@ -189,6 +199,8 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                         .HasColumnType("nvarchar(10)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AccountId", "CsvReference");
 
                     b.HasIndex("AccountId", "Isin");
 

@@ -1,0 +1,62 @@
+@page "/orders"
+@inherits AccountPage
+@inject LedgerQueries Ledger
+
+<PageTitle>@L["Nav_Orders"] · T212Ext</PageTitle>
+
+<div class="page-header">
+    <div class="me-auto">
+        <h1>@L["Nav_Orders"]</h1>
+        <p>@L["Orders_Subtitle"]</p>
+    </div>
+</div>
+
+<DataGrid TItem="OrderRow" Items="_rows" Columns="Columns" StorageKey="orders" ExportFileName="orders"
+          DefaultSortKey="date" DefaultSortDescending="true" DefaultSummaries="DefaultSummaries" EmptyText="@L["Orders_Empty"]" />
+
+@code {
+    private IReadOnlyList<OrderRow>? _rows;
+    private string? _currency;
+
+    private static readonly IReadOnlyDictionary<string, SummaryKind[]> DefaultSummaries = new Dictionary<string, SummaryKind[]>
+    {
+        ["net"] = [SummaryKind.Sum],
+        ["fees"] = [SummaryKind.Sum],
+        ["pl"] = [SummaryKind.Sum],
+    };
+
+    private IReadOnlyList<GridColumn<OrderRow>> Columns => WithAccount([
+        new() { Key = "date", Title = L["Col_Date"], Value = o => o.FilledAt ?? o.CreatedAt, Text = o => Fmt.DateTime(o.FilledAt ?? o.CreatedAt),
+                Filterable = true, FilterKey = o => (o.FilledAt ?? o.CreatedAt)?.UtcDateTime.Year.ToString() ?? "—", FilterValuesDescending = true },
+        new() { Key = "instrument", Title = L["Col_Instrument"], Value = o => o.InstrumentName ?? o.Ticker, MobileTitle = true },
+        new() { Key = "ticker", Title = L["Col_Ticker"], Value = o => o.Ticker, HideBelow = "xl", Filterable = false },
+        new() { Key = "side", Title = L["Col_Side"], Value = o => Labels.Side(L, o.Side), Filterable = true,
+                Template = o => @<span class="badge @(o.Side == "SELL" ? "text-bg-warning" : "badge-soft")">@Labels.Side(L, o.Side)</span> },
+        new() { Key = "status", Title = L["Col_Status"], Value = o => Labels.Humanize(o.Status), Filterable = true, HideBelow = "lg" },
+        new() { Key = "origin", Title = L["Col_Origin"], Value = o => Labels.Humanize(o.InitiatedFrom), Filterable = true, HideBelow = "xl", HideOnMobile = true },
+        new() { Key = "quantity", Title = L["Col_Shares"], Value = o => o.Quantity, Text = o => Fmt.Number(o.Quantity), AlignEnd = true, HideBelow = "lg",
+                Summaries = GridColumn<OrderRow>.Numeric, SummaryText = n => Fmt.Number(n) },
+        new() { Key = "price", Title = L["Col_Price"], Value = o => o.Price, Text = o => o.Price is null ? "—" : $"{Fmt.Number(o.Price)} {o.InstrumentCurrency}", AlignEnd = true, HideBelow = "lg" },
+        new() { Key = "net", Title = L["Col_NetValue"], Value = o => o.NetValue, Text = o => Fmt.Money(o.NetValue, o.WalletCurrency), AlignEnd = true,
+                Summaries = GridColumn<OrderRow>.Numeric, SummaryText = n => Fmt.Money(n, _currency) },
+        new() { Key = "fees", Title = L["Col_Fees"], Value = o => o.Fees, Text = o => Fmt.Money(o.Fees, o.WalletCurrency), AlignEnd = true, HideBelow = "xl",
+                Summaries = GridColumn<OrderRow>.Numeric, SummaryText = n => Fmt.Money(n, _currency) },
+        new() { Key = "pl", Title = L["Col_RealisedPL"], Value = o => o.RealisedProfitLoss, Text = o => Fmt.Money(o.RealisedProfitLoss, o.WalletCurrency), AlignEnd = true, HideBelow = "md",
+                Template = o => @<span class="@Fmt.SignClass(o.RealisedProfitLoss)">@Fmt.Money(o.RealisedProfitLoss, o.WalletCurrency)</span>,
+                Summaries = GridColumn<OrderRow>.Numeric, SummaryText = n => Fmt.Money(n, _currency) },
+        new() { Key = "fx", Title = L["Col_FxRate"], Value = o => o.FxRate, Text = o => Fmt.Number(o.FxRate), AlignEnd = true, HideBelow = "xl", HideOnMobile = true },
+    ]);
+
+    private List<GridColumn<OrderRow>> WithAccount(List<GridColumn<OrderRow>> columns)
+    {
+        if (SeveralAccounts)
+            columns.Insert(2, new() { Key = "account", Title = L["Common_Account"], Value = o => o.AccountName, Filterable = true, HideBelow = "lg" });
+        return columns;
+    }
+
+    protected override async Task LoadAsync()
+    {
+        _rows = await Ledger.GetOrdersAsync(AccountId);
+        _currency = _rows.Where(o => o.WalletCurrency is not null).GroupBy(o => o.WalletCurrency).OrderByDescending(g => g.Count()).Select(g => g.Key).FirstOrDefault();
+    }
+}

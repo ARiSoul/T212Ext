@@ -125,6 +125,45 @@ public class CsvImportServiceTests(DatabaseFixture database)
     }
 
     [Fact]
+    public async Task Daily_payments_of_the_same_amount_in_two_reports_stay_apart()
+    {
+        // Share lending pays every day, often the same amount; the last day of one report and the
+        // first day of the next were once taken for the same movement.
+        var account = await database.CreateAccountAsync();
+        const string header = "Action,Time (UTC),ID,Total,Currency (Total)\n";
+
+        await ImportAsync(account.Id, header + "Lending interest,2024-12-31 23:00:00+00:00,li-1,0.01,EUR\n");
+        var second = await ImportAsync(account.Id, header + "Lending interest,2025-01-01 23:00:00+00:00,li-2,0.01,EUR\n");
+
+        Assert.Equal(1, second.TransactionsAdded);
+        await using var db = database.CreateDbContext();
+        Assert.Equal(2, await db.CashTransactions.CountAsync(t => t.AccountId == account.Id));
+    }
+
+    [Fact]
+    public async Task Importing_again_after_the_api_confirmed_the_rows_changes_nothing()
+    {
+        var account = await database.CreateAccountAsync();
+        var api = new FakeT212Api
+        {
+            Dividends = [FakeT212Api.Dividend("api-ordinary", new DateTimeOffset(2025, 3, 27, 9, 0, 0, TimeSpan.Zero), 0.82m, quantity: 4.2m)],
+            Transactions = [new() { Reference = "api-lending", Type = "LENDING_INTEREST", Amount = 0.03m, Currency = "EUR", DateTime = new DateTimeOffset(2025, 4, 30, 23, 0, 0, TimeSpan.Zero) }],
+        };
+        var synchronizer = new AccountSynchronizer(database, _time, NullLogger<AccountSynchronizer>.Instance);
+        await synchronizer.SyncDividendsAsync(account, api, false, default);
+        await synchronizer.SyncTransactionsAsync(account, api, false, default);
+
+        await ImportAsync(account.Id, T212CsvParserTests.Layout2026);
+        var again = await ImportAsync(account.Id, T212CsvParserTests.Layout2026);
+
+        Assert.Equal(0, again.DividendsAdded);
+        Assert.Equal(0, again.TransactionsAdded);
+        await using var db = database.CreateDbContext();
+        Assert.Equal(2, await db.Dividends.CountAsync(d => d.AccountId == account.Id));
+        Assert.Equal(3, await db.CashTransactions.CountAsync(t => t.AccountId == account.Id));
+    }
+
+    [Fact]
     public async Task Uses_the_trading_212_ticker_found_by_isin()
     {
         var account = await database.CreateAccountAsync();

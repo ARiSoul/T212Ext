@@ -11,10 +11,17 @@ Read [docs/CONVENTIONS.md](docs/CONVENTIONS.md) before changing code, and follow
   - `Accounts/`: configured accounts;
   - `Sync/`: synchronizer, runner, worker;
   - `Import/`: CSV parser and import;
+  - `Analytics/`: dividend figures, computed in memory from plain facts;
   - `Queries/`: read models for the UI.
 - `src/T212Ext.Web/`: Blazor Web App (Interactive Server). It hosts the sync worker and applies migrations at startup.
+  - `Components/Grid/`: `DataGrid` and `GridEngine`;
+  - `Components/Charts/`: `ChartStyle` (validated palette) and `ThemedChart`;
+  - `Components/Shared/`: `AccountPage`, `Fmt`, `Labels`, selectors;
+  - `Resources/`: `SharedResource` texts (en, pt, es);
+  - `wwwroot/app.css`: the design tokens (light and dark).
 - `tests/T212Ext.Client.Tests/`: client tests with a stubbed HTTP handler.
-- `tests/T212Ext.Core.Tests/`: integration tests against a throwaway SQL Server database (LocalDB by default, `T212EXT_TEST_SQL` to override).
+- `tests/T212Ext.Core.Tests/`: integration tests against a throwaway SQL Server database (LocalDB by default, `T212EXT_TEST_SQL` to override), and analytics tests.
+- `tests/T212Ext.Web.Tests/`: grid engine, languages and translation tests.
 - `docs/`: see [docs/README.md](docs/README.md).
 
 ## Commands
