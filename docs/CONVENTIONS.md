@@ -17,9 +17,10 @@ The rules every change follows, for people and for coding assistants. Each rule 
    - Create it with `dotnet ef migrations add <Name> --project src/T212Ext.Core --startup-project src/T212Ext.Web --output-dir Data/Migrations`.
    - Review its `Up`/`Down`.
    - The app applies migrations when it starts. Nobody applies them by hand.
-4. **Secrets live only in user secrets (development) or the server's environment.**
+4. **Secrets live only in user secrets (development) or the server's `.env` (production).**
    - This covers API keys and secrets, and passwords in connection strings.
    - They are never pasted into chats, issues, `appsettings*.json` or the repository.
+   - Passwords are stored only as hashes (`hash-password`); `.env.example` holds names, never values.
 5. **Tests:**
    - The client is tested against `StubHandler`. Everything that touches the database is tested against the throwaway SQL Server of `DatabaseFixture`.
    - Every fix and every new rule gets a test that fails without it.
@@ -107,3 +108,19 @@ The rules every change follows, for people and for coding assistants. Each rule 
 6. **Pages read through the query classes** (`Core/Queries`), never through `DbContext` directly. Queries use `AsNoTracking`. Pages that depend on the chosen account inherit `AccountPage`.
 7. **No prerendering** (`App.razor`): pages load their data once, and JS interop (theme, saved grid state) works from the first render.
 8. **Long work runs in the worker, not in a page.** A page asks `SyncCoordinator.Request` and listens to `StateChanged`.
+9. **Every endpoint needs a signed-in user unless it says otherwise** (the fallback policy in `Auth/AuthSetup.cs`).
+   - The open ones are marked `AllowAnonymous`: `/login`, `/auth/login`, `/health`, `/language` and the static files. A new open endpoint is a decision, written here.
+   - Users come from configuration (`Auth:Users`), never from the database. Outside Development the app refuses to start without users.
+   - Sign-in failures do not say which part was wrong, sign-in is rate-limited per address, and an authenticator code works once.
+   - *Why:* the app holds a whole portfolio and tax history, and is reachable from the internet.
+10. **A page that sets or clears a cookie is a plain form**, not interactive: it is marked `[ExcludeFromInteractiveRouting]` and posts to an endpoint with `<AntiforgeryToken />` (`Login.razor`, the sign-out button). Every other page is interactive.
+11. **Redirects go only to local paths** (`SignInService.SafeReturnUrl`): the sign-in and language links cannot send anyone to another site.
+
+## 5. Deployment (`Dockerfile`, `docker-compose.yml`, `ops/`)
+
+1. **The server runs what the repository holds.** Its settings are only in `.env`; tracked files are never edited there, so `git pull` always applies cleanly.
+2. **A new setting the server needs goes, in the same PR, to `.env.example`, the settings table in the README, and the version's section in `UPGRADING.md`.**
+3. **The container publishes no port.** HTTPS is traceon's Caddy, on traceon's Docker network. The app trusts forwarded headers only because nothing else can reach it.
+4. **Database work outside migrations is a script in `ops/db/`, safe to run twice.** The app's login owns only its own database; `sa` is used only by those scripts and traceon's backups.
+5. **CI builds the image and starts it** against a SQL Server: it must refuse to start without users and answer `/health` with one. A change to the `Dockerfile` or the compose file is checked there before it reaches the server.
+6. **Server docs are commands to copy, one per block**, with `<placeholders>` for personal values ([DEPLOYMENT.md](DEPLOYMENT.md), [OPERATIONS.md](OPERATIONS.md)). They never show a secret's value.

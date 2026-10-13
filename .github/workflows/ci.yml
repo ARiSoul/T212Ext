@@ -61,3 +61,41 @@ jobs:
         with:
           name: test-results
           path: TestResults
+
+  # The image the server builds (docs/DEPLOYMENT.md): it must build, refuse to start without users,
+  # and with one start against SQL Server (migrations included) and answer /health.
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build the image
+        run: docker build -t t212ext:ci .
+
+      - name: Smoke test
+        run: |
+          docker network create t212ext-ci
+          docker run -d --name sql --network t212ext-ci -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD=CiOnly_Passw0rd             mcr.microsoft.com/mssql/server:2022-latest
+
+          if docker run --rm -e ASPNETCORE_ENVIRONMENT=Production t212ext:ci 2> refused.log; then
+            echo "Production started without users" >&2; exit 1
+          fi
+          grep -q "Auth:Users is empty" refused.log
+
+          hash="$(printf 'ci-only-password
+ci-only-password
+' | docker run --rm -i t212ext:ci hash-password)"
+          docker run -d --name app --network t212ext-ci -p 8080:8080             -e ASPNETCORE_ENVIRONMENT=Production -e Sync__Enabled=false             -e "ConnectionStrings__T212Ext=Server=sql;Database=T212Ext;User Id=sa;Password=CiOnly_Passw0rd;TrustServerCertificate=True"             -e Auth__Users__0__Username=ci -e "Auth__Users__0__PasswordHash=$hash"             t212ext:ci
+
+          # Kestrel listens only after the migrations, so /health answering means they ran.
+          for i in $(seq 1 60); do curl -fsS localhost:8080/health && break; sleep 3; done
+          curl -fsS localhost:8080/health | grep -q Healthy
+          test "$(curl -s -o /dev/null -w '%{http_code}' localhost:8080/)" = 302
+          curl -fsS localhost:8080/login | grep -q 'name="Password"'
+          test "$(docker exec app id -u)" != 0
+
+      - name: Container logs
+        if: failure()
+        run: docker logs app || true

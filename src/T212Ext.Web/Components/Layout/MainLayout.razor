@@ -53,6 +53,17 @@
                 <SyncButton Compact="true" />
                 <LanguageSelector />
                 <ThemeSelector />
+                <AuthorizeView>
+                    <Authorized>
+                        @* A plain form post: signing out clears a cookie, which needs a normal request. *@
+                        <form method="post" action="auth/logout">
+                            <AntiforgeryToken />
+                            <button type="submit" class="btn btn-icon" aria-label="@L["Nav_SignOut"]" title="@L["Nav_SignOut"] (@context.User.Identity?.Name)">
+                                <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                    </Authorized>
+                </AuthorizeView>
             </div>
         </header>
 

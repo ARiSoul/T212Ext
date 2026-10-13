@@ -1,0 +1,5 @@
+# Site block for traceon's Caddy (docs/DEPLOYMENT.md, "HTTPS through traceon's Caddy").
+# Copy to ~/traceon/caddy-sites/t212ext.caddy and put the real domain in place of the example.
+dividends.example.com {
+    reverse_proxy t212ext:8080
+}

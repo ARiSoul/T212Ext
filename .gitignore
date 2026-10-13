@@ -402,3 +402,5 @@ FodyWeavers.xsd
 .claude/
 # Build leftovers of the 1.x MAUI app (never tracked).
 .legacy-maui-leftovers/
+# Server secrets (docker compose reads them); only .env.example is committed.
+.env

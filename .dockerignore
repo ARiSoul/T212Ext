@@ -1,0 +1,14 @@
+# Only what the image build needs goes into the build context.
+**/bin/
+**/obj/
+.git/
+.github/
+.claude/
+.legacy-maui-leftovers/
+.vs/
+docs/
+tests/
+ops/
+.env
+**/*.user
+**/appsettings.Development.json

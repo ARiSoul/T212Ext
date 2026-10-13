@@ -2,9 +2,11 @@
 
 | File | What it is |
 |---|---|
-| [CONVENTIONS.md](CONVENTIONS.md) | The rules every change follows: workflow, the API client, data and sync, the app. |
+| [CONVENTIONS.md](CONVENTIONS.md) | The rules every change follows: workflow, the API client, data and sync, the app, deployment. |
 | [TAX.md](TAX.md) | The IRS report: what it computes, the rules it follows (with sources), and what is still to confirm. |
 | [T212-API.md](T212-API.md) | What we know about the Trading 212 API: authentication, endpoints, rate limits, quirks, terms of use. |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | First-time setup on the Hetzner server, next to traceon: database, sign-in, HTTPS, backups. |
+| [OPERATIONS.md](OPERATIONS.md) | Running it there: updates, rollback, logs, users, secrets, backups and restore. |
 | [BACKLOG.md](BACKLOG.md) | The roadmap by phase, and ideas not yet planned. |
 | [RELEASE-NOTES.md](RELEASE-NOTES.md) | What changed in each version, for the person using the app. |
 | [UPGRADING.md](UPGRADING.md) | Deploy steps of the versions not yet in production. |
@@ -27,9 +29,9 @@ Versions 1.x were the .NET MAUI app (never tagged). 2.0.0 is the rewrite.
 
 ## Releasing
 
-1. The branch bumps `VERSION`, adds the version's section to `RELEASE-NOTES.md` and, once there is a server, its deploy steps to `UPGRADING.md`.
+1. The branch bumps `VERSION`, adds the version's section to `RELEASE-NOTES.md` and its deploy steps to `UPGRADING.md`.
 2. After it merges, the merge commit gets the tag (`git tag v2.1.0 <commit>`) and a GitHub release with the version's notes.
-3. Once production runs the version, its section leaves `UPGRADING.md`.
+3. The deploy follows [OPERATIONS.md](OPERATIONS.md#1-deploying-an-update). Once production runs the version, its section leaves `UPGRADING.md`.
 
 ## Conventions
 

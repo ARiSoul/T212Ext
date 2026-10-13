@@ -88,6 +88,52 @@ h1:focus {
     --bs-btn-active-color: var(--bs-body-color);
 }
 
+/* Brand: the menu and the sign-in page. */
+.app-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0 0.5rem;
+    font-weight: 700;
+    font-size: 1.125rem;
+    letter-spacing: -0.01em;
+    color: var(--bs-body-color);
+    text-decoration: none;
+}
+
+.app-brand-mark {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    background: var(--app-accent);
+    color: var(--app-on-accent);
+    font-size: 1rem;
+}
+
+/* Sign-in page */
+.auth-shell {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    padding: 1rem;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 24rem;
+    padding: 1.75rem;
+    border: 1px solid var(--app-border);
+    border-radius: 0.75rem;
+    background: var(--app-surface);
+    box-shadow: var(--app-shadow);
+}
+
+    .auth-card .app-brand {
+        padding: 0;
+    }
+
 .btn-icon {
     display: inline-grid;
     place-items: center;

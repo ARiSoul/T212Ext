@@ -2,9 +2,14 @@ using System.Globalization;
 using ApexCharts;
 using Arisoul.T212Ext.Core;
 using Arisoul.T212Ext.Web;
+using Arisoul.T212Ext.Web.Auth;
 using Arisoul.T212Ext.Web.Components;
 using Arisoul.T212Ext.Web.Services;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Localization;
+
+if (AuthCommands.IsCommand(args))
+    return AuthCommands.Run(args, Console.In, Console.Out, Console.Error);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +19,17 @@ builder.Services.AddRazorComponents()
 builder.Services.AddT212ExtCore(builder.Configuration);
 builder.Services.AddT212ExtSyncWorker();
 builder.Services.AddHealthChecks();
+builder.AddT212ExtAuth();
+
+// Sign-in and language cookies are encrypted with these keys: on the server they live on a
+// volume, so a restart or a new image does not sign everyone out.
+var keysPath = builder.Configuration["DataProtection:KeysPath"];
+if (!string.IsNullOrEmpty(keysPath))
+{
+    builder.Services.AddDataProtection()
+        .SetApplicationName("T212Ext")
+        .PersistKeysToFileSystem(new DirectoryInfo(keysPath));
+}
 
 builder.Services.AddLocalization();
 builder.Services.AddApexCharts();
@@ -31,6 +47,17 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// No framing (the sign-in page cannot be overlaid by another site), no MIME sniffing, and no
+// full URLs (which can carry a year or an instrument) sent to other sites.
+app.Use((context, next) =>
+{
+    var headers = context.Response.Headers;
+    headers.XFrameOptions = "DENY";
+    headers.XContentTypeOptions = "nosniff";
+    headers["Referrer-Policy"] = "same-origin";
+    return next();
+});
+
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 
@@ -44,23 +71,29 @@ app.UseRequestLocalization(new RequestLocalizationOptions
     RequestCultureProviders = [new CookieRequestCultureProvider()],
 });
 
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseRateLimiter();
 app.UseAntiforgery();
 
-app.MapStaticAssets();
-app.MapHealthChecks("/health");
+// The sign-in page needs its styles and scripts before anyone is signed in.
+app.MapStaticAssets().AllowAnonymous();
+app.MapHealthChecks("/health").AllowAnonymous();
+app.MapT212ExtAuth();
 
 app.MapGet("/language", (string culture, string? returnUrl, HttpContext context) =>
 {
     context.Response.Cookies.Append(
         CookieRequestCultureProvider.DefaultCookieName,
         CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(Languages.Resolve(culture))),
-        new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), IsEssential = true, SameSite = SameSiteMode.Lax, HttpOnly = true });
+        new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), IsEssential = true, SameSite = SameSiteMode.Lax, HttpOnly = true, Secure = context.Request.IsHttps });
 
     // Local URLs only: the language link must not become an open redirect.
-    return Results.LocalRedirect(string.IsNullOrEmpty(returnUrl) || !returnUrl.StartsWith('/') ? "/" : returnUrl);
-});
+    return Results.LocalRedirect(SignInService.SafeReturnUrl(returnUrl));
+}).AllowAnonymous();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
+return 0;

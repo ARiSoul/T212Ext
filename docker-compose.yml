@@ -1,0 +1,37 @@
+# T212Ext on the server, next to traceon (docs/DEPLOYMENT.md).
+# It joins traceon's Docker network: traceon's Caddy serves it over HTTPS as "t212ext:8080", and it
+# reaches traceon's SQL Server as "sqlserver" with its own login. It publishes no port.
+
+# Log rotation (Docker's json-file driver has no limit by default)
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+services:
+  t212ext:
+    build: .
+    container_name: t212ext
+    # The app's settings (Auth__Users__*, T212__Accounts__*) come from .env as they are; see .env.example.
+    env_file: .env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # Caddy terminates HTTPS: trust its X-Forwarded-For/-Proto (the port is not published).
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      ConnectionStrings__T212Ext: "Server=sqlserver;Database=T212Ext;User Id=t212ext;Password=${T212EXT_DB_PASSWORD:?set T212EXT_DB_PASSWORD in .env};TrustServerCertificate=True"
+    volumes:
+      - keys:/data/keys
+    networks:
+      - traceon
+    logging: *default-logging
+    restart: unless-stopped
+
+volumes:
+  # Data protection keys: without them every restart signs everyone out.
+  keys:
+
+networks:
+  traceon:
+    external: true
+    name: ${TRACEON_NETWORK:-traceon_default}

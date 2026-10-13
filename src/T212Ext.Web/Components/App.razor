@@ -38,5 +38,12 @@
 @code {
     // No prerendering: pages load their data once, and JS interop (theme, saved grid state) is
     // available from the first render.
-    private static readonly IComponentRenderMode RenderMode = new InteractiveServerRenderMode(prerender: false);
+    private static readonly IComponentRenderMode Interactive = new InteractiveServerRenderMode(prerender: false);
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    // The sign-in page is a plain form ([ExcludeFromInteractiveRouting]): it sets a cookie, which
+    // only a normal request can do. Every other page is interactive.
+    private IComponentRenderMode? RenderMode => HttpContext.AcceptsInteractiveRouting() ? Interactive : null;
 }
