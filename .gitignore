@@ -396,3 +396,9 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# T212Ext
+# Local launch settings and Claude Code session files.
+.claude/
+# Build leftovers of the 1.x MAUI app (never tracked).
+.legacy-maui-leftovers/

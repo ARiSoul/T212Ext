@@ -1,0 +1,17 @@
+<div class="card h-100">
+    <div class="card-body py-2">
+        <div class="text-body-secondary small">@Label</div>
+        <div class="fs-5 fw-semibold @ValueClass">@Value</div>
+        @if (Hint is not null)
+        {
+            <div class="text-body-secondary small">@Hint</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter, EditorRequired] public string Value { get; set; } = "";
+    [Parameter] public string? ValueClass { get; set; }
+    [Parameter] public string? Hint { get; set; }
+}

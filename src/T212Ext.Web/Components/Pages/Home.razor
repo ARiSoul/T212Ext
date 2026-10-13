@@ -1,0 +1,102 @@
+@page "/"
+@inject OverviewQueries Overview
+@inject DividendQueries DividendQueries
+
+<PageTitle>Overview · T212Ext</PageTitle>
+
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+    <h1 class="h3 mb-0 me-auto">Overview</h1>
+    <SyncButton Finished="LoadAsync" />
+</div>
+
+@if (_accounts is null)
+{
+    <p class="text-body-secondary">Loading…</p>
+}
+else if (_accounts.Count == 0)
+{
+    <div class="alert alert-info">
+        No account is configured. Add one under <code>T212:Accounts</code> (see the README, "Configuration").
+    </div>
+}
+else
+{
+    @if (_summaries is { Count: > 0 })
+    {
+        <h2 class="h5">Dividends</h2>
+        @foreach (var summary in _summaries)
+        {
+            <div class="row g-2 mb-3">
+                <div class="col-6 col-lg-3"><StatCard Label="Last 12 months" Value="@Format.Money(summary.Last12Months, summary.Currency)" /></div>
+                <div class="col-6 col-lg-3"><StatCard Label="This year" Value="@Format.Money(summary.YearToDate, summary.Currency)" /></div>
+                <div class="col-6 col-lg-3"><StatCard Label="All time" Value="@Format.Money(summary.AllTime, summary.Currency)" /></div>
+                <div class="col-6 col-lg-3"><StatCard Label="Payments" Value="@summary.Count.ToString()" /></div>
+            </div>
+        }
+    }
+
+    <h2 class="h5">Accounts</h2>
+    <div class="row g-3">
+        @foreach (var account in _accounts)
+        {
+            var snapshot = account.LatestSnapshot;
+            <div class="col-12 col-xl-6">
+                <div class="card">
+                    <div class="card-header d-flex flex-wrap gap-2 align-items-center">
+                        <strong class="me-auto">@account.Name</strong>
+                        <span class="badge text-bg-secondary">@account.Environment</span>
+                        @if (account.Currency is not null)
+                        {
+                            <span class="badge text-bg-light">@account.Currency</span>
+                        }
+                    </div>
+                    <div class="card-body">
+                        @if (!account.HasCredentials)
+                        {
+                            <div class="alert alert-warning py-2 small">
+                                No API key: the sync skips this account. CSV import still works.
+                            </div>
+                        }
+
+                        @if (snapshot is null)
+                        {
+                            <p class="text-body-secondary mb-2">No snapshot yet. It is taken on each sync.</p>
+                        }
+                        else
+                        {
+                            <div class="row g-2 mb-2">
+                                <div class="col-6 col-md-3"><StatCard Label="Total value" Value="@Format.Money(snapshot.TotalValue, snapshot.Currency)" /></div>
+                                <div class="col-6 col-md-3"><StatCard Label="Invested" Value="@Format.Money(snapshot.TotalCost, snapshot.Currency)" /></div>
+                                <div class="col-6 col-md-3">
+                                    <StatCard Label="Unrealised P/L" Value="@Format.Money(snapshot.UnrealizedProfitLoss, snapshot.Currency)"
+                                              ValueClass="@Format.SignClass(snapshot.UnrealizedProfitLoss)" />
+                                </div>
+                                <div class="col-6 col-md-3"><StatCard Label="Free cash" Value="@Format.Money(snapshot.CashAvailable, snapshot.Currency)" /></div>
+                            </div>
+                            <p class="small text-body-secondary mb-2">
+                                @snapshot.Positions.Count positions · snapshot of @Format.DateTime(snapshot.TakenAt)
+                            </p>
+                        }
+
+                        <p class="small text-body-secondary mb-0">
+                            Stored: @account.DividendCount dividends · @account.OrderCount orders · @account.TransactionCount cash movements
+                        </p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private IReadOnlyList<AccountOverview>? _accounts;
+    private IReadOnlyList<DividendSummary>? _summaries;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _accounts = await Overview.GetAccountsAsync();
+        _summaries = await DividendQueries.GetSummariesAsync(null);
+    }
+}
