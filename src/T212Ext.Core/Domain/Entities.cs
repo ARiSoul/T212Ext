@@ -199,6 +199,24 @@ public class ExchangeRate
     public decimal PerEuro { get; set; }
 }
 
+/// <summary>
+/// A stock split (or reverse split) entered by the person: Trading 212 changes the quantity held
+/// without recording an order, so the FIFO of capital gains needs it.
+/// </summary>
+public class StockSplit
+{
+    public long Id { get; set; }
+    public required string Isin { get; set; }
+
+    /// <summary>The first day the new quantity applies.</summary>
+    public DateOnly Date { get; set; }
+
+    /// <summary>New shares per old share: 2 for a 2-for-1 split, 0.1 for a 1-for-10 reverse split.</summary>
+    public decimal Ratio { get; set; }
+
+    public DateTimeOffset CreatedAt { get; set; }
+}
+
 /// <summary>What the person set for an instrument, by ISIN. Shared by all accounts.</summary>
 public class InstrumentSetting
 {

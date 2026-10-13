@@ -1,0 +1,10 @@
+@inject IStringLocalizer<SharedResource> L
+
+<ul class="nav nav-pills tax-tabs mb-3 d-print-none">
+    <li class="nav-item">
+        <NavLink class="nav-link" href="tax" Match="NavLinkMatch.All"><i class="bi bi-cash-coin me-1"></i>@L["Tax_TabDividends"]</NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink class="nav-link" href="tax/gains"><i class="bi bi-graph-up-arrow me-1"></i>@L["Tax_TabGains"]</NavLink>
+    </li>
+</ul>

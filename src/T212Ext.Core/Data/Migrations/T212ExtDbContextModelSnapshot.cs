@@ -488,6 +488,37 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                     b.ToTable("Snapshots");
                 });
 
+            modelBuilder.Entity("Arisoul.T212Ext.Core.Domain.StockSplit", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Isin")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal>("Ratio")
+                        .HasPrecision(28, 10)
+                        .HasColumnType("decimal(28,10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Isin", "Date")
+                        .IsUnique();
+
+                    b.ToTable("StockSplits");
+                });
+
             modelBuilder.Entity("Arisoul.T212Ext.Core.Domain.SyncRun", b =>
                 {
                     b.Property<long>("Id")

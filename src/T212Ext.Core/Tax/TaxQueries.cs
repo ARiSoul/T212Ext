@@ -21,6 +21,88 @@ public sealed class TaxQueries(IDbContextFactory<T212ExtDbContext> dbFactory)
         return [.. dates.Select(d => d.UtcDateTime.Year).Distinct().OrderDescending()];
     }
 
+    /// <summary>Capital gains of a year by FIFO, from the API's filled orders.</summary>
+    /// <returns>The result, and the corporate-action fills (splits, spin-offs…) it cannot handle yet.</returns>
+    public async Task<(CapitalGainsResult Result, IReadOnlyList<string> Unsupported)> GetCapitalGainsAsync(int? accountId, int year, CancellationToken cancellationToken = default)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+
+        var orders = await db.Orders.AsNoTracking()
+            .Where(o => (accountId == null || o.AccountId == accountId) && o.FillId != null && o.FilledAt != null && o.FillQuantity != null && o.FillPrice != null)
+            .Select(o => new
+            {
+                o.Id, o.Isin, o.Ticker, o.InstrumentName, o.Side, o.FilledAt, o.FillQuantity, o.FillPrice, o.InstrumentCurrency,
+                o.FillType, o.RealisedProfitLoss, o.WalletCurrency, Fees = o.Taxes.Sum(t => t.Quantity),
+            })
+            .ToListAsync(cancellationToken);
+
+        var tickers = orders.Select(o => o.Ticker).Distinct().ToList();
+        var types = await db.Instruments.AsNoTracking()
+            .Where(i => tickers.Contains(i.Ticker))
+            .ToDictionaryAsync(i => i.Ticker, i => i.Type, cancellationToken);
+
+        var unsupported = orders
+            .Where(o => o.FillType is not null and not "TRADE")
+            .Select(o => $"{o.FilledAt:yyyy-MM-dd} {o.Ticker} {o.FillType}")
+            .ToList();
+
+        var trades = orders
+            .Where(o => o.FillType is null or "TRADE")
+            .Select(o => new TradeInput(
+                o.Id,
+                o.Isin ?? o.Ticker,
+                o.Ticker,
+                o.InstrumentName,
+                types.GetValueOrDefault(o.Ticker),
+                o.Side == "SELL" ? TradeSide.Sell : TradeSide.Buy,
+                o.FilledAt!.Value,
+                Math.Abs(o.FillQuantity!.Value),
+                o.FillPrice!.Value,
+                o.InstrumentCurrency ?? "EUR",
+                // Fees come negative, in the account currency (euros for a euro account).
+                Math.Abs(o.Fees),
+                o.Side == "SELL" ? o.RealisedProfitLoss : null))
+            .ToList();
+
+        var overrides = await db.InstrumentSettings.AsNoTracking()
+            .Where(s => s.SourceCountry != null)
+            .ToDictionaryAsync(s => s.Isin, s => s.SourceCountry!, cancellationToken);
+
+        var rates = await db.ExchangeRates.AsNoTracking()
+            .Select(r => new { r.Currency, r.Date, r.PerEuro })
+            .ToListAsync(cancellationToken);
+
+        var splits = await db.StockSplits.AsNoTracking()
+            .Select(s => new SplitInput(s.Isin, s.Date, s.Ratio))
+            .ToListAsync(cancellationToken);
+
+        var result = CapitalGains.Build(year, trades, overrides, new RateTable(rates.Select(r => (r.Currency, r.Date, r.PerEuro))), CapitalGainCodes.ForInstrumentType, splits);
+        return (result, unsupported);
+    }
+
+    /// <summary>The instruments with filled orders, for picking one (splits).</summary>
+    public async Task<IReadOnlyList<(string Isin, string Ticker, string? Name)>> GetTradedInstrumentsAsync(CancellationToken cancellationToken = default)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        var rows = await db.Orders.AsNoTracking()
+            .Where(o => o.FillId != null && o.Isin != null)
+            .GroupBy(o => o.Isin!)
+            .Select(g => new { Isin = g.Key, Ticker = g.Max(o => o.Ticker), Name = g.Max(o => o.InstrumentName) })
+            .ToListAsync(cancellationToken);
+        return [.. rows.Select(r => (r.Isin, r.Ticker ?? r.Isin, r.Name)).OrderBy(r => r.Name ?? r.Item2)];
+    }
+
+    /// <summary>Years with sales, newest first.</summary>
+    public async Task<IReadOnlyList<int>> GetSaleYearsAsync(int? accountId, CancellationToken cancellationToken = default)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        var dates = await db.Orders.AsNoTracking()
+            .Where(o => (accountId == null || o.AccountId == accountId) && o.Side == "SELL" && o.FillId != null && o.FilledAt != null)
+            .Select(o => o.FilledAt!.Value)
+            .ToListAsync(cancellationToken);
+        return [.. dates.Select(d => d.UtcDateTime.Year).Distinct().OrderDescending()];
+    }
+
     public async Task<IrsReportResult> GetReportAsync(int? accountId, int year, string? interestCountry, bool deductRefunds, CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);

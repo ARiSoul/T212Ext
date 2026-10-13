@@ -132,6 +132,14 @@ h1:focus {
     --bs-pagination-focus-box-shadow: 0 0 0 0.2rem var(--app-accent-soft);
 }
 
+.nav-pills {
+    --bs-nav-pills-link-active-bg: var(--app-accent);
+    --bs-nav-pills-link-active-color: var(--app-on-accent);
+    --bs-nav-link-color: var(--app-text-muted);
+    --bs-nav-link-hover-color: var(--bs-body-color);
+    gap: 0.25rem;
+}
+
 .card {
     --bs-card-bg: var(--app-surface);
     --bs-card-border-color: var(--app-border);

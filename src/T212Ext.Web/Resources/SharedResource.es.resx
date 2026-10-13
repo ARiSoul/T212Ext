@@ -79,6 +79,7 @@
   <data name="Col_YieldOnCost" xml:space="preserve"><value>Rentabilidad s/ coste</value></data>
   <data name="Common_Account" xml:space="preserve"><value>Cuenta</value></data>
   <data name="Common_AllAccounts" xml:space="preserve"><value>Todas las cuentas</value></data>
+  <data name="Common_Delete" xml:space="preserve"><value>Eliminar</value></data>
   <data name="Common_Failed" xml:space="preserve"><value>Falló</value></data>
   <data name="Common_Loading" xml:space="preserve"><value>Cargando…</value></data>
   <data name="Common_No" xml:space="preserve"><value>No</value></data>
@@ -96,6 +97,7 @@
   <data name="Country_CA" xml:space="preserve"><value>Canadá</value></data>
   <data name="Country_CH" xml:space="preserve"><value>Suiza</value></data>
   <data name="Country_CN" xml:space="preserve"><value>China</value></data>
+  <data name="Country_CW" xml:space="preserve"><value>Curazao</value></data>
   <data name="Country_CY" xml:space="preserve"><value>Chipre</value></data>
   <data name="Country_DE" xml:space="preserve"><value>Alemania</value></data>
   <data name="Country_DK" xml:space="preserve"><value>Dinamarca</value></data>
@@ -129,6 +131,42 @@
   <data name="Error_PageFailed" xml:space="preserve"><value>No se pudo cargar esta página.</value></data>
   <data name="Error_Text" xml:space="preserve"><value>Se produjo un error al procesar la solicitud.</value></data>
   <data name="Error_Title" xml:space="preserve"><value>Algo salió mal</value></data>
+  <data name="Gains_AcquiredOn" xml:space="preserve"><value>Fecha de adquisición</value></data>
+  <data name="Gains_Acquisition" xml:space="preserve"><value>Valor de adquisición</value></data>
+  <data name="Gains_AddSplit" xml:space="preserve"><value>Añadir desdoblamiento</value></data>
+  <data name="Gains_Balance" xml:space="preserve"><value>Saldo (ganancias − pérdidas)</value></data>
+  <data name="Gains_BrokerResult" xml:space="preserve"><value>Trading 212 (coste medio): {0}</value></data>
+  <data name="Gains_Counterparty" xml:space="preserve"><value>País de la contraparte</value></data>
+  <data name="Gains_DaysHeld" xml:space="preserve"><value>Días mantenido</value></data>
+  <data name="Gains_Disclaimer" xml:space="preserve"><value>Cifras preparadas a partir de tus órdenes, &lt;strong&gt;no es asesoramiento fiscal&lt;/strong&gt;. Cada venta se asocia a las acciones compradas primero (FIFO, art. 43.º del Código do IRS). Compras y ventas están en euros al tipo del BCE de su propia fecha; comisiones y costes de cambio son gastos. Solo tributan las ventas: las posiciones abiertas no se declaran. Compruébalo con las instrucciones del formulario de ese año.</value></data>
+  <data name="Gains_EtfCodeNote" xml:space="preserve"><value>Los ETF usan el código G20 (participaciones de fondos), cuya descripción encaja mejor; también se ven G90 y G01, y los tres tributan igual. A confirmar.</value></data>
+  <data name="Gains_Exclusion" xml:space="preserve"><value>Exclusión parcial</value></data>
+  <data name="Gains_ExclusionNote" xml:space="preserve"><value>Exclusión parcial (art. 43.º n.º 5 del Código do IRS, desde el 29 de junio de 2024): 10 % de la ganancia en valores cotizados mantenidos de 2 a 5 años, 20 % de 5 a 8, 30 % desde 8. El formulario pregunta si los valores cotizan (Sim) y la AT debería aplicarla; la columna es informativa.</value></data>
+  <data name="Gains_Expenses" xml:space="preserve"><value>Gastos</value></data>
+  <data name="Gains_Flag_MissingPurchases" xml:space="preserve"><value>faltan compras</value></data>
+  <data name="Gains_Flag_MissingRate" xml:space="preserve"><value>sin tipo de cambio</value></data>
+  <data name="Gains_Flag_NoCountry" xml:space="preserve"><value>sin país de origen</value></data>
+  <data name="Gains_Gain" xml:space="preserve"><value>Plus/minusvalía</value></data>
+  <data name="Gains_LessThanYear" xml:space="preserve"><value>Menos de 365 días</value></data>
+  <data name="Gains_LinesNote" xml:space="preserve"><value>Una línea por venta y por compra a la que se asoció (FIFO). El impuesto pagado en el extranjero es 0: no hay retención en estas ventas.</value></data>
+  <data name="Gains_Listed" xml:space="preserve"><value>Valores admitidos a negociación</value></data>
+  <data name="Gains_MissingPurchases" xml:space="preserve"><value>Algunas ventas son mayores que las acciones compradas antes: el historial de compras está incompleto. Importa los informes CSV de años anteriores.</value></data>
+  <data name="Gains_NoSales" xml:space="preserve"><value>No hubo ventas en este año.</value></data>
+  <data name="Gains_Quadro92A" xml:space="preserve"><value>Anexo J, cuadro 9.2A</value></data>
+  <data name="Gains_Realisation" xml:space="preserve"><value>Valor de transmisión</value></data>
+  <data name="Gains_SalesCount" xml:space="preserve"><value>{0} ventas</value></data>
+  <data name="Gains_ShortTerm" xml:space="preserve"><value>Saldo mantenido &lt; 365 días</value></data>
+  <data name="Gains_ShortTermHint" xml:space="preserve"><value>Puede tener que acumularse: ver la nota en TAX.md</value></data>
+  <data name="Gains_ShortTermNote" xml:space="preserve"><value>Un saldo positivo de activos mantenidos menos de 365 días debe acumularse (englobamento) cuando la base imponible, incluyéndolo, alcanza el último tramo (83.696 EUR para rentas de 2025, 86.634 EUR para 2026) — art. 72.º n.º 14 del Código do IRS. Las pérdidas solo pueden compensarse (5 años) si se acumulan.</value></data>
+  <data name="Gains_Shortfall" xml:space="preserve"><value>{0}: desde {1}, se vendieron {2} acciones más de las compradas — probablemente un desdoblamiento a registrar abajo</value></data>
+  <data name="Gains_SoldOn" xml:space="preserve"><value>Fecha de transmisión</value></data>
+  <data name="Gains_SplitRatio" xml:space="preserve"><value>{0} acciones nuevas por acción</value></data>
+  <data name="Gains_SplitRatioInput" xml:space="preserve"><value>Acciones nuevas por acción</value></data>
+  <data name="Gains_Splits" xml:space="preserve"><value>Desdoblamientos de acciones</value></data>
+  <data name="Gains_SplitsHint" xml:space="preserve"><value>En un desdoblamiento, Trading 212 cambia el número de acciones sin registrar una orden. Registra los desdoblamientos de los activos que tenías para que el FIFO use las cantidades correctas: las acciones conservan su fecha y coste de adquisición (art. 43.º n.º 8 del Código do IRS).</value></data>
+  <data name="Gains_Subtitle" xml:space="preserve"><value>Ventas de acciones y ETF para la declaración del IRS portugués: Anexo J, cuadro 9.2A</value></data>
+  <data name="Gains_Unsupported" xml:space="preserve"><value>Operaciones societarias aún no tratadas (desdoblamientos, spin-offs…), revisa estos activos a mano:</value></data>
+  <data name="Gains_YearOrMore" xml:space="preserve"><value>365 días o más</value></data>
   <data name="Grid_ClearFilter" xml:space="preserve"><value>Borrar</value></data>
   <data name="Grid_Empty" xml:space="preserve"><value>Todavía no hay nada aquí.</value></data>
   <data name="Grid_Export" xml:space="preserve"><value>Exportar</value></data>
@@ -196,6 +234,9 @@
   <data name="Positions_SnapshotOf" xml:space="preserve"><value>Posiciones abiertas el {0}</value></data>
   <data name="Positions_Subtitle" xml:space="preserve"><value>Posiciones abiertas de la última instantánea</value></data>
   <data name="Positions_YieldOnCost" xml:space="preserve"><value>Rentabilidad s/ coste {0}</value></data>
+  <data name="Quadro11_Account" xml:space="preserve"><value>número de cuenta {0}, país de la entidad {1} (compruébalo en el contrato)</value></data>
+  <data name="Quadro11_Text" xml:space="preserve"><value>Las cuentas de valores y de depósito en entidades fuera de Portugal deben identificarse cada año, aunque no generen rentas. Una cuenta de Trading 212 no tiene IBAN: su número va en “Outros números de identificação”.</value></data>
+  <data name="Quadro11_Title" xml:space="preserve"><value>Anexo J, cuadro 11: cuentas en el extranjero</value></data>
   <data name="Reconnect_Failed" xml:space="preserve"><value>No se pudo reconectar. Reintenta o recarga la página.</value></data>
   <data name="Reconnect_Paused" xml:space="preserve"><value>El servidor ha pausado la sesión.</value></data>
   <data name="Reconnect_Rejoining" xml:space="preserve"><value>Reconectando con el servidor…</value></data>
@@ -249,7 +290,7 @@
   <data name="Tax_GrossEur" xml:space="preserve"><value>Bruto EUR</value></data>
   <data name="Tax_GrossIncome" xml:space="preserve"><value>Rendimiento bruto</value></data>
   <data name="Tax_GrossOriginal" xml:space="preserve"><value>Bruto (original)</value></data>
-  <data name="Tax_InterestCountry" xml:space="preserve"><value>País de tu entidad de Trading 212 (para intereses)</value></data>
+  <data name="Tax_InterestCountry" xml:space="preserve"><value>País de tu entidad de Trading 212</value></data>
   <data name="Tax_Line" xml:space="preserve"><value>Línea</value></data>
   <data name="Tax_MissingRates" xml:space="preserve"><value>Faltan tipos de cambio para:</value></data>
   <data name="Tax_NetEur" xml:space="preserve"><value>Neto EUR</value></data>
@@ -270,6 +311,8 @@
   <data name="Tax_SourceCountryHint" xml:space="preserve"><value>Se usa en el informe del IRS. El país del ISIN suele ser correcto; cámbialo cuando la renta viene de otro país.</value></data>
   <data name="Tax_Subtitle" xml:space="preserve"><value>Dividendos extranjeros para la declaración del IRS portugués: Anexo J, cuadro 8A</value></data>
   <data name="Tax_SuggestedCode" xml:space="preserve"><value>Código sugerido</value></data>
+  <data name="Tax_TabDividends" xml:space="preserve"><value>Dividendos (cuadro 8A)</value></data>
+  <data name="Tax_TabGains" xml:space="preserve"><value>Plusvalías (cuadro 9.2A)</value></data>
   <data name="Tax_TaxPaidAbroad" xml:space="preserve"><value>Impuesto pagado en el extranjero</value></data>
   <data name="Tax_TaxPaidAbroadColumn" xml:space="preserve"><value>Impuesto pagado en el extranjero (país de origen)</value></data>
   <data name="Tax_Title" xml:space="preserve"><value>Informe del IRS (Portugal)</value></data>

@@ -171,3 +171,12 @@ internal sealed class InstrumentSettingConfiguration : IEntityTypeConfiguration<
         builder.Property(s => s.SourceCountry).HasMaxLength(Lengths.Country);
     }
 }
+
+internal sealed class StockSplitConfiguration : IEntityTypeConfiguration<StockSplit>
+{
+    public void Configure(EntityTypeBuilder<StockSplit> builder)
+    {
+        builder.Property(s => s.Isin).HasMaxLength(Lengths.Isin);
+        builder.HasIndex(s => new { s.Isin, s.Date }).IsUnique();
+    }
+}

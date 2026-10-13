@@ -1,0 +1,297 @@
+@page "/tax/gains"
+@inherits AccountPage
+@using Arisoul.T212Ext.Core.Rates
+@using Arisoul.T212Ext.Core.Tax
+@inject TaxQueries Tax
+@inject InstrumentSettings Settings
+@inject ExchangeRateUpdater RateUpdater
+@inject IJSRuntime JS
+@inject BrowserStorage Storage
+@inject ILogger<CapitalGainsReport> Logger
+
+<PageTitle>@L["Tax_TabGains"] · T212Ext</PageTitle>
+
+<div class="page-header">
+    <div class="me-auto">
+        <h1>@L["Tax_Title"]</h1>
+        <p>@L["Gains_Subtitle"]</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2 d-print-none">
+        <select class="form-select form-select-sm w-auto" aria-label="@L["Common_Year"]" value="@_year" @onchange="OnYearChanged">
+            @foreach (var year in _years)
+            {
+                <option value="@year">@year</option>
+            }
+        </select>
+        <select class="form-select form-select-sm w-auto" aria-label="@L["Tax_InterestCountry"]" title="@L["Tax_InterestCountry"]" value="@_entityCountry" @onchange="OnEntityCountryChanged">
+            @foreach (var country in Labels.KnownCountries.OrderBy(c => Labels.Country(L, c)))
+            {
+                <option value="@country">@Labels.Country(L, country)</option>
+            }
+        </select>
+        <button type="button" class="btn btn-sm btn-outline-secondary" disabled="@_updatingRates" @onclick="UpdateRatesAsync">
+            <i class="bi bi-currency-exchange me-1"></i>@L["Tax_UpdateRates"]
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="PrintAsync"><i class="bi bi-printer"></i> @L["Tax_Print"]</button>
+    </div>
+</div>
+
+<TaxTabs />
+
+<div class="alert alert-info d-flex gap-2 small">
+    <i class="bi bi-info-circle mt-1"></i>
+    <div>@((MarkupString)L["Gains_Disclaimer"].Value)</div>
+</div>
+
+@if (_rateError is not null)
+{
+    <div class="alert alert-danger">@_rateError</div>
+}
+
+@if (_result is null)
+{
+    <p class="text-body-secondary"><span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>@L["Common_Loading"]</p>
+}
+else if (_result.Sales.Count == 0)
+{
+    <div class="grid-empty">@L["Gains_NoSales"]</div>
+}
+else
+{
+    var r = _result;
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-lg"><Stat Icon="bi-box-arrow-up" Label="@L["Gains_Realisation"]" Value="@Fmt.Money(r.Realisation, "EUR")" Hint="@string.Format(L["Gains_SalesCount"], r.Sales.Count)" /></div>
+        <div class="col-6 col-lg"><Stat Icon="bi-box-arrow-in-down" Label="@L["Gains_Acquisition"]" Value="@Fmt.Money(r.Acquisition, "EUR")" /></div>
+        <div class="col-6 col-lg"><Stat Icon="bi-receipt" Label="@L["Gains_Expenses"]" Value="@Fmt.Money(r.Expenses, "EUR")" /></div>
+        <div class="col-6 col-lg"><Stat Icon="bi-calculator" Label="@L["Gains_Balance"]" Value="@Fmt.Money(r.Balance, "EUR")" ValueClass="@Fmt.SignClass(r.Balance)"
+                                       Hint="@(r.BrokerResult is { } broker ? string.Format(L["Gains_BrokerResult"], Fmt.Money(broker, "EUR")) : null)" /></div>
+        <div class="col-12 col-lg"><Stat Icon="bi-hourglass-split" Label="@L["Gains_ShortTerm"]" Value="@Fmt.Money(r.ShortTermBalance, "EUR")" ValueClass="@Fmt.SignClass(r.ShortTermBalance)" Hint="@L["Gains_ShortTermHint"]" /></div>
+    </div>
+
+    @if (r.MissingRates.Count > 0)
+    {
+        <div class="alert alert-warning"><strong>@L["Tax_MissingRates"]</strong> @string.Join(", ", r.MissingRates.Take(12))@(r.MissingRates.Count > 12 ? "…" : "")</div>
+    }
+    @if (r.Shortfalls.Count > 0)
+    {
+        <div class="alert alert-warning">
+            <div class="mb-1">@L["Gains_MissingPurchases"]</div>
+            <ul class="mb-0">
+                @foreach (var shortfall in r.Shortfalls)
+                {
+                    <li>@string.Format(L["Gains_Shortfall"], shortfall.Name ?? shortfall.Ticker, Fmt.Date(shortfall.FirstSale), Fmt.Number(Math.Round(shortfall.Quantity, 6)))</li>
+                }
+            </ul>
+        </div>
+    }
+    @if (_unsupported.Count > 0)
+    {
+        <div class="alert alert-warning">@L["Gains_Unsupported"] @string.Join(", ", _unsupported.Take(10))</div>
+    }
+
+    <h2 class="section-title">@L["Gains_Quadro92A"]</h2>
+    <DataGrid TItem="GainLine" Items="_lines" Columns="Columns" StorageKey="tax-gains" ExportFileName="@($"irs-{_year}-anexo-j-quadro-9-2a")"
+              DefaultSortKey="sold" DefaultSummaries="DefaultSummaries" />
+    <p class="small text-body-secondary mt-2">@L["Gains_LinesNote"]</p>
+    @if (_lines.Any(l => l.Code == CapitalGainCodes.FundUnits))
+    {
+        <p class="small text-body-secondary">@L["Gains_EtfCodeNote"]</p>
+    }
+    @if (_lines.Any(l => l.LongHoldingExclusion > 0))
+    {
+        <p class="small text-body-secondary">@L["Gains_ExclusionNote"]</p>
+    }
+    @if (r.ShortTermBalance > 0)
+    {
+        <p class="small text-body-secondary">@L["Gains_ShortTermNote"]</p>
+    }
+}
+
+<Quadro11Card EntityCountry="@_entityCountry" />
+
+<h2 class="section-title">@L["Gains_Splits"]</h2>
+<div class="card d-print-none">
+    <div class="card-body">
+        <p class="small text-body-secondary">@L["Gains_SplitsHint"]</p>
+        @if (_splits.Count > 0)
+        {
+            <ul class="list-unstyled mb-3">
+                @foreach (var split in _splits)
+                {
+                    <li class="d-flex align-items-center gap-2 py-1">
+                        <span>@InstrumentName(split.Isin) · @Fmt.Date(split.Date) · @string.Format(L["Gains_SplitRatio"], Fmt.Number(split.Ratio))</span>
+                        <button type="button" class="btn btn-sm btn-link text-negative p-0" aria-label="@L["Common_Delete"]" @onclick="() => DeleteSplitAsync(split.Id)"><i class="bi bi-trash"></i></button>
+                    </li>
+                }
+            </ul>
+        }
+        <div class="d-flex flex-wrap gap-2 align-items-end">
+            <label class="small">
+                @L["Col_Instrument"]
+                <select class="form-select form-select-sm" @bind="_splitIsin">
+                    <option value="">—</option>
+                    @foreach (var instrument in _instruments)
+                    {
+                        <option value="@instrument.Isin">@(instrument.Name ?? instrument.Ticker)</option>
+                    }
+                </select>
+            </label>
+            <label class="small">
+                @L["Col_Date"]
+                <input type="date" class="form-control form-control-sm" @bind="_splitDate" />
+            </label>
+            <label class="small">
+                @L["Gains_SplitRatioInput"]
+                <input type="number" class="form-control form-control-sm" style="width: 7rem" step="any" min="0" @bind="_splitRatio" />
+            </label>
+            <button type="button" class="btn btn-sm btn-primary" disabled="@(string.IsNullOrEmpty(_splitIsin) || _splitRatio is not > 0 || _splitRatio == 1)" @onclick="AddSplitAsync">
+                <i class="bi bi-plus-lg"></i> @L["Gains_AddSplit"]
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private IReadOnlyList<int> _years = [];
+    private int _year = DateTime.UtcNow.Year - 1;
+    private CapitalGainsResult? _result;
+    private IReadOnlyList<GainLine> _lines = [];
+    private IReadOnlyList<string> _unsupported = [];
+    private bool _updatingRates;
+    private string? _rateError;
+    private IReadOnlyList<StockSplit> _splits = [];
+    private IReadOnlyList<(string Isin, string Ticker, string? Name)> _instruments = [];
+    private string? _splitIsin;
+    private DateTime _splitDate = DateTime.Today;
+    private decimal? _splitRatio = 2;
+
+    private static readonly IReadOnlyDictionary<string, SummaryKind[]> DefaultSummaries = new Dictionary<string, SummaryKind[]>
+    {
+        ["realisation"] = [SummaryKind.Sum],
+        ["acquisition"] = [SummaryKind.Sum],
+        ["expenses"] = [SummaryKind.Sum],
+        ["gain"] = [SummaryKind.Sum],
+    };
+
+    private IReadOnlyList<GridColumn<GainLine>> Columns => [
+        new() { Key = "line", Title = L["Tax_Line"], Value = l => LineNumber(l), AlignEnd = false, HideBelow = "lg" },
+        new() { Key = "instrument", Title = L["Col_Instrument"], Value = l => l.Name ?? l.Ticker, MobileTitle = true, Filterable = false },
+        new() { Key = "country", Title = L["Tax_SourceCountryColumn"], Value = l => $"{CountryCodes.Format(CountryCodes.Numeric(l.Country))} · {Labels.Country(L, l.Country)}", Filterable = true, HideBelow = "xl" },
+        new() { Key = "code", Title = L["Tax_Code"], Value = l => l.Code, Filterable = true, HideBelow = "lg" },
+        new() { Key = "sold", Title = L["Gains_SoldOn"], Value = l => l.SoldAt, Text = l => Fmt.Date(l.SoldAt) },
+        new() { Key = "realisation", Title = L["Gains_Realisation"], Value = l => l.RealisationEur, Text = l => Fmt.Money(l.RealisationEur, "EUR"), AlignEnd = true,
+                Summaries = GridColumn<GainLine>.Numeric, SummaryText = n => Fmt.Money(n, "EUR") },
+        new() { Key = "acquired", Title = L["Gains_AcquiredOn"], Value = l => l.AcquiredAt, Text = l => Fmt.Date(l.AcquiredAt) },
+        new() { Key = "acquisition", Title = L["Gains_Acquisition"], Value = l => l.AcquisitionEur, Text = l => Fmt.Money(l.AcquisitionEur, "EUR"), AlignEnd = true,
+                Summaries = GridColumn<GainLine>.Numeric, SummaryText = n => Fmt.Money(n, "EUR") },
+        new() { Key = "expenses", Title = L["Gains_Expenses"], Value = l => l.ExpensesEur, Text = l => Fmt.Money(l.ExpensesEur, "EUR"), AlignEnd = true, HideBelow = "md",
+                Summaries = GridColumn<GainLine>.Numeric, SummaryText = n => Fmt.Money(n, "EUR") },
+        new() { Key = "gain", Title = L["Gains_Gain"], Value = l => l.Gain, Text = l => Fmt.Money(l.Gain, "EUR"), AlignEnd = true,
+                Template = l => @<span class="@Fmt.SignClass(l.Gain)">@Fmt.Money(l.Gain, "EUR")</span>,
+                Summaries = GridColumn<GainLine>.Numeric, SummaryText = n => Fmt.Money(n, "EUR") },
+        new() { Key = "shares", Title = L["Col_Shares"], Value = l => l.Quantity, Text = l => Fmt.Number(l.Quantity), AlignEnd = true, HideBelow = "xl", HideOnMobile = true },
+        new() { Key = "days", Title = L["Gains_DaysHeld"], Value = l => l.DaysHeld, AlignEnd = true, HideBelow = "lg",
+                Filterable = true, FilterKey = l => l.DaysHeld < 365 ? L["Gains_LessThanYear"].Value : L["Gains_YearOrMore"].Value },
+        new() { Key = "exclusion", Title = L["Gains_Exclusion"], Value = l => l.LongHoldingExclusion, Text = l => l.LongHoldingExclusion > 0 ? Fmt.Percent(l.LongHoldingExclusion, 0) : "—",
+                AlignEnd = true, HideBelow = "xl", HideOnMobile = true },
+        new() { Key = "counterparty", Title = L["Gains_Counterparty"], Value = _ => $"{CountryCodes.Format(CountryCodes.Numeric(_entityCountry))} · {Labels.Country(L, _entityCountry)}",
+                HideBelow = "xxl", HideOnMobile = true, Sortable = false },
+        new() { Key = "listed", Title = L["Gains_Listed"], Value = _ => L["Common_Yes"].Value, HideBelow = "xxl", HideOnMobile = true, Sortable = false },
+        new() { Key = "check", Title = L["Tax_Check"], Value = l => FlagsText(l.Flags), Filterable = true, FilterKey = l => FlagsText(l.Flags) is "" ? L["Common_Ok"].Value : FlagsText(l.Flags),
+                HideBelow = "xl", HideOnMobile = true },
+    ];
+
+    private const string EntityCountryKey = "t212ext.tax.interestCountry";
+    private string _entityCountry = "CY";
+    private bool _optionsRead;
+    private Dictionary<GainLine, int> _numbers = new(ReferenceEqualityComparer.Instance);
+
+    // Lines are numbered like the form (951, 952…) in the order of sale, then purchase.
+    private int LineNumber(GainLine line) => _numbers.GetValueOrDefault(line);
+
+    private async Task OnEntityCountryChanged(ChangeEventArgs e)
+    {
+        _entityCountry = e.Value?.ToString() ?? "CY";
+        await Storage.SetAsync(EntityCountryKey, _entityCountry);
+    }
+
+    protected override async Task LoadAsync()
+    {
+        if (!_optionsRead)
+        {
+            _entityCountry = await Storage.GetAsync<string>(EntityCountryKey) ?? "CY";
+            _optionsRead = true;
+        }
+
+        _years = await Tax.GetSaleYearsAsync(AccountId);
+        if (_years.Count > 0 && !_years.Contains(_year))
+            _year = _years.Contains(DateTime.UtcNow.Year - 1) ? DateTime.UtcNow.Year - 1 : _years[0];
+        await BuildAsync();
+    }
+
+    private async Task BuildAsync()
+    {
+        (_result, _unsupported) = await Tax.GetCapitalGainsAsync(AccountId, _year);
+        _lines = [.. _result.Lines];
+        _numbers = new(ReferenceEqualityComparer.Instance);
+        var number = 951;
+        foreach (var line in _lines.OrderBy(l => l.SoldAt).ThenBy(l => l.AcquiredAt))
+            _numbers[line] = number++;
+        _splits = await Settings.GetSplitsAsync();
+        _instruments = await Tax.GetTradedInstrumentsAsync();
+        _splitIsin ??= _result.Shortfalls.FirstOrDefault()?.Isin;
+    }
+
+    private string InstrumentName(string isin) =>
+        _instruments.FirstOrDefault(i => i.Isin == isin) is { Isin: not null } i ? i.Name ?? i.Ticker : isin;
+
+    private async Task AddSplitAsync()
+    {
+        if (string.IsNullOrEmpty(_splitIsin) || _splitRatio is not { } ratio || ratio <= 0 || ratio == 1)
+            return;
+
+        await Settings.AddSplitAsync(_splitIsin, DateOnly.FromDateTime(_splitDate), ratio);
+        await BuildAsync();
+    }
+
+    private async Task DeleteSplitAsync(long id)
+    {
+        await Settings.DeleteSplitAsync(id);
+        await BuildAsync();
+    }
+
+    private async Task OnYearChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var year))
+            _year = year;
+        await BuildAsync();
+    }
+
+    private async Task UpdateRatesAsync()
+    {
+        _updatingRates = true;
+        _rateError = null;
+        try
+        {
+            await RateUpdater.UpdateAsync(CancellationToken.None);
+            await BuildAsync();
+        }
+        catch (Exception ex) when (ex is HttpRequestException or FormatException or TaskCanceledException)
+        {
+            Logger.LogWarning(ex, "Exchange rate update failed");
+            _rateError = L["Tax_RatesFailed"];
+        }
+        finally
+        {
+            _updatingRates = false;
+        }
+    }
+
+    private async Task PrintAsync() => await JS.InvokeVoidAsync("print");
+
+    // Short term is shown in its own column; the check column is about the data.
+    private string FlagsText(GainFlags flags) =>
+        string.Join(", ", Enum.GetValues<GainFlags>()
+            .Where(f => f is not GainFlags.None and not GainFlags.ShortTerm && flags.HasFlag(f))
+            .Select(f => L[$"Gains_Flag_{f}"].Value));
+}

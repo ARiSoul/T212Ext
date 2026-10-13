@@ -13,13 +13,15 @@ Trading 212's own app shows dividends one by one. T212Ext reads them through the
 
 ---
 
-## Features (2.2)
+## Features (2.3)
 
 **IRS report (Portugal)**
 - **Anexo J, quadro 8A:** foreign dividends by source country (code E11), gross and tax paid abroad, in euros at the ECB rate of each payment date. Exact withholding from the API's gross and the CSV's net per share.
 - **Apart:** Portuguese dividends (35% withheld in Portugal) and interest/share lending (code to confirm).
 - **Withholding refunds** deducted from the year they refer to.
-- **Checks** dividend by dividend, CSV export, and a print-friendly page. See [docs/TAX.md](docs/TAX.md). *Figures to check, not tax advice.*
+- **Capital gains, quadro 9.2A:** every sale matched to its purchases by FIFO, with values in euros at the ECB rate of each date, expenses, and codes G01 or G20. Also: the year's balance, the balance of holdings under 365 days, the partial exclusion for long holdings, and the stock splits you enter.
+- **Quadro 11:** your account number, for identifying the account abroad.
+- **Checks** line by line, CSV export, and a print-friendly page. See [docs/TAX.md](docs/TAX.md). *Figures to check, not tax advice.*
 
 
 **Dividends, at a glance**

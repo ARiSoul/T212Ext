@@ -15,6 +15,7 @@ public class T212ExtDbContext(DbContextOptions<T212ExtDbContext> options) : DbCo
     public DbSet<SyncRun> SyncRuns => Set<SyncRun>();
     public DbSet<ExchangeRate> ExchangeRates => Set<ExchangeRate>();
     public DbSet<InstrumentSetting> InstrumentSettings => Set<InstrumentSetting>();
+    public DbSet<StockSplit> StockSplits => Set<StockSplit>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {

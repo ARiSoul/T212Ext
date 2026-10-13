@@ -30,7 +30,7 @@ public static class Labels
     public static IReadOnlyList<string> KnownCountries { get; } =
     [
         "US", "IE", "GB", "DE", "FR", "NL", "CH", "LU", "BE", "ES", "PT", "IT", "AT", "DK", "SE", "NO", "FI",
-        "CA", "AU", "JP", "HK", "CN", "SG", "JE", "GG", "IM", "BM", "KY", "VG", "PA", "BR", "IL", "CY", "BG",
+        "CA", "AU", "JP", "HK", "CN", "SG", "CW", "JE", "GG", "IM", "BM", "KY", "VG", "PA", "BR", "IL", "CY", "BG",
     ];
 
     /// <summary>A country's name from its ISO code: translated for the usual ISIN countries, else the English name, else the code.</summary>
