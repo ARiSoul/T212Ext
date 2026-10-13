@@ -22,6 +22,9 @@ public static class Fmt
     public static string Date(DateTimeOffset? value) =>
         value is null ? "—" : value.Value.UtcDateTime.ToString("d", CultureInfo.CurrentCulture);
 
+    public static string Date(DateOnly? value) =>
+        value is null ? "—" : value.Value.ToString("d", CultureInfo.CurrentCulture);
+
     public static string DateTime(DateTimeOffset? value) =>
         value is null ? "—" : value.Value.ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
 

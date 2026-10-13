@@ -452,6 +452,35 @@ h1:focus {
     margin-top: 0.75rem;
 }
 
+/* ---------------- Print (the IRS report) ---------------- */
+@media print {
+    .app-sidebar, .app-topbar, .app-backdrop, .grid-toolbar, .grid-footer, .d-print-none {
+        display: none !important;
+    }
+
+    .app-shell {
+        display: block;
+    }
+
+    .app-content {
+        padding: 0;
+        max-width: none;
+    }
+
+    .card, .stat, .data-grid .table-responsive {
+        box-shadow: none;
+        break-inside: avoid;
+    }
+
+    .data-grid .d-md-none {
+        display: none !important;
+    }
+
+    .data-grid .d-none.d-md-block {
+        display: block !important;
+    }
+}
+
 /* ---------------- Blazor ---------------- */
 #blazor-error-ui {
     color-scheme: light only;

@@ -15,6 +15,8 @@ public static class Lengths
     public const int Code = 100;
     public const int Reference = 100;
     public const int Error = 2000;
+    public const int Note = 500;
+    public const int Country = 2;
 }
 
 internal sealed class BrokerAccountConfiguration : IEntityTypeConfiguration<BrokerAccount>
@@ -102,6 +104,7 @@ internal sealed class CashTransactionConfiguration : IEntityTypeConfiguration<Ca
     {
         builder.Property(t => t.Reference).HasMaxLength(Lengths.Reference);
         builder.Property(t => t.CsvReference).HasMaxLength(Lengths.Reference);
+        builder.Property(t => t.Note).HasMaxLength(Lengths.Note);
         builder.Property(t => t.Type).HasMaxLength(Lengths.Code);
         builder.Property(t => t.Currency).HasMaxLength(Lengths.Currency);
         builder.HasOne(t => t.Account).WithMany().HasForeignKey(t => t.AccountId);
@@ -147,5 +150,24 @@ internal sealed class SyncRunConfiguration : IEntityTypeConfiguration<SyncRun>
         builder.Property(r => r.Error).HasMaxLength(Lengths.Error);
         builder.HasOne(r => r.Account).WithMany().HasForeignKey(r => r.AccountId);
         builder.HasIndex(r => r.StartedAt);
+    }
+}
+
+internal sealed class ExchangeRateConfiguration : IEntityTypeConfiguration<ExchangeRate>
+{
+    public void Configure(EntityTypeBuilder<ExchangeRate> builder)
+    {
+        builder.HasKey(r => new { r.Currency, r.Date });
+        builder.Property(r => r.Currency).HasMaxLength(Lengths.Currency);
+    }
+}
+
+internal sealed class InstrumentSettingConfiguration : IEntityTypeConfiguration<InstrumentSetting>
+{
+    public void Configure(EntityTypeBuilder<InstrumentSetting> builder)
+    {
+        builder.HasKey(s => s.Isin);
+        builder.Property(s => s.Isin).HasMaxLength(Lengths.Isin);
+        builder.Property(s => s.SourceCountry).HasMaxLength(Lengths.Country);
     }
 }

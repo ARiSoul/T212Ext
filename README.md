@@ -13,7 +13,14 @@ Trading 212's own app shows dividends one by one. T212Ext reads them through the
 
 ---
 
-## Features (2.1)
+## Features (2.2)
+
+**IRS report (Portugal)**
+- **Anexo J, quadro 8A:** foreign dividends by source country (code E11), gross and tax paid abroad, in euros at the ECB rate of each payment date. Exact withholding from the API's gross and the CSV's net per share.
+- **Apart:** Portuguese dividends (35% withheld in Portugal) and interest/share lending (code to confirm).
+- **Withholding refunds** deducted from the year they refer to.
+- **Checks** dividend by dividend, CSV export, and a print-friendly page. See [docs/TAX.md](docs/TAX.md). *Figures to check, not tax advice.*
+
 
 **Dividends, at a glance**
 - **Overview:**
@@ -41,7 +48,7 @@ The grids remember your choices.
 - A modern interface with **light, dark and automatic themes**, made for phone and desktop.
 - **Português, English, Español.**
 
-The next phase is the **IRS report** (Anexo J), then the deployment. See [docs/BACKLOG.md](docs/BACKLOG.md).
+Next: the deployment next to traceon, with sign-in. See [docs/BACKLOG.md](docs/BACKLOG.md).
 
 ## Tech stack
 
@@ -145,7 +152,8 @@ T212Ext.slnx
 VERSION                       Version of the whole solution
 src/
   T212Ext.Client/             Trading 212 API client: models, auth, rate limits, paging
-  T212Ext.Core/               Entities, EF Core (Data/), sync (Sync/), CSV import (Import/), analytics (Analytics/), queries (Queries/)
+  T212Ext.Core/               Entities, EF Core (Data/), sync (Sync/), CSV import (Import/), analytics (Analytics/),
+                              ECB rates (Rates/), IRS report (Tax/), queries (Queries/)
   T212Ext.Web/                Blazor app; hosts the sync worker
     Components/Grid/          The DataGrid and its engine
     Components/Charts/        Chart style (validated palette) and the themed chart card
@@ -163,6 +171,7 @@ docs/                         See docs/README.md
 |---|---|
 | [docs/README.md](docs/README.md) | Index, versioning and releasing |
 | [docs/CONVENTIONS.md](docs/CONVENTIONS.md) | Rules every change follows |
+| [docs/TAX.md](docs/TAX.md) | The IRS report: rules, sources, what is still to confirm |
 | [docs/T212-API.md](docs/T212-API.md) | What we know about the Trading 212 API: auth, limits, quirks, terms |
 | [docs/BACKLOG.md](docs/BACKLOG.md) | Roadmap and ideas |
 | [docs/RELEASE-NOTES.md](docs/RELEASE-NOTES.md) | What changed in each version |

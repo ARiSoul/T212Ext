@@ -83,17 +83,20 @@
   <data name="Common_Loading" xml:space="preserve"><value>Loading…</value></data>
   <data name="Common_No" xml:space="preserve"><value>No</value></data>
   <data name="Common_Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="Common_Saved" xml:space="preserve"><value>Saved</value></data>
   <data name="Common_TryAgain" xml:space="preserve"><value>Try again</value></data>
   <data name="Common_Year" xml:space="preserve"><value>Year</value></data>
   <data name="Common_Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="Country_AT" xml:space="preserve"><value>Austria</value></data>
   <data name="Country_AU" xml:space="preserve"><value>Australia</value></data>
   <data name="Country_BE" xml:space="preserve"><value>Belgium</value></data>
+  <data name="Country_BG" xml:space="preserve"><value>Bulgaria</value></data>
   <data name="Country_BM" xml:space="preserve"><value>Bermuda</value></data>
   <data name="Country_BR" xml:space="preserve"><value>Brazil</value></data>
   <data name="Country_CA" xml:space="preserve"><value>Canada</value></data>
   <data name="Country_CH" xml:space="preserve"><value>Switzerland</value></data>
   <data name="Country_CN" xml:space="preserve"><value>China</value></data>
+  <data name="Country_CY" xml:space="preserve"><value>Cyprus</value></data>
   <data name="Country_DE" xml:space="preserve"><value>Germany</value></data>
   <data name="Country_DK" xml:space="preserve"><value>Denmark</value></data>
   <data name="Country_ES" xml:space="preserve"><value>Spain</value></data>
@@ -178,6 +181,7 @@
   <data name="Nav_Overview" xml:space="preserve"><value>Overview</value></data>
   <data name="Nav_Positions" xml:space="preserve"><value>Positions</value></data>
   <data name="Nav_SyncLog" xml:space="preserve"><value>Sync log</value></data>
+  <data name="Nav_Tax" xml:space="preserve"><value>IRS report</value></data>
   <data name="NotFound_Text" xml:space="preserve"><value>The page you are looking for does not exist.</value></data>
   <data name="NotFound_Title" xml:space="preserve"><value>Page not found</value></data>
   <data name="Order_Buy" xml:space="preserve"><value>Buy</value></data>
@@ -215,6 +219,7 @@
   <data name="Stat_YieldOnCost" xml:space="preserve"><value>Yield on cost</value></data>
   <data name="Stat_YieldOnCostHint" xml:space="preserve"><value>Last 12 months of current holdings ÷ invested</value></data>
   <data name="SyncJob_Dividends" xml:space="preserve"><value>Dividends</value></data>
+  <data name="SyncJob_ExchangeRates" xml:space="preserve"><value>Exchange rates</value></data>
   <data name="SyncJob_Instruments" xml:space="preserve"><value>Instruments</value></data>
   <data name="SyncJob_Orders" xml:space="preserve"><value>Orders</value></data>
   <data name="SyncJob_Snapshot" xml:space="preserve"><value>Snapshot</value></data>
@@ -226,6 +231,54 @@
   <data name="Sync_Last" xml:space="preserve"><value>Last sync {0}</value></data>
   <data name="Sync_Now" xml:space="preserve"><value>Sync now</value></data>
   <data name="Sync_Running" xml:space="preserve"><value>Syncing</value></data>
+  <data name="Tax_Check" xml:space="preserve"><value>Check</value></data>
+  <data name="Tax_Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Tax_DeductRefunds" xml:space="preserve"><value>Deduct withholding refunds for the year</value></data>
+  <data name="Tax_Detail" xml:space="preserve"><value>Dividend by dividend</value></data>
+  <data name="Tax_Disclaimer" xml:space="preserve"><value>Figures prepared from your data to help fill in the return, &lt;strong&gt;not tax advice&lt;/strong&gt;. Amounts are in euros at the ECB reference rate of the payment date (or the last quote before it, Código do IRS art. 23.º). Dividends use code E11 (no withholding in Portugal) and one line per source country. Check them against the form instructions for the year before submitting.</value></data>
+  <data name="Tax_DomesticText" xml:space="preserve"><value>{0} payments, gross {1}, tax withheld in Portugal {2} ({3}). They are not foreign income, so they are not in Anexo J. A rate of 35 % is the one Portugal applies when the beneficial owner is not identified (omnibus accounts), above the usual 28 %. Declaring them is optional (Anexo E, if you choose to aggregate the income), and how to recover the difference is worth asking a tax adviser.</value></data>
+  <data name="Tax_DomesticTitle" xml:space="preserve"><value>Portuguese dividends</value></data>
+  <data name="Tax_EffectiveRate" xml:space="preserve"><value>Rate withheld</value></data>
+  <data name="Tax_Flag_GrossDerived" xml:space="preserve"><value>gross derived from net</value></data>
+  <data name="Tax_Flag_HighWithholding" xml:space="preserve"><value>withholding above 15 %</value></data>
+  <data name="Tax_Flag_Mismatch" xml:space="preserve"><value>gross − tax ≠ net</value></data>
+  <data name="Tax_Flag_MissingRate" xml:space="preserve"><value>no exchange rate</value></data>
+  <data name="Tax_Flag_NoCountry" xml:space="preserve"><value>no source country (set it on the instrument)</value></data>
+  <data name="Tax_Flag_ReturnOfCapital" xml:space="preserve"><value>return of capital, left out</value></data>
+  <data name="Tax_Flag_WithholdingEstimated" xml:space="preserve"><value>withholding estimated (import the CSV)</value></data>
+  <data name="Tax_GrossEur" xml:space="preserve"><value>Gross EUR</value></data>
+  <data name="Tax_GrossIncome" xml:space="preserve"><value>Gross income</value></data>
+  <data name="Tax_GrossOriginal" xml:space="preserve"><value>Gross (original)</value></data>
+  <data name="Tax_InterestCountry" xml:space="preserve"><value>Country of your Trading 212 entity (for interest)</value></data>
+  <data name="Tax_Line" xml:space="preserve"><value>Line</value></data>
+  <data name="Tax_MissingRates" xml:space="preserve"><value>Exchange rates missing for:</value></data>
+  <data name="Tax_NetEur" xml:space="preserve"><value>Net EUR</value></data>
+  <data name="Tax_NoLines" xml:space="preserve"><value>No foreign dividends in this year.</value></data>
+  <data name="Tax_OtherIncome" xml:space="preserve"><value>Interest and share lending</value></data>
+  <data name="Tax_OtherIncomeHint" xml:space="preserve"><value>Listed apart; code to confirm</value></data>
+  <data name="Tax_OtherIncomeNote" xml:space="preserve"><value>No official guidance was found for the code and country of interest and share lending paid by Trading 212. E21 (interest without Portuguese withholding) and the country of the Trading 212 entity of your account are the likely answer; confirm before declaring.</value></data>
+  <data name="Tax_OtherIncomeTitle" xml:space="preserve"><value>Interest and share lending</value></data>
+  <data name="Tax_Print" xml:space="preserve"><value>Print</value></data>
+  <data name="Tax_Quadro8A" xml:space="preserve"><value>Anexo J, quadro 8A</value></data>
+  <data name="Tax_Rate" xml:space="preserve"><value>ECB rate (date)</value></data>
+  <data name="Tax_RatesFailed" xml:space="preserve"><value>The exchange rates could not be fetched from the ECB. Try again later.</value></data>
+  <data name="Tax_RefundsDeductedNote" xml:space="preserve"><value>{0} of withholding refunds for this year were deducted from the tax paid abroad (switch above).</value></data>
+  <data name="Tax_RefundsTitle" xml:space="preserve"><value>Withholding refunds for this year</value></data>
+  <data name="Tax_SourceCountry" xml:space="preserve"><value>Source country of the income</value></data>
+  <data name="Tax_SourceCountryColumn" xml:space="preserve"><value>Source country</value></data>
+  <data name="Tax_SourceCountryFromIsin" xml:space="preserve"><value>{0} (from the ISIN)</value></data>
+  <data name="Tax_SourceCountryHint" xml:space="preserve"><value>Used by the IRS report. The ISIN's country is usually right; change it when the income comes from elsewhere.</value></data>
+  <data name="Tax_Subtitle" xml:space="preserve"><value>Foreign dividends for the Portuguese tax return: Anexo J, quadro 8A</value></data>
+  <data name="Tax_SuggestedCode" xml:space="preserve"><value>Suggested code</value></data>
+  <data name="Tax_TaxPaidAbroad" xml:space="preserve"><value>Tax paid abroad</value></data>
+  <data name="Tax_TaxPaidAbroadColumn" xml:space="preserve"><value>Tax paid abroad (source country)</value></data>
+  <data name="Tax_Title" xml:space="preserve"><value>IRS report</value></data>
+  <data name="Tax_ToCheck" xml:space="preserve"><value>Dividends to check</value></data>
+  <data name="Tax_ToCheckHint" xml:space="preserve"><value>See the Check column below</value></data>
+  <data name="Tax_ToConfirm" xml:space="preserve"><value>to confirm</value></data>
+  <data name="Tax_TreatyCapNote" xml:space="preserve"><value>Some countries withheld more than 15 %. The credit for tax paid abroad is capped at the rate of the double taxation treaty (Código do IRS art. 81.º): check how much to declare.</value></data>
+  <data name="Tax_UpdateRates" xml:space="preserve"><value>Update exchange rates</value></data>
+  <data name="Tax_WithheldEur" xml:space="preserve"><value>Withheld EUR</value></data>
   <data name="Theme_Auto" xml:space="preserve"><value>Same as the system</value></data>
   <data name="Theme_Dark" xml:space="preserve"><value>Dark</value></data>
   <data name="Theme_Label" xml:space="preserve"><value>Theme</value></data>

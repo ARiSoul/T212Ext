@@ -40,7 +40,9 @@ public class CsvImportServiceTests(DatabaseFixture database)
         Assert.Equal(0.51m, ordinary.AmountInEuro);
         Assert.Equal(0.09m, ordinary.WithholdingTax);
         Assert.Equal("USD", ordinary.WithholdingTaxCurrency);
-        Assert.Equal(0.25m, ordinary.GrossAmountPerShare);
+        // The report's price per share is net; the gross adds the withholding per share back.
+        Assert.Equal(0.25m, ordinary.NetAmountPerShare);
+        Assert.Equal(0.25m + 0.09m / 2.5m, ordinary.GrossAmountPerShare);
 
         var cash = await db.CashTransactions.Where(t => t.AccountId == account.Id).OrderBy(t => t.DateTime).ToListAsync();
         Assert.Equal(["DEPOSIT", "INTEREST_ON_FREE_CASH", "WITHDRAW"], cash.Select(t => t.Type));

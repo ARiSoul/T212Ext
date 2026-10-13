@@ -81,9 +81,10 @@ The old endpoints `account/info`, `account/cash`, `portfolio` and `portfolio/{ti
 - **Dividend rows:**
   - `Action` is `Dividend (<type>)`. Seen: `Dividend (Dividend)`, `Dividend (Dividend manufactured payment)`, `Dividend (Tax exempted)`. Known from samples: `Dividend (Ordinary)`, `Dividend (Dividends paid by us corporations)`;
   - `No. of shares`;
-  - `Price / share`: the gross amount per share, in `Currency (Price / share)`;
+  - `Price / share`: the **net** amount per share (after withholding), in `Currency (Price / share)`. Checked against known dividends: Apple May 2024 shows 0.2125 = 0.25 gross × 0.85. The API's `grossAmountPerShare` is the real gross;
   - `Total`: net, in the account currency;
-  - `Withholding tax` with its currency (the instrument's). Filled on every dividend row seen.
+  - `Withholding tax` with its currency (the instrument's). Filled on every dividend row seen, but **rounded to cents**, so tiny positions show 0.00. Shares × (API gross − CSV net per share) gives the exact amount;
+  - Portuguese companies' dividends come with **35%** withheld (the omnibus-account rate).
 - **Dividend rows have no `ID`**, so they are matched to the API's dividends by instrument, date, quantity and amount.
 - **`Dividend adjustment`:** no instrument, an `ID`, and a note such as "2025 US dividends withholding tax refund adjustment". These are corrections of tax already withheld, usually refunds, so positive. T212Ext stores them as cash movements of type `DIVIDEND_ADJUSTMENT`, which the API does not have.
 - **Cash rows:** `Deposit`, `Withdrawal`, `Interest on cash`, `Lending interest` (one row per day it pays), each with an `ID`.
