@@ -4,7 +4,12 @@ Deploy steps for the versions that are not yet in production.
 
 The usual deploy command and checks are in [OPERATIONS.md](OPERATIONS.md#1-deploying-an-update).
 
-**Production runs 2.5.0** (since 2026-10-14). No version is waiting to be deployed.
+**Production runs 2.5.0** (since 2026-10-14).
+
+## 2.6.0
+
+- Only the usual deploy: no migration, no new setting.
+- **Try afterwards** on the phone: open the site, sign in, and add it to the home screen (iPhone: Share → Add to Home Screen; Android: the browser's menu → Install app). It must open in its own window, with the green icon, and keep the session. On Android, long-press the icon: the shortcuts are Dividends and IRS report.
 
 ## How this file works
 

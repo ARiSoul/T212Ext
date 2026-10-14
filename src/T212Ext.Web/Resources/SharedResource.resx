@@ -246,6 +246,7 @@
   <data name="Positions_SnapshotOf" xml:space="preserve"><value>Open positions on {0}</value></data>
   <data name="Positions_Subtitle" xml:space="preserve"><value>Open positions from the latest snapshot</value></data>
   <data name="Positions_YieldOnCost" xml:space="preserve"><value>Yield on cost {0}</value></data>
+  <data name="Pwa_Description" xml:space="preserve"><value>Your Trading 212 dividends, history and IRS report.</value></data>
   <data name="Quadro11_Account" xml:space="preserve"><value>account number {0}, institution country {1} (check your client agreement)</value></data>
   <data name="Quadro11_Text" xml:space="preserve"><value>Securities and deposit accounts at institutions outside Portugal must be identified every year, even without income. A Trading 212 account has no IBAN: its number goes in “Outros números de identificação”.</value></data>
   <data name="Quadro11_Title" xml:space="preserve"><value>Anexo J, quadro 11: accounts abroad</value></data>

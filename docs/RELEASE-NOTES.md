@@ -2,6 +2,13 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.6.0 — Install it on the phone (2026-10-15)
+
+**New**
+- **Installable app.** On the phone, "Add to Home Screen" (iPhone: Share → Add to Home Screen; Android: the browser's menu → Install app); on the computer, the install button in the address bar. It opens in its own window with its own icon, and long-pressing the icon on Android offers shortcuts to Dividends and the IRS report.
+- The name, description and shortcuts follow the app's language.
+- Nothing is kept offline: every page comes from the server, so figures are never stale and a new version shows at once.
+
 ## 2.5.0 — Automatic CSV reports (2026-10-14)
 
 No more exporting reports by hand.

@@ -246,6 +246,7 @@
   <data name="Positions_SnapshotOf" xml:space="preserve"><value>Posições abertas em {0}</value></data>
   <data name="Positions_Subtitle" xml:space="preserve"><value>Posições abertas da última fotografia</value></data>
   <data name="Positions_YieldOnCost" xml:space="preserve"><value>Yield sobre custo {0}</value></data>
+  <data name="Pwa_Description" xml:space="preserve"><value>Os seus dividendos, histórico e relatório de IRS da Trading 212.</value></data>
   <data name="Quadro11_Account" xml:space="preserve"><value>número de conta {0}, país da instituição {1} (confirme no contrato)</value></data>
   <data name="Quadro11_Text" xml:space="preserve"><value>As contas de títulos e de depósito em instituições fora de Portugal têm de ser identificadas todos os anos, mesmo sem rendimentos. Uma conta Trading 212 não tem IBAN: o número vai em “Outros números de identificação”.</value></data>
   <data name="Quadro11_Title" xml:space="preserve"><value>Anexo J, quadro 11: contas no estrangeiro</value></data>

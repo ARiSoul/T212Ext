@@ -115,6 +115,11 @@ jobs:
           script="$(grep -oE '_framework/blazor\.web\.[a-z0-9]+\.js' login.html | head -n1)"
           test -n "$script"
           test "$(curl -fsS -o /dev/null -w '%{content_type}' "localhost:8080/$script")" = "text/javascript"
+
+          # The installable app: open without sign-in, as browsers fetch them before anyone signs in.
+          test "$(curl -fsS -o /dev/null -w '%{content_type}' localhost:8080/manifest.webmanifest)" = "application/manifest+json"
+          curl -fsS -o /dev/null localhost:8080/service-worker.js
+          curl -fsS -o /dev/null localhost:8080/icons/icon-512.png
           test "$(docker exec app id -u)" != 0
 
       - name: Container logs

@@ -13,7 +13,7 @@ Trading 212's own app shows dividends one by one. T212Ext reads them through the
 
 ---
 
-## Features (2.5)
+## Features (2.6)
 
 **IRS report (Portugal)**
 - **Anexo J, quadro 8A:** foreign dividends by source country (code E11), gross and tax paid abroad, in euros at the ECB rate of each payment date. Exact withholding from the API's gross and the CSV's net per share.
@@ -53,6 +53,7 @@ The grids remember your choices.
 
 **Hosting**
 - **Sign-in** with a password and an authenticator code (TOTP), for running on a server.
+- **Installable** on the phone and the computer ("Add to Home Screen", "Install app"): its own icon and window, no browser bars.
 - **Docker** image and compose file for the server it shares with traceon: independent apps that share only the reverse proxy (HTTPS) and SQL Server, through neutral networks. Own database login, own encrypted backups. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 Next: see [docs/BACKLOG.md](docs/BACKLOG.md).
