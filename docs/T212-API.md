@@ -42,8 +42,8 @@ What we know about the [Trading 212 public API](https://docs.trading212.com), as
 | `GET /api/v0/equity/history/dividends` | 20 / 1 min | Paged. `amount` is **net, in the account currency**; `grossAmountPerShare` in `tickerCurrency`; `type` has ~60 values (ORDINARY, RETURN_OF_CAPITAL, …) |
 | `GET /api/v0/equity/history/orders` | 20 / 1 min | Paged. Each item is `{order, fill}`; `fill.walletImpact` has `fxRate`, `netValue`, `realisedProfitLoss` and `taxes[]` |
 | `GET /api/v0/equity/history/transactions` | 20 / 1 min | Paged. Types: WITHDRAW, DEPOSIT, FEE, TRANSFER, INTEREST_ON_FREE_CASH, LENDING_INTEREST. Optional `time` filter |
-| `POST /api/v0/equity/history/exports` | 1 / 30 s | Asks for a CSV report (in the client, not used by the app yet) |
-| `GET /api/v0/equity/history/exports` | 1 / 1 min | Report status and `downloadLink` |
+| `POST /api/v0/equity/history/exports` | 1 / 30 s | Asks for a CSV report of `timeFrom`–`timeTo`; returns a `reportId` |
+| `GET /api/v0/equity/history/exports` | 1 / 1 min | Every report asked for, with its status (`Queued`, `Processing`, `Running`, `Canceled`, `Failed`, `Finished`) and, once finished, a `downloadLink` |
 
 The old endpoints `account/info`, `account/cash`, `portfolio` and `portfolio/{ticker}` (used by T212Ext 1.x) are gone from the spec. Pies are deprecated.
 
@@ -74,7 +74,9 @@ The old endpoints `account/info`, `account/cash`, `portfolio` and `portfolio/{ti
 
 ## CSV reports
 
-- Made in the app (**History → Export**) or through `/history/exports`. At most one year per report.
+- Made in the app (**History → Export**) or through `/history/exports`. At most one year per report in the app; the API's limit is not documented, so T212Ext asks for one year at most too.
+- **Through the API** (T212Ext 2.5.0, `ReportImporter`): asked for during the sync, followed with the list endpoint (once a minute at most), downloaded from the `downloadLink` (pre-signed, on another host: no credentials are sent) and imported like an uploaded file.
+  - *To check on the first real runs:* how long a report takes; how long `downloadLink` stays valid; how long a report stays listed (T212Ext gives one up after a day unlisted); whether the key needs a permission of its own (the spec lists 403 "Missing Permissions" for these endpoints, without naming a scope); whether a report made through the API has the same layout as one from the app.
 - A report only has the columns its rows use, so the parser reads columns by name.
 - **The current layout**, checked against real reports exported on 2026-10-13 (2023–2026):
   - the header is `Action,Time (UTC),ISIN,Ticker,Name,Notes,ID,No. of shares,Price / share,Currency (Price / share),Exchange rate,Result,Currency (Result),Total,Currency (Total),Withholding tax,Currency (Withholding tax),Charge amount,Currency (Charge amount),Deposit fee,Currency (Deposit fee),Currency conversion fee,Currency (Currency conversion fee)`;

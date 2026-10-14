@@ -13,7 +13,7 @@ Trading 212's own app shows dividends one by one. T212Ext reads them through the
 
 ---
 
-## Features (2.4)
+## Features (2.5)
 
 **IRS report (Portugal)**
 - **Anexo J, quadro 8A:** foreign dividends by source country (code E11), gross and tax paid abroad, in euros at the ECB rate of each payment date. Exact withholding from the API's gross and the CSV's net per share.
@@ -45,6 +45,7 @@ The grids remember your choices.
 - **Scheduled sync** of every configured account (Invest and Stocks ISA) every 6 hours. It reads the summary and positions (one snapshot per day), and the dividend, order and cash movement history.
 - **Incremental and resumable.** Each sync stops at the first page with nothing new, and an interrupted first sync is completed by the next one. It respects Trading 212's rate limits.
 - **CSV import** of Trading 212 reports, several at once. It adds the **withholding tax** per dividend, which the API does not give, and fills gaps in the API's history. Rows seen in both sources are merged, never duplicated.
+- **Automatic reports:** the sync asks Trading 212 for these CSV reports itself, every week, and imports them. The first time it goes back to the account's first activity. Manual uploads are needed only for what they do not cover.
 
 **Look and language**
 - A modern interface with **light, dark and automatic themes**, made for phone and desktop.
@@ -116,6 +117,11 @@ dotnet user-secrets set "T212:Accounts:1:ApiSecret" "<secret>"
 | `Sync:Interval` | `06:00:00` | Time between scheduled syncs. |
 | `Sync:RunOnStartup` | `true` | Sync once when the app starts. |
 | `Sync:InstrumentsMaxAge` | `1.00:00:00` | How old the instrument list may get before it is refreshed. |
+| `Reports:Enabled` | `true` | Ask for CSV reports during the sync and import them. |
+| `Reports:Interval` | `7.00:00:00` | A new report is asked for once the covered history is older than this. |
+| `Reports:Overlap` | `3.00:00:00` | Each report starts this long before the last one ended. |
+| `Reports:WaitForReport` | `00:03:00` | How long a sync waits for a report; one not ready is collected by the next sync. |
+| `Reports:HistoryStart` | empty | Where the first report starts for an account with no data yet; default one year back. |
 | `Ui:DefaultCulture` | `pt-PT` | Language until one is chosen in the app (`pt-PT`, `en-GB` or `es-ES`). |
 | `Auth:Users:N:Username` | | Who may sign in. Without users the app is open, which only Development allows. |
 | `Auth:Users:N:PasswordHash` | | Hash made with `hash-password` (below). |
@@ -158,7 +164,9 @@ sqllocaldb stop MSSQLLocalDB
 
 ### 4. Import your history (recommended)
 
-The API's history is incomplete for some accounts, and it never includes withholding tax. In the Trading 212 app, go to **History → Export**. Pick the whole period (one year per report at most) and include dividends, interest and transactions. Upload each file on the **Import CSV** page.
+The API's history is incomplete for some accounts, and it never includes withholding tax. The sync fixes both on its own by asking Trading 212 for CSV reports (`Reports:*` above); the **Import CSV** page lists them.
+
+To do it by hand instead, or for a period they do not cover: in the Trading 212 app, go to **History → Export**. Pick the whole period (one year per report at most) and include dividends, interest and transactions. Upload each file on the **Import CSV** page.
 
 ## Tests
 
@@ -179,7 +187,7 @@ T212Ext.slnx
 VERSION                       Version of the whole solution
 src/
   T212Ext.Client/             Trading 212 API client: models, auth, rate limits, paging
-  T212Ext.Core/               Entities, EF Core (Data/), sync (Sync/), CSV import (Import/), analytics (Analytics/),
+  T212Ext.Core/               Entities, EF Core (Data/), sync (Sync/), CSV import (Import/), automatic reports (Reports/), analytics (Analytics/),
                               ECB rates (Rates/), IRS report (Tax/), queries (Queries/)
   T212Ext.Web/                Blazor app; hosts the sync worker
     Auth/                     Sign-in: users from configuration, authenticator codes, setup commands

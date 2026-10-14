@@ -256,6 +256,17 @@
   <data name="Reconnect_ResumeFailed" xml:space="preserve"><value>No se pudo reanudar la sesión. Reintenta o recarga la página.</value></data>
   <data name="Reconnect_Retry" xml:space="preserve"><value>Reintentar</value></data>
   <data name="Reconnect_RetryIn" xml:space="preserve"><value>No se pudo reconectar. Nuevo intento en</value></data>
+  <data name="Reports_AddedCompleted" xml:space="preserve"><value>{0} nuevos, {1} completados</value></data>
+  <data name="Reports_CoveredUntil" xml:space="preserve"><value>Historial cubierto por informes hasta {0}.</value></data>
+  <data name="Reports_Disabled" xml:space="preserve"><value>Los informes automáticos están desactivados (Reports:Enabled). Sube los informes CSV arriba.</value></data>
+  <data name="Reports_Empty" xml:space="preserve"><value>Aún no se ha pedido ningún informe. La próxima sincronización pide el primero.</value></data>
+  <data name="Reports_Intro" xml:space="preserve"><value>Durante la sincronización, la app pide a Trading 212 un informe CSV de los últimos días (como mucho cada {0} días) y lo importa como si lo hubieras subido: el impuesto retenido en cada dividendo y lo que le falta al historial de la API. La primera vez, retrocede hasta la primera actividad de la cuenta, un año por informe. Sube archivos arriba solo para lo que estos informes no cubren.</value></data>
+  <data name="Reports_Period" xml:space="preserve"><value>Periodo</value></data>
+  <data name="Reports_Requested" xml:space="preserve"><value>Pedido</value></data>
+  <data name="Reports_Status_Failed" xml:space="preserve"><value>Falló</value></data>
+  <data name="Reports_Status_Imported" xml:space="preserve"><value>Importado</value></data>
+  <data name="Reports_Status_Requested" xml:space="preserve"><value>Esperando a Trading 212</value></data>
+  <data name="Reports_Title" xml:space="preserve"><value>Informes automáticos</value></data>
   <data name="Source_Api" xml:space="preserve"><value>API</value></data>
   <data name="Source_Both" xml:space="preserve"><value>API + CSV</value></data>
   <data name="Source_Csv" xml:space="preserve"><value>CSV</value></data>
@@ -275,6 +286,7 @@
   <data name="SyncJob_ExchangeRates" xml:space="preserve"><value>Tipos de cambio</value></data>
   <data name="SyncJob_Instruments" xml:space="preserve"><value>Instrumentos</value></data>
   <data name="SyncJob_Orders" xml:space="preserve"><value>Órdenes</value></data>
+  <data name="SyncJob_Reports" xml:space="preserve"><value>Informes CSV</value></data>
   <data name="SyncJob_Snapshot" xml:space="preserve"><value>Instantánea</value></data>
   <data name="SyncJob_Transactions" xml:space="preserve"><value>Movimientos de efectivo</value></data>
   <data name="SyncLog_Empty" xml:space="preserve"><value>Todavía no se ha ejecutado ninguna sincronización.</value></data>

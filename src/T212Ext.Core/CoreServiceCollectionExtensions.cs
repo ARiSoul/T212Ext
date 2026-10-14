@@ -4,6 +4,7 @@ using Arisoul.T212Ext.Core.Data;
 using Arisoul.T212Ext.Core.Import;
 using Arisoul.T212Ext.Core.Queries;
 using Arisoul.T212Ext.Core.Rates;
+using Arisoul.T212Ext.Core.Reports;
 using Arisoul.T212Ext.Core.Sync;
 using Arisoul.T212Ext.Core.Tax;
 using Microsoft.Data.SqlClient;
@@ -30,6 +31,7 @@ public static class CoreServiceCollectionExtensions
 
         services.AddOptions<T212Options>().Bind(configuration.GetSection(T212Options.Section));
         services.AddOptions<SyncOptions>().Bind(configuration.GetSection(SyncOptions.Section));
+        services.AddOptions<ReportOptions>().Bind(configuration.GetSection(ReportOptions.Section));
         services.AddSingleton<AccountRegistry>();
 
         services.AddT212Client();
@@ -37,6 +39,8 @@ public static class CoreServiceCollectionExtensions
         services.AddScoped<SyncRunner>();
         services.AddScoped<AccountSynchronizer>();
         services.AddScoped<CsvImportService>();
+        services.AddScoped<ReportImporter>();
+        services.AddScoped<ReportQueries>();
         services.AddScoped<DividendQueries>();
         services.AddScoped<OverviewQueries>();
         services.AddScoped<AnalyticsQueries>();

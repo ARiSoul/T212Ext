@@ -4,6 +4,7 @@ using Arisoul.T212Ext.Core.Data;
 using Arisoul.T212Ext.Core.Data.Configurations;
 using Arisoul.T212Ext.Core.Domain;
 using Arisoul.T212Ext.Core.Rates;
+using Arisoul.T212Ext.Core.Reports;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -37,7 +38,9 @@ public sealed class SyncRunner(
     AccountSynchronizer synchronizer,
     IDbContextFactory<T212ExtDbContext> dbFactory,
     ExchangeRateUpdater rateUpdater,
+    ReportImporter reportImporter,
     IOptions<SyncOptions> options,
+    IOptions<ReportOptions> reportOptions,
     TimeProvider time,
     ILogger<SyncRunner> logger)
 {
@@ -86,19 +89,21 @@ public sealed class SyncRunner(
             var api = apiFactory.Create(credentials);
             var full = request.FullHistory;
 
-            Func<CancellationToken, Task<JobResult>>[] jobs =
+            List<(SyncJob Job, Func<CancellationToken, Task<JobResult>> Work)> jobs =
             [
-                ct => synchronizer.SyncSnapshotAsync(account, api, ct),
-                ct => synchronizer.SyncDividendsAsync(account, api, full, ct),
-                ct => synchronizer.SyncOrdersAsync(account, api, full, ct),
-                ct => synchronizer.SyncTransactionsAsync(account, api, full, ct),
+                (SyncJob.Snapshot, ct => synchronizer.SyncSnapshotAsync(account, api, ct)),
+                (SyncJob.Dividends, ct => synchronizer.SyncDividendsAsync(account, api, full, ct)),
+                (SyncJob.Orders, ct => synchronizer.SyncOrdersAsync(account, api, full, ct)),
+                (SyncJob.Transactions, ct => synchronizer.SyncTransactionsAsync(account, api, full, ct)),
             ];
-            SyncJob[] names = [SyncJob.Snapshot, SyncJob.Dividends, SyncJob.Orders, SyncJob.Transactions];
+            // After the API's history, so a report only adds what the API lacks.
+            if (reportOptions.Value.Enabled)
+                jobs.Add((SyncJob.Reports, ct => reportImporter.RunAsync(account, api, ct)));
 
-            for (var i = 0; i < jobs.Length; i++)
+            foreach (var (job, work) in jobs)
             {
-                Progress?.Invoke($"{account.Key}: {names[i]}");
-                var error = await RunJobAsync(account.Id, names[i], jobs[i], cancellationToken);
+                Progress?.Invoke($"{account.Key}: {job}");
+                var error = await RunJobAsync(account.Id, job, work, cancellationToken);
                 if (error is T212ApiException { IsUnauthorized: true })
                 {
                     logger.LogWarning("Account {Account}: API key refused; remaining jobs skipped", account.Key);

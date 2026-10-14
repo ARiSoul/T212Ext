@@ -2,6 +2,18 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.5.0 — Automatic CSV reports (2026-10-14)
+
+No more exporting reports by hand.
+
+**New**
+- **Automatic CSV reports.** During the sync, the app asks Trading 212 for a CSV report of the latest days (at most once a week), downloads it and imports it, as if you had uploaded it:
+  - the tax withheld on each dividend, which only the reports have, so the IRS report stays complete;
+  - what the API's history misses;
+  - the first time, it goes back to the account's first activity, one year per report, over one or a few syncs.
+- **The Import CSV page lists them:** period, what each one added, and whether it is imported, waiting for Trading 212, or failed (with the reason). It also says how far the history is covered.
+- Settings `Reports:*`, on by default (see the README).
+
 ## 2.4.1 — Pages load on the server (2026-10-14)
 
 **Fixed**
