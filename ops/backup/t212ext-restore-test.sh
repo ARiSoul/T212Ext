@@ -13,7 +13,7 @@ TEST_DB="${DB_NAME}_RestoreTest"
 
 # shellcheck source=/dev/null
 source "$CONFIG"
-: "${BACKUP_DIR:?}" "${DB_CONTAINER:?}" "${SA_ENV_FILE:?SA_ENV_FILE not set in $CONFIG}"
+: "${BACKUP_DIR:?}" "${DB_CONTAINER:?}" "${SA_ENV_FILE:?SA_ENV_FILE not set in $CONFIG}" "${GPG_PASSPHRASE_FILE:?GPG_PASSPHRASE_FILE not set in $CONFIG}"
 SQLCMDPASSWORD="$(grep -E "^${SA_ENV_KEY:-DB_SA_PASSWORD}=" "$SA_ENV_FILE" | head -n1 | cut -d= -f2-)"
 : "${SQLCMDPASSWORD:?${SA_ENV_KEY:-DB_SA_PASSWORD} not found in $SA_ENV_FILE}"
 export SQLCMDPASSWORD
@@ -25,7 +25,10 @@ sqlcmd() {
 
 newest() { find "$BACKUP_DIR/daily" -maxdepth 1 -type f -name "$DB_NAME-*" -printf '%T@ %p\n' | sort -rn | head -n1 | cut -d' ' -f2-; }
 src="${1:-$(newest)}"
-[ -n "$src" ] && [ -r "$src" ] || { echo "No backup to restore (give a file, or run t212ext-backup.sh first)." >&2; exit 1; }
+if [ -z "$src" ] || [ ! -r "$src" ]; then
+  echo "No backup to restore (give a file, or run t212ext-backup.sh first)." >&2
+  exit 1
+fi
 echo "Restoring from: $src"
 
 work="$(mktemp -d)"

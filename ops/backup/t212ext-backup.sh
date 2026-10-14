@@ -23,7 +23,7 @@ T212EXT_DB_PASSWORD="$(grep -E '^T212EXT_DB_PASSWORD=' "$T212EXT_DIR/.env" | hea
 : "${T212EXT_DB_PASSWORD:?T212EXT_DB_PASSWORD not found in $T212EXT_DIR/.env}"
 export SQLCMDPASSWORD="$T212EXT_DB_PASSWORD"
 
-ping() { [ -n "${PING_URL:-}" ] && curl -fsS -m 10 --retry 3 "$PING_URL$1" > /dev/null || true; }
+ping() { if [ -n "${PING_URL:-}" ]; then curl -fsS -m 10 --retry 3 "$PING_URL$1" > /dev/null || true; fi; }
 trap 'echo "$(date -Is) backup FAILED (line $LINENO)" >&2; ping /fail' ERR
 
 # The password goes by environment (-e NAME without a value), never on a command line.
