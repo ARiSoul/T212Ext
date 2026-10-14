@@ -2,7 +2,9 @@ using System.Net;
 using Arisoul.T212Ext.Client;
 using Arisoul.T212Ext.Core.Accounts;
 using Arisoul.T212Ext.Core.Domain;
+using Arisoul.T212Ext.Core.Import;
 using Arisoul.T212Ext.Core.Rates;
+using Arisoul.T212Ext.Core.Reports;
 using Arisoul.T212Ext.Core.Sync;
 using Arisoul.T212Ext.Core.Tests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -18,16 +20,21 @@ public class SyncRunnerTests(DatabaseFixture database)
     private readonly ManualTimeProvider _time = new(new DateTimeOffset(2090, 1, 1, 0, 0, 0, TimeSpan.Zero).AddMinutes(Random.Shared.Next(1_000_000)));
     private readonly FakeT212ApiFactory _factory = new();
 
-    private SyncRunner CreateRunner(params AccountOptions[] accounts)
+    private SyncRunner CreateRunner(params AccountOptions[] accounts) => CreateRunner(new ReportOptions { Enabled = false }, accounts);
+
+    private SyncRunner CreateRunner(ReportOptions reports, params AccountOptions[] accounts)
     {
         var registry = new AccountRegistry(Options.Create(new T212Options { Accounts = [.. accounts] }), _time);
+        var reportOptions = Options.Create(reports);
         return new SyncRunner(
             registry,
             _factory,
             new AccountSynchronizer(database, _time, NullLogger<AccountSynchronizer>.Instance),
             database,
             new ExchangeRateUpdater(database, new FakeRateSource(), _time, NullLogger<ExchangeRateUpdater>.Instance),
+            new ReportImporter(database, new CsvImportService(database, _time), reportOptions, _time, NullLogger<ReportImporter>.Instance),
             Options.Create(new SyncOptions { InstrumentsMaxAge = TimeSpan.FromDays(1) }),
+            reportOptions,
             _time,
             NullLogger<SyncRunner>.Instance);
     }
@@ -60,6 +67,19 @@ public class SyncRunnerTests(DatabaseFixture database)
         Assert.Equal([true, true, false, true], runs.Select(r => r.Succeeded));
         Assert.Equal("Trading 212 answered 500", runs[2].Error);
         Assert.Equal(1, runs[1].ItemsAdded);
+    }
+
+    [Fact]
+    public async Task With_reports_on_the_report_job_runs_after_the_history()
+    {
+        var (account, options, api) = await SetUpAccountAsync();
+
+        await CreateRunner(new ReportOptions { WaitForReport = TimeSpan.FromMinutes(5), PollInterval = TimeSpan.Zero }, options).RunAsync(new SyncRequest(), default);
+
+        var runs = await RunsOfAsync(account.Id);
+        Assert.Equal([SyncJob.Snapshot, SyncJob.Dividends, SyncJob.Orders, SyncJob.Transactions, SyncJob.Reports], runs.Select(r => r.Job));
+        Assert.True(runs[^1].Succeeded);
+        Assert.Single(api.ReportRequests);
     }
 
     [Fact]

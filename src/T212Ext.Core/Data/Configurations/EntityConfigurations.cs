@@ -153,6 +153,17 @@ internal sealed class SyncRunConfiguration : IEntityTypeConfiguration<SyncRun>
     }
 }
 
+internal sealed class AccountReportConfiguration : IEntityTypeConfiguration<AccountReport>
+{
+    public void Configure(EntityTypeBuilder<AccountReport> builder)
+    {
+        builder.Property(r => r.Status).HasConversion<string>().HasMaxLength(20);
+        builder.Property(r => r.Error).HasMaxLength(Lengths.Error);
+        builder.HasOne<BrokerAccount>().WithMany().HasForeignKey(r => r.AccountId);
+        builder.HasIndex(r => new { r.AccountId, r.ReportId }).IsUnique();
+    }
+}
+
 internal sealed class ExchangeRateConfiguration : IEntityTypeConfiguration<ExchangeRate>
 {
     public void Configure(EntityTypeBuilder<ExchangeRate> builder)

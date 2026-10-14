@@ -292,6 +292,9 @@ public enum SyncJob
     Orders,
     Transactions,
     ExchangeRates,
+
+    /// <summary>CSV reports asked for through the API and imported (<see cref="AccountReport"/>).</summary>
+    Reports,
 }
 
 /// <summary>Progress of one history job of one account.</summary>
@@ -325,4 +328,41 @@ public class SyncRun
     public int ItemsAdded { get; set; }
     public int ItemsUpdated { get; set; }
     public string? Error { get; set; }
+}
+
+public enum AccountReportStatus
+{
+    /// <summary>Asked for; Trading 212 is still making it.</summary>
+    Requested,
+
+    /// <summary>Downloaded and imported.</summary>
+    Imported,
+
+    /// <summary>Trading 212 failed or cancelled it, or the import failed. The period is asked for again later.</summary>
+    Failed,
+}
+
+/// <summary>
+/// One CSV report asked for through the API, and what importing it gave. The imported ones say how
+/// far the account's history is covered by reports.
+/// </summary>
+public class AccountReport
+{
+    public long Id { get; set; }
+    public int AccountId { get; set; }
+
+    /// <summary>Trading 212's id of the report.</summary>
+    public long ReportId { get; set; }
+
+    public DateTimeOffset From { get; set; }
+    public DateTimeOffset To { get; set; }
+    public AccountReportStatus Status { get; set; }
+    public DateTimeOffset RequestedAt { get; set; }
+    public DateTimeOffset? FinishedAt { get; set; }
+    public string? Error { get; set; }
+
+    public int DividendsAdded { get; set; }
+    public int DividendsMatched { get; set; }
+    public int TransactionsAdded { get; set; }
+    public int TransactionsMatched { get; set; }
 }

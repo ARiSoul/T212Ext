@@ -256,6 +256,17 @@
   <data name="Reconnect_ResumeFailed" xml:space="preserve"><value>Could not resume the session. Try again or reload the page.</value></data>
   <data name="Reconnect_Retry" xml:space="preserve"><value>Try again</value></data>
   <data name="Reconnect_RetryIn" xml:space="preserve"><value>Could not reconnect. Trying again in</value></data>
+  <data name="Reports_AddedCompleted" xml:space="preserve"><value>{0} new, {1} completed</value></data>
+  <data name="Reports_CoveredUntil" xml:space="preserve"><value>History covered by reports until {0}.</value></data>
+  <data name="Reports_Disabled" xml:space="preserve"><value>Automatic reports are off (Reports:Enabled). Upload the CSV reports above.</value></data>
+  <data name="Reports_Empty" xml:space="preserve"><value>No report asked for yet. The next sync asks for the first one.</value></data>
+  <data name="Reports_Intro" xml:space="preserve"><value>During the sync, the app asks Trading 212 for a CSV report of the latest days (at most every {0} days) and imports it as if you had uploaded it: the tax withheld on each dividend, and what the API's history misses. The first time, it goes back to the account's first activity, one year per report. Upload files above only for what these reports do not cover.</value></data>
+  <data name="Reports_Period" xml:space="preserve"><value>Period</value></data>
+  <data name="Reports_Requested" xml:space="preserve"><value>Asked for</value></data>
+  <data name="Reports_Status_Failed" xml:space="preserve"><value>Failed</value></data>
+  <data name="Reports_Status_Imported" xml:space="preserve"><value>Imported</value></data>
+  <data name="Reports_Status_Requested" xml:space="preserve"><value>Waiting for Trading 212</value></data>
+  <data name="Reports_Title" xml:space="preserve"><value>Automatic reports</value></data>
   <data name="Source_Api" xml:space="preserve"><value>API</value></data>
   <data name="Source_Both" xml:space="preserve"><value>API + CSV</value></data>
   <data name="Source_Csv" xml:space="preserve"><value>CSV</value></data>
@@ -275,6 +286,7 @@
   <data name="SyncJob_ExchangeRates" xml:space="preserve"><value>Exchange rates</value></data>
   <data name="SyncJob_Instruments" xml:space="preserve"><value>Instruments</value></data>
   <data name="SyncJob_Orders" xml:space="preserve"><value>Orders</value></data>
+  <data name="SyncJob_Reports" xml:space="preserve"><value>CSV reports</value></data>
   <data name="SyncJob_Snapshot" xml:space="preserve"><value>Snapshot</value></data>
   <data name="SyncJob_Transactions" xml:space="preserve"><value>Cash movements</value></data>
   <data name="SyncLog_Empty" xml:space="preserve"><value>No sync has run yet.</value></data>

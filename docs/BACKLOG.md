@@ -4,6 +4,7 @@ The roadmap by phase, then ideas and known limitations not yet planned. When an 
 
 Done so far:
 - **2.0.0, phase 1 (foundations):** API client, database, scheduled sync, CSV import, first pages, tests.
+- **2.5.0:** automatic CSV reports: asked for through the API during the sync, imported like an uploaded file, listed on the import page.
 - **2.4.0, phase 4 (deployment):** sign-in with password and authenticator code, Docker image and compose sharing only the reverse proxy and SQL Server with traceon (neutral `edge` and `data` networks, own login), data protection keys on a volume, own encrypted backups, CI check of the image, DEPLOYMENT and OPERATIONS docs.
 - **2.3.0:** capital gains for Anexo J quadro 9.2A (FIFO, ECB rates, splits), quadro 11 account details.
 - **2.2.0, phase 3 (IRS report):** Anexo J quadro 8A from dividends, ECB rates, source country per instrument, Portuguese dividends and interest apart, CSV export and print.
@@ -18,7 +19,7 @@ Done so far:
 
 - [IRS report follow-ups](#irs-report-follow-ups)
 - [Deployment follow-ups](#deployment-follow-ups)
-- [Phase 5 — Extras (2.5 and later)](#phase-5--extras-25-and-later)
+- [Phase 5 — Extras (2.6 and later)](#phase-5--extras-26-and-later)
 - [App and grid follow-ups](#app-and-grid-follow-ups)
 - [Known limitations and technical debt](#known-limitations-and-technical-debt)
 - [Product ideas](#product-ideas)
@@ -49,10 +50,9 @@ Phase 4 shipped as **2.4.0**: see [DEPLOYMENT.md](DEPLOYMENT.md). Left for later
 | 4.11 | **Image from CI** | Build the image in GitHub Actions and pull it on the server (GHCR), instead of building on the server. Worth it only if the server's builds get slow. |
 | 4.12 | **Infrastructure project** | Move Caddy, SQL Server and the shared networks out of traceon's compose into a project of their own, with both apps as equal guests. Worth it with a third app, or before touching traceon's SQL Server for another reason. Moving SQL Server means a short downtime and a backup and restore of every database. |
 
-## Phase 5 — Extras (2.5 and later)
+## Phase 5 — Extras (2.6 and later)
 
 - **Notifications:** a Web Push when a dividend arrives, and a monthly summary. traceon already has VAPID and Web Push.
-- **Automatic CSV reports:** request a report through `/history/exports` every month, download it and import it. This adds withholding tax and closes the API's history gaps without manual work.
 - **Upcoming dividends calendar** from an external provider (EODHD, Financial Modeling Prep, …). It also makes a real forward estimate possible. Check each provider's licence for personal use first.
 - **Goals:** for example, "dividends cover X% of my monthly expenses", with progress over time.
 - **Dividend growth per instrument:** the yearly growth of the dividend per share (from `GrossAmountPerShare`), and the cuts.

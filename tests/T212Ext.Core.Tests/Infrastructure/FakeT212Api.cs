@@ -59,9 +59,54 @@ public sealed class FakeT212Api : IT212Api
     public IAsyncEnumerable<T212Page<HistoryTransactionItem>> GetTransactionPagesAsync(DateTimeOffset? from = null, CancellationToken cancellationToken = default) =>
         PagesAsync(Transactions, cancellationToken);
 
-    public Task<long> RequestReportAsync(ReportRequest request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
-    public Task<IReadOnlyList<ReportStatus>> GetReportsAsync(CancellationToken cancellationToken = default) => throw new NotSupportedException();
-    public Task<Stream> DownloadReportAsync(Uri downloadLink, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+    /// <summary>Every report asked for, by id.</summary>
+    public Dictionary<long, ReportRequest> ReportRequests { get; } = [];
+
+    /// <summary>The status every report shows; a report can be set apart in <see cref="ReportStatusById"/>.</summary>
+    public string ReportStatus { get; set; } = "Finished";
+
+    public Dictionary<long, string> ReportStatusById { get; } = [];
+
+    /// <summary>Reports Trading 212 no longer lists.</summary>
+    public HashSet<long> ReportsForgotten { get; } = [];
+
+    /// <summary>The CSV of a report, from its request. By default a report with no rows.</summary>
+    public Func<ReportRequest, string> ReportCsv { get; set; } = _ => "Action,Time,Total\n";
+
+    public int ReportStatusCalls { get; private set; }
+
+    private long _nextReportId = 7000;
+
+    public Task<long> RequestReportAsync(ReportRequest request, CancellationToken cancellationToken = default)
+    {
+        ThrowIfFailing();
+        var id = ++_nextReportId;
+        ReportRequests[id] = request;
+        return Task.FromResult(id);
+    }
+
+    public Task<IReadOnlyList<ReportStatus>> GetReportsAsync(CancellationToken cancellationToken = default)
+    {
+        ThrowIfFailing();
+        ReportStatusCalls++;
+        IReadOnlyList<ReportStatus> statuses = [.. ReportRequests
+            .Where(r => !ReportsForgotten.Contains(r.Key))
+            .Select(r => new ReportStatus
+            {
+                ReportId = r.Key,
+                Status = ReportStatusById.GetValueOrDefault(r.Key, ReportStatus),
+                DownloadLink = $"https://reports.example.com/{r.Key}.csv",
+                TimeFrom = r.Value.TimeFrom,
+                TimeTo = r.Value.TimeTo,
+            })];
+        return Task.FromResult(statuses);
+    }
+
+    public Task<Stream> DownloadReportAsync(Uri downloadLink, CancellationToken cancellationToken = default)
+    {
+        var id = long.Parse(Path.GetFileNameWithoutExtension(downloadLink.AbsolutePath), System.Globalization.CultureInfo.InvariantCulture);
+        return Task.FromResult<Stream>(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(ReportCsv(ReportRequests[id]))));
+    }
 
     private async IAsyncEnumerable<T212Page<T>> PagesAsync<T>(List<T> items, [EnumeratorCancellation] CancellationToken cancellationToken)
     {

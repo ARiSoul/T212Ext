@@ -81,6 +81,10 @@ The rules every change follows, for people and for coding assistants. Each rule 
     - The calculation lives in `Core/Tax/IrsReport.cs`, a pure function tested in `IrsReportTests`. A rule changes in TAX.md and in the code in the same PR.
     - Anything not confirmed by an official source shows as "to confirm" on the page, never as fact.
     - Money for the tax report is converted per payment with `RateTable` (the ECB rate of the date, else the last quote before it) and rounded to cents per payment.
+11. **Reports asked for through the API go through the same import as uploaded files** (`ReportImporter` → `CsvImportService`).
+    - Each one is an `AccountReport` row; the imported ones say how far the history is covered. Reports are asked for in order, one at a time, with an overlap, so the latest imported one ends the covered history.
+    - A sync waits a few minutes at most for a report; one not ready is collected by the next sync. A failed one is asked for again on the next sync, never in a loop within one.
+    - *Why:* the CSV is the only source of the tax withheld on each dividend, and the API's history has gaps. *(2.5.0)*
 
 ## 4. App (`src/T212Ext.Web`)
 

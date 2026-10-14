@@ -1,6 +1,10 @@
 @page "/import"
 @using Arisoul.T212Ext.Core.Import
+@using Arisoul.T212Ext.Core.Reports
+@using Microsoft.Extensions.Options
 @inject OverviewQueries Overview
+@inject ReportQueries Reports
+@inject IOptions<ReportOptions> ReportOptions
 @inject CsvImportService ImportService
 @inject IStringLocalizer<SharedResource> L
 @inject ILogger<Import> Logger
@@ -90,6 +94,25 @@
     </div>
 }
 
+<section class="mt-4">
+    <h2 class="h5">@L["Reports_Title"]</h2>
+    @if (ReportOptions.Value.Enabled)
+    {
+        <p class="text-body-secondary">@string.Format(L["Reports_Intro"], (int)ReportOptions.Value.Interval.TotalDays)</p>
+        @if (CoveredUntil is { } covered)
+        {
+            <p><i class="bi bi-check2-circle text-positive me-1"></i>@string.Format(L["Reports_CoveredUntil"], Fmt.Date(covered))</p>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info">@L["Reports_Disabled"]</div>
+    }
+
+    <DataGrid TItem="ReportRow" Items="_reports" Columns="ReportColumns" StorageKey="reports" ExportFileName="reports"
+              DefaultSortKey="requested" DefaultSortDescending="true" EmptyText="@L["Reports_Empty"]" />
+</section>
+
 @code {
     private const long MaxFileSize = 20 * 1024 * 1024;
     private const int MaxFiles = 20;
@@ -100,12 +123,48 @@
     private string? _progress;
     private string? _error;
     private readonly List<(string FileName, CsvImportResult? Result, string? Error)> _results = [];
+    private IReadOnlyList<ReportRow>? _reports;
+
+    // Reports are asked for in order, so the latest imported one ends the covered history.
+    private DateTimeOffset? CoveredUntil => _reports?.Where(r => r.Status == AccountReportStatus.Imported).Select(r => (DateTimeOffset?)r.To).Max();
+
+    private IReadOnlyList<GridColumn<ReportRow>> ReportColumns => [
+        new() { Key = "requested", Title = L["Reports_Requested"], Value = r => r.RequestedAt, Text = r => Fmt.DateTime(r.RequestedAt), MobileTitle = true },
+        new() { Key = "period", Title = L["Reports_Period"], Value = r => r.From, Text = r => $"{Fmt.Date(r.From)} – {Fmt.Date(r.To)}" },
+        new() { Key = "account", Title = L["Common_Account"], Value = r => r.AccountName, Filterable = true, HideBelow = "md" },
+        new() { Key = "dividends", Title = L["Nav_Dividends"], Value = r => r.DividendsAdded, Text = r => string.Format(L["Reports_AddedCompleted"], r.DividendsAdded, r.DividendsMatched),
+                AlignEnd = true, HideBelow = "lg" },
+        new() { Key = "cash", Title = L["SyncJob_Transactions"], Value = r => r.TransactionsAdded, Text = r => string.Format(L["Reports_AddedCompleted"], r.TransactionsAdded, r.TransactionsMatched),
+                AlignEnd = true, HideBelow = "lg" },
+        new() { Key = "status", Title = L["Col_Result"], Value = r => StatusText(r.Status), Filterable = true,
+                Template = r => @<div>
+                    @switch (r.Status)
+                    {
+                        case AccountReportStatus.Imported:
+                            <span class="badge text-bg-success"><i class="bi bi-check-lg"></i> @StatusText(r.Status)</span>
+                            break;
+                        case AccountReportStatus.Requested:
+                            <span class="badge badge-soft"><i class="bi bi-hourglass-split"></i> @StatusText(r.Status)</span>
+                            break;
+                        default:
+                            <span class="badge text-bg-danger"><i class="bi bi-x-lg"></i> @StatusText(r.Status)</span>
+                            break;
+                    }
+                    @if (r.Error is not null)
+                    {
+                        <div class="small text-body-secondary text-break mt-1">@r.Error</div>
+                    }
+                </div> },
+    ];
 
     protected override async Task OnInitializedAsync()
     {
         _accounts = await Overview.GetAccountsAsync();
         _accountId = _accounts.FirstOrDefault()?.Id ?? 0;
+        _reports = await Reports.GetReportsAsync(null);
     }
+
+    private string StatusText(AccountReportStatus status) => L[$"Reports_Status_{status}"];
 
     private async Task OnFilesChosen(InputFileChangeEventArgs e)
     {

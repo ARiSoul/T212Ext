@@ -91,6 +91,7 @@ Logs rotate at 5 files of 10 MB. Worth knowing:
 - `Failed sign-in for <user> from <address>`: a wrong password or code. After 5 attempts a minute from one address the sign-in page asks to wait.
 - `API key refused; remaining jobs skipped`: Trading 212 answered 401, so the key was revoked or expired; see section 5.
 - `Sync job <job> failed for account <id>`: the **Sync log** page has the detail. A 403 there means the key lacks a permission ([T212-API.md](T212-API.md)).
+- `asked for report <id>` and `imported report <id>`: the automatic CSV reports. Their list, with what each one added, is on the **Import CSV** page; `report <id> could not be imported` comes with the reason, and the period is asked for again on the next sync.
 
 **Restart** (keeps everything):
 

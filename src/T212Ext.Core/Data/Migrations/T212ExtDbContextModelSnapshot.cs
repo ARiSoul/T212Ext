@@ -17,10 +17,65 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Arisoul.T212Ext.Core.Domain.AccountReport", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DividendsAdded")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DividendsMatched")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Error")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTimeOffset?>("FinishedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("From")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("ReportId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("RequestedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTimeOffset>("To")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("TransactionsAdded")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TransactionsMatched")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId", "ReportId")
+                        .IsUnique();
+
+                    b.ToTable("AccountReports");
+                });
 
             modelBuilder.Entity("Arisoul.T212Ext.Core.Domain.BrokerAccount", b =>
                 {
@@ -581,6 +636,15 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                     b.HasKey("AccountId", "Job");
 
                     b.ToTable("SyncStates");
+                });
+
+            modelBuilder.Entity("Arisoul.T212Ext.Core.Domain.AccountReport", b =>
+                {
+                    b.HasOne("Arisoul.T212Ext.Core.Domain.BrokerAccount", null)
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Arisoul.T212Ext.Core.Domain.CashTransaction", b =>
