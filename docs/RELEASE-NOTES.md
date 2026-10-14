@@ -21,6 +21,7 @@ Phase 4: T212Ext can run on the Hetzner server next to traceon, reachable from a
 **Changed**
 - Locally nothing changes: without users configured, the app stays open in Development. Anywhere else it refuses to start without users.
 - The app now tells browsers not to show it inside other sites, and not to send its addresses to other sites.
+- Security updates: .NET libraries 10.0.13, and a fixed `System.Security.Cryptography.Pkcs` (two denial-of-service advisories of 2026-10-13).
 
 ## 2.3.0 — Capital gains for the IRS (2026-10-13)
 

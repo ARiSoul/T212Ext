@@ -30,6 +30,9 @@ The rules every change follows, for people and for coding assistants. Each rule 
    - A sandboxed tool (a coding assistant) may not reach the LocalDB instance another process started, and `dotnet ef` commands start `MSSQLLocalDB` in the tool's own context: stop it afterwards (`sqllocaldb stop MSSQLLocalDB`) so the maintainer's app can start it. It then uses its own instance through `T212EXT_TEST_SQL`, e.g. `Server=(localdb)\T212ExtClaude;...`.
 6. **Merge only with CI green** and the branch up to date with `main`. Docs-only PRs can merge at once.
 7. **Language:** code, comments, docs, commits and PRs are in English. The maintainer is addressed in European Portuguese.
+8. **A package with a known vulnerability fails the build** (NuGet audit warnings are errors).
+   - Update the package that brings it. If no fixed version of that package exists yet, pin the vulnerable one at a fixed version in the project that brings it, with a comment naming the advisory, and remove the pin once the parent brings a fixed version.
+   - *Why:* the app is reachable from the internet. Advisories appear without any change on our side, so CI can turn red overnight (2.4.0: `System.Security.Cryptography.Pkcs` through `Microsoft.Data.SqlClient`).
 
 ## 2. Trading 212 API client (`src/T212Ext.Client`)
 
