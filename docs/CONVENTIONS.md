@@ -17,9 +17,10 @@ The rules every change follows, for people and for coding assistants. Each rule 
    - Create it with `dotnet ef migrations add <Name> --project src/T212Ext.Core --startup-project src/T212Ext.Web --output-dir Data/Migrations`.
    - Review its `Up`/`Down`.
    - The app applies migrations when it starts. Nobody applies them by hand.
-4. **Secrets live only in user secrets (development) or the server's environment.**
+4. **Secrets live only in user secrets (development) or the server's `.env` (production).**
    - This covers API keys and secrets, and passwords in connection strings.
    - They are never pasted into chats, issues, `appsettings*.json` or the repository.
+   - Passwords are stored only as hashes (`hash-password`); `.env.example` holds names, never values.
 5. **Tests:**
    - The client is tested against `StubHandler`. Everything that touches the database is tested against the throwaway SQL Server of `DatabaseFixture`.
    - Every fix and every new rule gets a test that fails without it.
@@ -29,6 +30,9 @@ The rules every change follows, for people and for coding assistants. Each rule 
    - A sandboxed tool (a coding assistant) may not reach the LocalDB instance another process started, and `dotnet ef` commands start `MSSQLLocalDB` in the tool's own context: stop it afterwards (`sqllocaldb stop MSSQLLocalDB`) so the maintainer's app can start it. It then uses its own instance through `T212EXT_TEST_SQL`, e.g. `Server=(localdb)\T212ExtClaude;...`.
 6. **Merge only with CI green** and the branch up to date with `main`. Docs-only PRs can merge at once.
 7. **Language:** code, comments, docs, commits and PRs are in English. The maintainer is addressed in European Portuguese.
+8. **A package with a known vulnerability fails the build** (NuGet audit warnings are errors).
+   - Update the package that brings it. If no fixed version of that package exists yet, pin the vulnerable one at a fixed version in the project that brings it, with a comment naming the advisory, and remove the pin once the parent brings a fixed version.
+   - *Why:* the app is reachable from the internet. Advisories appear without any change on our side, so CI can turn red overnight (2.4.0: `System.Security.Cryptography.Pkcs` through `Microsoft.Data.SqlClient`).
 
 ## 2. Trading 212 API client (`src/T212Ext.Client`)
 
@@ -107,3 +111,28 @@ The rules every change follows, for people and for coding assistants. Each rule 
 6. **Pages read through the query classes** (`Core/Queries`), never through `DbContext` directly. Queries use `AsNoTracking`. Pages that depend on the chosen account inherit `AccountPage`.
 7. **No prerendering** (`App.razor`): pages load their data once, and JS interop (theme, saved grid state) works from the first render.
 8. **Long work runs in the worker, not in a page.** A page asks `SyncCoordinator.Request` and listens to `StateChanged`.
+9. **Every endpoint needs a signed-in user unless it says otherwise** (the fallback policy in `Auth/AuthSetup.cs`).
+   - The open ones are marked `AllowAnonymous`: `/login`, `/auth/login`, `/health`, `/language` and the static files. A new open endpoint is a decision, written here.
+   - Users come from configuration (`Auth:Users`), never from the database. Outside Development the app refuses to start without users.
+   - Sign-in failures do not say which part was wrong, sign-in is rate-limited per address, and an authenticator code works once.
+   - *Why:* the app holds a whole portfolio and tax history, and is reachable from the internet.
+10. **A page that sets or clears a cookie is a plain form**, not interactive: it is marked `[ExcludeFromInteractiveRouting]` and posts to an endpoint with `<AntiforgeryToken />` (`Login.razor`, the sign-out button). Every other page is interactive.
+11. **Redirects go only to local paths** (`SignInService.SafeReturnUrl`): the sign-in and language links cannot send anyone to another site.
+
+## 5. Deployment (`Dockerfile`, `docker-compose.yml`, `ops/`)
+
+1. **The server runs what the repository holds.** Its settings are only in `.env`; tracked files are never edited there, so `git pull` always applies cleanly.
+2. **A new setting the server needs goes, in the same PR, to `.env.example`, the settings table in the README, and the version's section in `UPGRADING.md`.**
+3. **T212Ext depends on the server's shared infrastructure, never on another app.**
+   - It joins only the external networks `edge` (the reverse proxy) and `data` (SQL Server as `sqlserver`), never another project's network, and publishes no port.
+   - Names on those networks are DNS names: every service and container is `t212ext-<role>` (today `t212ext-web`), never generic (`web`, `api`) nor `sqlserver`, `caddy` or `traceon-*`.
+   - Its site is a file in the proxy's sites folder, with the domain written in it; the docs always validate the configuration before reloading Caddy. Its backups, scripts and secrets are its own. Nothing in this repository calls another app's scripts.
+   - The infrastructure's side of the contract is traceon's `docs/OPERATIONS.md`, section 20; a change there is checked against this section.
+   - Where the infrastructure lives (today traceon's compose project) is a setting with a default (`SA_ENV_FILE`, `DB_CONTAINER`), not something the app is built around.
+   - The app trusts forwarded headers only because nothing but the proxy can reach it.
+   - *Why:* the two apps are independent; a change in one must not break the other, and either could move to another server.
+4. **Database work outside migrations is a script in `ops/db/`, safe to run twice.**
+   - The app's login owns only its own database, and the app and its nightly backup use only that login.
+   - `sa` is used only to create the database and login, and to restore (restore test, disaster restore).
+5. **CI builds the image and starts it** against a SQL Server: it must refuse to start without users and answer `/health` with one. A change to the `Dockerfile` or the compose file is checked there before it reaches the server.
+6. **Server docs are commands to copy, one per block**, with `<placeholders>` for personal values ([DEPLOYMENT.md](DEPLOYMENT.md), [OPERATIONS.md](OPERATIONS.md)). They never show a secret's value.

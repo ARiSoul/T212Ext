@@ -209,6 +209,14 @@
   <data name="Income_SharesHeld" xml:space="preserve"><value>{0} shares held</value></data>
   <data name="Income_Subtitle" xml:space="preserve"><value>What each instrument has paid you. Choose one to see its history.</value></data>
   <data name="Language_Label" xml:space="preserve"><value>Language</value></data>
+  <data name="Login_Code" xml:space="preserve"><value>Authenticator code</value></data>
+  <data name="Login_CodeHint" xml:space="preserve"><value>The 6 digits your authenticator app shows.</value></data>
+  <data name="Login_Invalid" xml:space="preserve"><value>The username, password or code is not right.</value></data>
+  <data name="Login_Password" xml:space="preserve"><value>Password</value></data>
+  <data name="Login_Submit" xml:space="preserve"><value>Sign in</value></data>
+  <data name="Login_Throttled" xml:space="preserve"><value>Too many attempts. Wait a minute and try again.</value></data>
+  <data name="Login_Title" xml:space="preserve"><value>Sign in</value></data>
+  <data name="Login_Username" xml:space="preserve"><value>Username</value></data>
   <data name="Nav_Cash" xml:space="preserve"><value>Cash movements</value></data>
   <data name="Nav_Data" xml:space="preserve"><value>Data</value></data>
   <data name="Nav_Dividends" xml:space="preserve"><value>Dividends</value></data>
@@ -218,6 +226,7 @@
   <data name="Nav_Orders" xml:space="preserve"><value>Orders</value></data>
   <data name="Nav_Overview" xml:space="preserve"><value>Overview</value></data>
   <data name="Nav_Positions" xml:space="preserve"><value>Positions</value></data>
+  <data name="Nav_SignOut" xml:space="preserve"><value>Sign out</value></data>
   <data name="Nav_SyncLog" xml:space="preserve"><value>Sync log</value></data>
   <data name="Nav_Tax" xml:space="preserve"><value>IRS report</value></data>
   <data name="NotFound_Text" xml:space="preserve"><value>The page you are looking for does not exist.</value></data>

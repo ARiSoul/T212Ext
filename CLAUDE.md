@@ -16,6 +16,7 @@ Read [docs/CONVENTIONS.md](docs/CONVENTIONS.md) before changing code, and follow
   - `Tax/`: the IRS report (`IrsReport`; rules in docs/TAX.md);
   - `Queries/`: read models for the UI.
 - `src/T212Ext.Web/`: Blazor Web App (Interactive Server). It hosts the sync worker and applies migrations at startup.
+  - `Auth/`: sign-in (users from configuration, TOTP, `hash-password` and `new-totp-secret` commands);
   - `Components/Grid/`: `DataGrid` and `GridEngine`;
   - `Components/Charts/`: `ChartStyle` (validated palette) and `ThemedChart`;
   - `Components/Shared/`: `AccountPage`, `Fmt`, `Labels`, selectors;
@@ -24,6 +25,7 @@ Read [docs/CONVENTIONS.md](docs/CONVENTIONS.md) before changing code, and follow
 - `tests/T212Ext.Client.Tests/`: client tests with a stubbed HTTP handler.
 - `tests/T212Ext.Core.Tests/`: integration tests against a throwaway SQL Server database (LocalDB by default, `T212EXT_TEST_SQL` to override), and analytics tests.
 - `tests/T212Ext.Web.Tests/`: grid engine, languages and translation tests.
+- `Dockerfile`, `docker-compose.yml`, `.env.example`, `ops/`: the server deployment next to traceon (docs/DEPLOYMENT.md, docs/OPERATIONS.md).
 - `docs/`: see [docs/README.md](docs/README.md).
 
 ## Commands

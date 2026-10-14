@@ -13,7 +13,7 @@ Trading 212's own app shows dividends one by one. T212Ext reads them through the
 
 ---
 
-## Features (2.3)
+## Features (2.4)
 
 **IRS report (Portugal)**
 - **Anexo J, quadro 8A:** foreign dividends by source country (code E11), gross and tax paid abroad, in euros at the ECB rate of each payment date. Exact withholding from the API's gross and the CSV's net per share.
@@ -50,7 +50,11 @@ The grids remember your choices.
 - A modern interface with **light, dark and automatic themes**, made for phone and desktop.
 - **Português, English, Español.**
 
-Next: the deployment next to traceon, with sign-in. See [docs/BACKLOG.md](docs/BACKLOG.md).
+**Hosting**
+- **Sign-in** with a password and an authenticator code (TOTP), for running on a server.
+- **Docker** image and compose file for the server it shares with traceon: independent apps that share only the reverse proxy (HTTPS) and SQL Server, through neutral networks. Own database login, own encrypted backups. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
+Next: see [docs/BACKLOG.md](docs/BACKLOG.md).
 
 ## Tech stack
 
@@ -59,6 +63,7 @@ Next: the deployment next to traceon, with sign-in. See [docs/BACKLOG.md](docs/B
 | **App** | ASP.NET Core 10, Blazor Web App (Interactive Server), Bootstrap 5, Bootstrap Icons, Blazor-ApexCharts |
 | **Sync** | `BackgroundService` in the same process, typed `HttpClient` |
 | **Database** | SQL Server (LocalDB in development, Express in production), EF Core 10 with migrations |
+| **Hosting** | Docker Compose behind the server's shared Caddy (HTTPS) and SQL Server; cookie sign-in with TOTP |
 | **Tests** | xUnit; integration tests against a throwaway SQL Server database |
 
 ## Getting started
@@ -112,8 +117,28 @@ dotnet user-secrets set "T212:Accounts:1:ApiSecret" "<secret>"
 | `Sync:RunOnStartup` | `true` | Sync once when the app starts. |
 | `Sync:InstrumentsMaxAge` | `1.00:00:00` | How old the instrument list may get before it is refreshed. |
 | `Ui:DefaultCulture` | `pt-PT` | Language until one is chosen in the app (`pt-PT`, `en-GB` or `es-ES`). |
+| `Auth:Users:N:Username` | | Who may sign in. Without users the app is open, which only Development allows. |
+| `Auth:Users:N:PasswordHash` | | Hash made with `hash-password` (below). |
+| `Auth:Users:N:TotpSecret` | empty | Authenticator secret made with `new-totp-secret`. Empty: password only. |
+| `DataProtection:KeysPath` | empty | Folder for the cookie encryption keys. Set by the Docker image. |
 
-On a server, use environment variables instead of user secrets (`T212__Accounts__0__ApiKey=…`).
+On a server, the settings come from environment variables instead (`T212__Accounts__0__ApiKey=…`): see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
+**Sign-in.** Locally the app is open while `Auth:Users` is empty. To try the sign-in, add a user to the user secrets; the two commands print what to store and touch nothing else:
+
+```bash
+dotnet run --project src/T212Ext.Web -- hash-password
+```
+
+```bash
+dotnet run --project src/T212Ext.Web -- new-totp-secret <username>
+```
+
+```bash
+dotnet user-secrets set "Auth:Users:0:Username" "<username>" --project src/T212Ext.Web
+```
+
+Then `Auth:Users:0:PasswordHash` and, optionally, `Auth:Users:0:TotpSecret` the same way.
 
 ### 3. Run
 
@@ -123,7 +148,7 @@ dotnet run --project src/T212Ext.Web
 
 Open http://localhost:5067. The first start creates the database, and a first sync runs straight away.
 
-> **Do not expose the app to the internet yet.** It has no sign-in until the deployment phase (see the [backlog](docs/BACKLOG.md#phase-4--deploy-next-to-traceon-23)).
+> **Exposing it to the internet:** follow [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Outside Development the app refuses to start without users.
 
 **If startup fails with "LocalDB … SQL Server process failed to start"**, the LocalDB instance is running in a context your process cannot reach. This happens, for example, when a sandboxed tool or another session started it. Stop it, and let the app start it again:
 
@@ -145,7 +170,7 @@ dotnet test T212Ext.slnx
 - `tests/T212Ext.Core.Tests`: sync, CSV parsing and import, merging between sources, analytics and queries, against a real SQL Server.
   - Each run creates a throwaway database and drops it at the end.
   - The server is LocalDB by default. Set `T212EXT_TEST_SQL` to use another one (a connection string without `Database`).
-- `tests/T212Ext.Web.Tests`: the grid engine (filters, sorting, totals, paging, export), languages, and that the three translations have the same keys.
+- `tests/T212Ext.Web.Tests`: the grid engine (filters, sorting, totals, paging, export), sign-in (passwords, authenticator codes, return URLs, settings), languages, and that the three translations have the same keys.
 
 ## Project layout
 
@@ -157,6 +182,7 @@ src/
   T212Ext.Core/               Entities, EF Core (Data/), sync (Sync/), CSV import (Import/), analytics (Analytics/),
                               ECB rates (Rates/), IRS report (Tax/), queries (Queries/)
   T212Ext.Web/                Blazor app; hosts the sync worker
+    Auth/                     Sign-in: users from configuration, authenticator codes, setup commands
     Components/Grid/          The DataGrid and its engine
     Components/Charts/        Chart style (validated palette) and the themed chart card
     Resources/                Texts in English, Portuguese and Spanish
@@ -164,6 +190,8 @@ tests/
   T212Ext.Client.Tests/
   T212Ext.Core.Tests/
   T212Ext.Web.Tests/
+ops/                          Server scripts: database setup (db/), backups (backup/), Caddy site (caddy/)
+Dockerfile, docker-compose.yml, .env.example   The server deployment (docs/DEPLOYMENT.md)
 docs/                         See docs/README.md
 ```
 
@@ -175,6 +203,8 @@ docs/                         See docs/README.md
 | [docs/CONVENTIONS.md](docs/CONVENTIONS.md) | Rules every change follows |
 | [docs/TAX.md](docs/TAX.md) | The IRS report: rules, sources, what is still to confirm |
 | [docs/T212-API.md](docs/T212-API.md) | What we know about the Trading 212 API: auth, limits, quirks, terms |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | First-time setup on the server it shares with traceon |
+| [docs/OPERATIONS.md](docs/OPERATIONS.md) | Updates, logs, users, secrets, backups on the server |
 | [docs/BACKLOG.md](docs/BACKLOG.md) | Roadmap and ideas |
 | [docs/RELEASE-NOTES.md](docs/RELEASE-NOTES.md) | What changed in each version |
 

@@ -1,0 +1,83 @@
+@page "/login"
+@layout AuthLayout
+@attribute [AllowAnonymous]
+@attribute [ExcludeFromInteractiveRouting]
+@using System.Globalization
+@using Arisoul.T212Ext.Web.Auth
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Options
+@inject IStringLocalizer<SharedResource> L
+@inject SignInService SignIn
+@inject IOptions<AuthOptions> AuthOptions
+@inject NavigationManager Navigation
+
+<PageTitle>@L["Login_Title"] · T212Ext</PageTitle>
+
+<div class="auth-card">
+    <div class="app-brand mb-3">
+        <span class="app-brand-mark" aria-hidden="true"><i class="bi bi-bar-chart-fill"></i></span>
+        <span>T212Ext</span>
+    </div>
+
+    <h1 class="h4 mb-3">@L["Login_Title"]</h1>
+
+    @if (Error == "invalid")
+    {
+        <div class="alert alert-danger py-2" role="alert">@L["Login_Invalid"]</div>
+    }
+    else if (Error == "throttled")
+    {
+        <div class="alert alert-warning py-2" role="alert">@L["Login_Throttled"]</div>
+    }
+
+    <form method="post" action="auth/login">
+        <AntiforgeryToken />
+        <input type="hidden" name="ReturnUrl" value="@SafeReturnUrl" />
+
+        <div class="mb-3">
+            <label class="form-label" for="username">@L["Login_Username"]</label>
+            <input class="form-control" id="username" name="Username" autocomplete="username" required autofocus />
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="password">@L["Login_Password"]</label>
+            <input class="form-control" id="password" name="Password" type="password" autocomplete="current-password" required />
+        </div>
+        @if (SignIn.RequiresCode)
+        {
+            <div class="mb-3">
+                <label class="form-label" for="code">@L["Login_Code"]</label>
+                <input class="form-control" id="code" name="Code" inputmode="numeric" pattern="[0-9 ]*" autocomplete="one-time-code" maxlength="7" />
+                <div class="form-text">@L["Login_CodeHint"]</div>
+            </div>
+        }
+
+        <button type="submit" class="btn btn-primary w-100">@L["Login_Submit"]</button>
+    </form>
+
+    <div class="d-flex justify-content-center gap-2 mt-4 small">
+        @foreach (var language in Languages.All)
+        {
+            <a class="@(language.Culture == CultureInfo.CurrentUICulture.Name ? "fw-semibold" : "text-body-secondary")"
+               href="@($"language?culture={Uri.EscapeDataString(language.Culture)}&returnUrl={Uri.EscapeDataString(CurrentUrl)}")">@language.NativeName</a>
+        }
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private string? Error { get; set; }
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    private string SafeReturnUrl => SignInService.SafeReturnUrl(ReturnUrl);
+
+    private string CurrentUrl => "/" + Navigation.ToBaseRelativePath(Navigation.Uri);
+
+    protected override void OnInitialized()
+    {
+        // A local run without users has nothing to sign in to.
+        if (!AuthOptions.Value.Enabled)
+            Navigation.NavigateTo("/");
+    }
+}

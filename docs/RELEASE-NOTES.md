@@ -2,6 +2,27 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.4.0 — Ready for the server (2026-10-13)
+
+Phase 4: T212Ext can run on the Hetzner server it shares with traceon, reachable from anywhere over HTTPS and protected by a sign-in. See [DEPLOYMENT.md](DEPLOYMENT.md).
+
+**New**
+- **Sign-in.** Every page needs it once users are configured:
+  - a password, stored only as a hash, and an optional (recommended) code from an authenticator app;
+  - a session lasts 14 days from the last visit; changing the password ends every session;
+  - after 5 wrong attempts in a minute, the page asks to wait;
+  - a sign-out button at the top right.
+- **Running on the server:**
+  - a Docker image and a compose file; the two apps stay independent and share only the reverse proxy and SQL Server, through two neutral networks;
+  - its own database and login on the shared SQL Server, created by a script;
+  - its own nightly encrypted backups, off the server, with a weekly restore test;
+  - [DEPLOYMENT.md](DEPLOYMENT.md) for the first setup and [OPERATIONS.md](OPERATIONS.md) for updates, users, secrets and restores.
+
+**Changed**
+- Locally nothing changes: without users configured, the app stays open in Development. Anywhere else it refuses to start without users.
+- The app now tells browsers not to show it inside other sites, and not to send its addresses to other sites.
+- Security updates: .NET libraries 10.0.13, and a fixed `System.Security.Cryptography.Pkcs` (two denial-of-service advisories of 2026-10-13).
+
 ## 2.3.0 — Capital gains for the IRS (2026-10-13)
 
 The IRS report gets a second tab: the sales of shares and ETFs, for Anexo J, quadro 9.2A. See [TAX.md](TAX.md#capital-gains-anexo-j-quadro-92a). To check, not tax advice.

@@ -4,6 +4,7 @@ The roadmap by phase, then ideas and known limitations not yet planned. When an 
 
 Done so far:
 - **2.0.0, phase 1 (foundations):** API client, database, scheduled sync, CSV import, first pages, tests.
+- **2.4.0, phase 4 (deployment):** sign-in with password and authenticator code, Docker image and compose sharing only the reverse proxy and SQL Server with traceon (neutral `edge` and `data` networks, own login), data protection keys on a volume, own encrypted backups, CI check of the image, DEPLOYMENT and OPERATIONS docs.
 - **2.3.0:** capital gains for Anexo J quadro 9.2A (FIFO, ECB rates, splits), quadro 11 account details.
 - **2.2.0, phase 3 (IRS report):** Anexo J quadro 8A from dividends, ECB rates, source country per instrument, Portuguese dividends and interest apart, CSV export and print.
 - **2.1.0, phase 2 (dividend dashboard):**
@@ -16,8 +17,8 @@ Done so far:
 ## Contents
 
 - [IRS report follow-ups](#irs-report-follow-ups)
-- [Phase 4 — Deploy next to traceon (2.3)](#phase-4--deploy-next-to-traceon-23)
-- [Phase 5 — Extras (2.4 and later)](#phase-5--extras-24-and-later)
+- [Deployment follow-ups](#deployment-follow-ups)
+- [Phase 5 — Extras (2.5 and later)](#phase-5--extras-25-and-later)
 - [App and grid follow-ups](#app-and-grid-follow-ups)
 - [Known limitations and technical debt](#known-limitations-and-technical-debt)
 - [Product ideas](#product-ideas)
@@ -36,24 +37,19 @@ Phase 3 shipped as **2.2.0** (dividends) and **2.3.0** (capital gains): see [TAX
 | 3.9e | **Inflation coefficient** | For holdings over 24 months (art. 50.º), if Anexo J's instructions confirm it applies. |
 | 3.10 | **Domestic dividends in Anexo E** | Only if the maintainer chooses aggregation (englobamento). |
 
-## Phase 4 — Deploy next to traceon (2.3)
+## Deployment follow-ups
 
-Branch `feature-deploy`. Run T212Ext on the Hetzner VPS that already runs traceon.
+Phase 4 shipped as **2.4.0**: see [DEPLOYMENT.md](DEPLOYMENT.md). Left for later:
 
 | # | Item | Notes |
 |---|---|---|
-| 4.1 | **Sign-in** | Required before exposure. Options: ASP.NET Core Identity with one user and two-step verification (preferred), or Caddy `basic_auth` as a stop-gap. |
-| 4.2 | **Dockerfile** | Multi-stage, non-root, `curl` for the health check at `/health`. |
-| 4.3 | **Compose and network** | Its own `docker-compose.yml` on a shared external Docker network (e.g. `edge`) that traceon's Caddy joins too. One more Caddyfile site, e.g. `dividends.arisoul.org { reverse_proxy t212ext:8080 }`. |
-| 4.4 | **Database** | A new `T212Ext` database on traceon's SQL Server Express, with its own login (not `sa`). No extra RAM, and traceon's backups can include it. Check that the backup scripts in traceon's `ops/backup` cover a second database. |
-| 4.5 | **Secrets** | Keys and secrets in the server's `.env`. Trading 212 keys restricted to the VPS IP address. |
-| 4.6 | **Data protection keys** | Persist the ASP.NET Core data protection keys to a volume, so sign-in and language cookies survive restarts. |
-| 4.7 | **Docs** | `docs/DEPLOYMENT.md`, `docs/OPERATIONS.md`, the first `UPGRADING.md` section. |
-| 4.8 | **PWA** | Installable on the phone, as traceon. |
+| 4.8 | **PWA** | A manifest and icons so the site installs on the phone's home screen, as traceon. Offline makes no sense for a server app; a small service worker only if the browser needs one to offer the install. |
+| 4.9 | **Content-Security-Policy** | The app already sends `X-Frame-Options`, `X-Content-Type-Options` and `Referrer-Policy`. A CSP needs care: the theme script in `App.razor` is inline, and Blazor and ApexCharts need their own allowances. |
+| 4.10 | **Sign-in history** | A small table of recent sign-ins (time, address, success), shown on a page, instead of only the logs. |
+| 4.11 | **Image from CI** | Build the image in GitHub Actions and pull it on the server (GHCR), instead of building on the server. Worth it only if the server's builds get slow. |
+| 4.12 | **Infrastructure project** | Move Caddy, SQL Server and the shared networks out of traceon's compose into a project of their own, with both apps as equal guests. Worth it with a third app, or before touching traceon's SQL Server for another reason. Moving SQL Server means a short downtime and a backup and restore of every database. |
 
-**Effort:** 12–18 h.
-
-## Phase 5 — Extras (2.4 and later)
+## Phase 5 — Extras (2.5 and later)
 
 - **Notifications:** a Web Push when a dividend arrives, and a monthly summary. traceon already has VAPID and Web Push.
 - **Automatic CSV reports:** request a report through `/history/exports` every month, download it and import it. This adds withholding tax and closes the API's history gaps without manual work.
@@ -79,7 +75,7 @@ Recorded 2026-10-13 with the 2.1 work.
 - **Orders from CSV reports are not imported** (3.9b). Capital gains rely on the API's order history.
 - **CSV action names not seen yet** land in "Other lines skipped". Examples: other order types, card payments, currency conversions, transfers between accounts. When one shows up, decide whether it matters, and update [T212-API.md](T212-API.md#csv-reports) and the parser together.
 - **Transactions pagination** fails after page 2 for some accounts (a Trading 212 bug). The sync then logs a failed job; CSV reports fill the gap.
-- **No sign-in** until phase 4. Do not expose the app.
+- **Users live in configuration:** adding one or changing a password means editing `.env` and recreating the container ([OPERATIONS.md](OPERATIONS.md#4-users-and-sign-in)). Fine for one or two people.
 - **One instrument list for all accounts**, refreshed with the first configured account's key.
 - **Daily snapshots exist only from the day the app first ran.** Earlier portfolio values cannot be rebuilt from the API. The portfolio chart fills in over time.
 - **Summaries in several currencies:** grid totals add up whatever is in the column. That is fine while an account has one currency; with accounts in two currencies, filter by account first.

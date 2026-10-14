@@ -1,0 +1,42 @@
+# T212Ext on the server, next to traceon (docs/DEPLOYMENT.md).
+# It talks only to the server's shared infrastructure, never to another app:
+#   edge: the reverse proxy (Caddy) serves it over HTTPS as "t212ext-web:8080";
+#   data: it reaches SQL Server as "sqlserver", with a login of its own.
+# Both networks are created once by hand (docker network create edge / data). It publishes no port.
+# Names on those networks are DNS names: keep the "t212ext-" prefix (traceon docs/OPERATIONS.md, section 20).
+
+# Log rotation (Docker's json-file driver has no limit by default)
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+services:
+  t212ext-web:
+    build: .
+    container_name: t212ext-web
+    # The app's settings (Auth__Users__*, T212__Accounts__*) come from .env as they are; see .env.example.
+    env_file: .env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # Caddy terminates HTTPS: trust its X-Forwarded-For/-Proto (the port is not published).
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      ConnectionStrings__T212Ext: "Server=sqlserver,1433;Database=T212Ext;User Id=t212ext;Password=${T212EXT_DB_PASSWORD:?set T212EXT_DB_PASSWORD in .env};TrustServerCertificate=True"
+    volumes:
+      - keys:/data/keys
+    networks:
+      - edge
+      - data
+    logging: *default-logging
+    restart: unless-stopped
+
+volumes:
+  # Data protection keys: without them every restart signs everyone out.
+  keys:
+
+networks:
+  edge:
+    external: true
+  data:
+    external: true

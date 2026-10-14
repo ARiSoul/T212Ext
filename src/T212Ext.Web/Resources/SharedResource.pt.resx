@@ -209,6 +209,14 @@
   <data name="Income_SharesHeld" xml:space="preserve"><value>{0} ações em carteira</value></data>
   <data name="Income_Subtitle" xml:space="preserve"><value>O que cada ativo já lhe pagou. Escolha um para ver o histórico.</value></data>
   <data name="Language_Label" xml:space="preserve"><value>Língua</value></data>
+  <data name="Login_Code" xml:space="preserve"><value>Código da aplicação de autenticação</value></data>
+  <data name="Login_CodeHint" xml:space="preserve"><value>Os 6 dígitos que a aplicação de autenticação mostra.</value></data>
+  <data name="Login_Invalid" xml:space="preserve"><value>O utilizador, a palavra-passe ou o código não estão certos.</value></data>
+  <data name="Login_Password" xml:space="preserve"><value>Palavra-passe</value></data>
+  <data name="Login_Submit" xml:space="preserve"><value>Entrar</value></data>
+  <data name="Login_Throttled" xml:space="preserve"><value>Demasiadas tentativas. Aguarde um minuto e tente de novo.</value></data>
+  <data name="Login_Title" xml:space="preserve"><value>Iniciar sessão</value></data>
+  <data name="Login_Username" xml:space="preserve"><value>Utilizador</value></data>
   <data name="Nav_Cash" xml:space="preserve"><value>Movimentos de dinheiro</value></data>
   <data name="Nav_Data" xml:space="preserve"><value>Dados</value></data>
   <data name="Nav_Dividends" xml:space="preserve"><value>Dividendos</value></data>
@@ -218,6 +226,7 @@
   <data name="Nav_Orders" xml:space="preserve"><value>Ordens</value></data>
   <data name="Nav_Overview" xml:space="preserve"><value>Visão geral</value></data>
   <data name="Nav_Positions" xml:space="preserve"><value>Posições</value></data>
+  <data name="Nav_SignOut" xml:space="preserve"><value>Terminar sessão</value></data>
   <data name="Nav_SyncLog" xml:space="preserve"><value>Registo de sincronização</value></data>
   <data name="Nav_Tax" xml:space="preserve"><value>Relatório de IRS</value></data>
   <data name="NotFound_Text" xml:space="preserve"><value>A página que procura não existe.</value></data>

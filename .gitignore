@@ -402,3 +402,8 @@ FodyWeavers.xsd
 .claude/
 # Build leftovers of the 1.x MAUI app (never tracked).
 .legacy-maui-leftovers/
+# Server secrets (docker compose and the backup scripts read them); only the examples are committed.
+.env
+ops/backup/backup.env
+# The backup scripts (the Visual Studio rule "Backup*/" above would hide the folder).
+!ops/backup/
