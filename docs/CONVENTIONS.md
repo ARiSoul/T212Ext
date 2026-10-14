@@ -125,7 +125,9 @@ The rules every change follows, for people and for coding assistants. Each rule 
 2. **A new setting the server needs goes, in the same PR, to `.env.example`, the settings table in the README, and the version's section in `UPGRADING.md`.**
 3. **T212Ext depends on the server's shared infrastructure, never on another app.**
    - It joins only the external networks `edge` (the reverse proxy) and `data` (SQL Server as `sqlserver`), never another project's network, and publishes no port.
-   - Its site is a file in the proxy's sites folder; its backups, scripts and secrets are its own. Nothing in this repository calls another app's scripts.
+   - Names on those networks are DNS names: every service and container is `t212ext-<role>` (today `t212ext-web`), never generic (`web`, `api`) nor `sqlserver`, `caddy` or `traceon-*`.
+   - Its site is a file in the proxy's sites folder, with the domain written in it; the docs always validate the configuration before reloading Caddy. Its backups, scripts and secrets are its own. Nothing in this repository calls another app's scripts.
+   - The infrastructure's side of the contract is traceon's `docs/OPERATIONS.md`, section 20; a change there is checked against this section.
    - Where the infrastructure lives (today traceon's compose project) is a setting with a default (`SA_ENV_FILE`, `DB_CONTAINER`), not something the app is built around.
    - The app trusts forwarded headers only because nothing but the proxy can reach it.
    - *Why:* the two apps are independent; a change in one must not break the other, and either could move to another server.

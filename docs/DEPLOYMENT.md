@@ -20,19 +20,25 @@ First-time setup of T212Ext on the Hetzner server that also runs traceon. Day-to
 T212Ext and traceon are independent apps, each its own Docker Compose project. They share only the server's infrastructure: the reverse proxy, which alone can own ports 80 and 443, and SQL Server, so the small server runs one instance (SQL Server on Linux needs 2 GB of memory each). That infrastructure lives in traceon's compose project today; T212Ext reaches it only through two neutral Docker networks, never traceon's own.
 
 ```
-t212ext.<your-domain> ─┐
-traceon's domains     ─┴─▶ server :443 ─▶ Caddy ─┬─ edge ──▶ t212ext:8080 ─┐
-                                                 └─ (traceon's own network) ─▶ traceon
-                                                                             │
-                           SQL Server ◀── data ──────────────────────────────┘
-                           database T212Ext, login "t212ext"
+browser ──▶ t212ext.<your-domain> ──▶ server :443 ──▶ Caddy (shared)
+                                                        │  network edge
+                                                        ▼
+                                                  t212ext-web:8080
+                                                        │  network data
+                                                        ▼
+                                                  SQL Server "sqlserver" (shared)
+                                                  database T212Ext, login "t212ext"
 ```
 
-- **One container, `t212ext`**, built from this repository's `Dockerfile` by its `docker-compose.yml`. It publishes no port.
-- **Network `edge`:** the proxy and the apps it serves. Caddy reaches the app as `t212ext:8080`. Caddy picks the app by domain; each domain gets its own certificate automatically.
+traceon's domains go through the same Caddy to traceon's containers, on traceon's own network, which T212Ext cannot see.
+
+- **One container, `t212ext-web`**, built from this repository's `Dockerfile` by its `docker-compose.yml`. It publishes no port.
+- **Network `edge`:** the proxy and the apps it serves. Caddy reaches the app as `t212ext-web:8080`. Caddy picks the app by domain; each domain gets its own certificate automatically.
+- **Names on the shared networks are DNS names**, so they carry the app's prefix (`t212ext-web`), never a generic one (`web`, `api`) nor `sqlserver`, `caddy` or `traceon-*`.
 - **Network `data`:** the apps and SQL Server, reached as `sqlserver`. T212Ext has its own database and a login that can touch nothing else.
 - **T212Ext cannot reach traceon's containers**, nor traceon T212Ext's. Different domains also mean the browser never mixes their cookies.
 - **Backups are the app's own** ([ops/backup](../ops/backup)): signed in with the app's login, to a folder of their own on the Storage Box.
+- **The rules of that shared infrastructure** (what it keeps stable, and what every app does on its side) are in traceon's `docs/OPERATIONS.md`, section 20, "Other apps on this server".
 - **Sign-in** is the app's own: users with a password and, preferably, an authenticator code, set in `.env`. Every page needs it; only `/login` and `/health` are open.
 - **Data protection keys** (they encrypt the sign-in and language cookies) are on a Docker volume, so restarts and new images do not sign you out.
 
@@ -95,7 +101,7 @@ nano ~/t212ext/.env
 **Password.** The app stores only a hash. This builds the image the first time (a few minutes), asks for the password twice without showing it, and prints the hash:
 
 ```bash
-cd ~/t212ext && docker compose run --rm -it t212ext hash-password
+cd ~/t212ext && docker compose run --rm -it t212ext-web hash-password
 ```
 
 Put the printed line in `Auth__Users__0__PasswordHash=`. Use a long password from the password manager (at least 12 characters).
@@ -103,7 +109,7 @@ Put the printed line in `Auth__Users__0__PasswordHash=`. Use a long password fro
 **Authenticator code (recommended).** The app holds your whole portfolio and tax history; with a code, a leaked password is not enough:
 
 ```bash
-cd ~/t212ext && docker compose run --rm t212ext new-totp-secret <username>
+cd ~/t212ext && docker compose run --rm t212ext-web new-totp-secret <username>
 ```
 
 It prints a secret (32 letters and digits) and an `otpauth://` link. Put the secret in `Auth__Users__0__TotpSecret=`, and add it to the authenticator app as a "setup key" (time-based). Keep a copy in the password manager: it is the only way to recover the codes if the phone is lost.
@@ -138,10 +144,10 @@ cd ~/t212ext && docker compose up -d --build
 docker compose ps
 ```
 
-`t212ext` turns `healthy` after about a minute. The first start creates the tables (migrations), then the first sync starts.
+`t212ext-web` turns `healthy` after about a minute. The first start creates the tables (migrations), then the first sync starts.
 
 ```bash
-docker compose logs --tail 50 t212ext
+docker compose logs --tail 50 t212ext-web
 ```
 
 Expected: `Now listening on: http://[::]:8080`, then the sync jobs. Errors about the database mean section 4 (or `T212EXT_DB_PASSWORD` changed without running the script); an error about `Auth:Users` means section 5; `network edge declared as external, but could not be found` means section 2.
@@ -154,11 +160,15 @@ The site file comes from [ops/caddy/t212ext.caddy.example](../ops/caddy/t212ext.
 cp ~/t212ext/ops/caddy/t212ext.caddy.example ~/traceon/caddy-sites/t212ext.caddy && nano ~/traceon/caddy-sites/t212ext.caddy
 ```
 
-Replace `t212ext.example.com` with your domain. Then reload Caddy (no downtime for the other sites):
+Replace `t212ext.example.com` with your domain, written in the file itself: Caddy there has only traceon's environment variables, so `{$VAR}` would not work.
+
+Validate the whole configuration, then reload (no downtime for the other sites). Always both, in this order:
 
 ```bash
-docker exec traceon-caddy caddy reload --config /etc/caddy/Caddyfile
+docker exec traceon-caddy caddy validate --config /etc/caddy/Caddyfile && docker exec traceon-caddy caddy reload --config /etc/caddy/Caddyfile
 ```
+
+**If the validation fails, fix or remove `t212ext.caddy` at once.** Caddy keeps running with the old configuration, but while a broken file is in the folder it would not start again after a restart or a traceon deploy, and every site on the server would be down, traceon's included.
 
 Caddy gets the certificate within a few seconds. Check:
 

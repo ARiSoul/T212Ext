@@ -45,7 +45,7 @@ cd ~/t212ext && git pull && docker compose up -d --build
 
    The keys volume stays; migrations apply when the app starts.
 
-4. Check: `t212ext` is `healthy` after about a minute, `/health` answers, the version at the bottom of the menu is the new one.
+4. Check: `t212ext-web` is `healthy` after about a minute, `/health` answers, the version at the bottom of the menu is the new one.
 
 ```bash
 docker compose ps
@@ -56,6 +56,8 @@ curl -s https://t212ext.<your-domain>/health
 ```
 
 **Changing only `.env`** needs no build: `docker compose up -d` recreates the container with the new values.
+
+**Changing the domain:** a new DNS record, then edit `~/traceon/caddy-sites/t212ext.caddy` and validate before reloading, as in [DEPLOYMENT.md](DEPLOYMENT.md#8-https-through-the-shared-caddy). Never reload without validating: a broken site file would keep Caddy, and every site on the server, from starting again.
 
 A sync cut short by the restart keeps what it saved (history jobs save page by page), and the sync on startup carries on.
 
@@ -77,11 +79,11 @@ cd ~/t212ext && docker compose ps
 ```
 
 ```bash
-docker compose logs --tail 100 t212ext
+docker compose logs --tail 100 t212ext-web
 ```
 
 ```bash
-docker compose logs -f --since 10m t212ext
+docker compose logs -f --since 10m t212ext-web
 ```
 
 Logs rotate at 5 files of 10 MB. Worth knowing:
@@ -93,7 +95,7 @@ Logs rotate at 5 files of 10 MB. Worth knowing:
 **Restart** (keeps everything):
 
 ```bash
-cd ~/t212ext && docker compose restart t212ext
+cd ~/t212ext && docker compose restart t212ext-web
 ```
 
 Memory and CPU of every container on the server:
@@ -106,8 +108,8 @@ docker stats --no-stream
 
 Users are in `.env` (`Auth__Users__N__*`, [DEPLOYMENT.md](DEPLOYMENT.md#5-sign-in)). After any change, `docker compose up -d`.
 
-- **Change a password:** a new hash with `docker compose run --rm -it t212ext hash-password`, into `Auth__Users__0__PasswordHash`. Every session of that user ends.
-- **New authenticator (phone lost or replaced):** if the secret is in the password manager, add it to the new phone. Otherwise create a new one with `docker compose run --rm t212ext new-totp-secret <username>`. Changing it also ends the sessions.
+- **Change a password:** a new hash with `docker compose run --rm -it t212ext-web hash-password`, into `Auth__Users__0__PasswordHash`. Every session of that user ends.
+- **New authenticator (phone lost or replaced):** if the secret is in the password manager, add it to the new phone. Otherwise create a new one with `docker compose run --rm t212ext-web new-totp-secret <username>`. Changing it also ends the sessions.
 - **Sign out everywhere** without changing anything: delete the data protection keys. This also resets everyone's language choice.
 
 ```bash
@@ -161,7 +163,7 @@ mkdir -p /tmp/t212ext-restore && rsync -a -e "ssh -p 23 -i ~/.ssh/storagebox_ed2
 **Disaster restore** (replaces the live database; needs `sa`). On a new server, first write the passphrase from the password manager to `~/.config/t212ext/backup.passphrase` and fetch the file from the Storage Box (command above).
 
 ```bash
-cd ~/t212ext && docker compose stop t212ext
+cd ~/t212ext && docker compose stop t212ext-web
 ```
 
 ```bash
@@ -179,7 +181,7 @@ sql "ALTER DATABASE [T212Ext] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; RESTORE D
 On a new server, run `~/t212ext/ops/db/create-database.sh` now: it maps the restored database's user to the new login. Then:
 
 ```bash
-docker exec traceon-db rm -f /var/opt/mssql/backup/t212ext-restore.bak && cd ~/t212ext && docker compose start t212ext
+docker exec traceon-db rm -f /var/opt/mssql/backup/t212ext-restore.bak && cd ~/t212ext && docker compose start t212ext-web
 ```
 
 What a backup does not hold: `.env` and `backup.env` (keep the secrets in the password manager) and the data protection keys (losing them only signs everyone out).
