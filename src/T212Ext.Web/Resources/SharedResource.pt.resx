@@ -79,6 +79,7 @@
   <data name="Col_YieldOnCost" xml:space="preserve"><value>Yield sobre custo</value></data>
   <data name="Common_Account" xml:space="preserve"><value>Conta</value></data>
   <data name="Common_AllAccounts" xml:space="preserve"><value>Todas as contas</value></data>
+  <data name="Common_Close" xml:space="preserve"><value>Fechar</value></data>
   <data name="Common_Delete" xml:space="preserve"><value>Apagar</value></data>
   <data name="Common_Failed" xml:space="preserve"><value>Falhou</value></data>
   <data name="Common_Loading" xml:space="preserve"><value>A carregar…</value></data>
@@ -128,7 +129,9 @@
   <data name="Dividends_Payments" xml:space="preserve"><value>Pagamentos</value></data>
   <data name="Dividends_Subtitle" xml:space="preserve"><value>Todos os pagamentos, por ano, mês, país e moeda</value></data>
   <data name="Dividends_WithheldNote" xml:space="preserve"><value>O imposto retido vem só dos relatórios CSV; a API não o dá.</value></data>
+  <data name="Error_Circuit" xml:space="preserve"><value>A ligação ao servidor perdeu-se.</value></data>
   <data name="Error_PageFailed" xml:space="preserve"><value>Não foi possível carregar esta página.</value></data>
+  <data name="Error_Reload" xml:space="preserve"><value>Recarregar</value></data>
   <data name="Error_Text" xml:space="preserve"><value>Ocorreu um erro ao processar o pedido.</value></data>
   <data name="Error_Title" xml:space="preserve"><value>Algo correu mal</value></data>
   <data name="Gains_AcquiredOn" xml:space="preserve"><value>Data de aquisição</value></data>

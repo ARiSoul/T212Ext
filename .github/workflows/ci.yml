@@ -109,6 +109,12 @@ jobs:
           test "$(curl -s -o /dev/null -w '%{http_code}' localhost:8080/)" = 302
           curl -fsS localhost:8080/login -o login.html
           grep -q 'name="Password"' login.html
+
+          # The Blazor script must be a known, fingerprinted asset that loads as JavaScript (2.4.1: the
+          # image once lacked it, and every page stayed blank after sign-in).
+          script="$(grep -oE '_framework/blazor\.web\.[a-z0-9]+\.js' login.html | head -n1)"
+          test -n "$script"
+          test "$(curl -fsS -o /dev/null -w '%{content_type}' "localhost:8080/$script")" = "text/javascript"
           test "$(docker exec app id -u)" != 0
 
       - name: Container logs

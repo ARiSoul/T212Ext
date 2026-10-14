@@ -79,6 +79,7 @@
   <data name="Col_YieldOnCost" xml:space="preserve"><value>Rentabilidad s/ coste</value></data>
   <data name="Common_Account" xml:space="preserve"><value>Cuenta</value></data>
   <data name="Common_AllAccounts" xml:space="preserve"><value>Todas las cuentas</value></data>
+  <data name="Common_Close" xml:space="preserve"><value>Cerrar</value></data>
   <data name="Common_Delete" xml:space="preserve"><value>Eliminar</value></data>
   <data name="Common_Failed" xml:space="preserve"><value>Falló</value></data>
   <data name="Common_Loading" xml:space="preserve"><value>Cargando…</value></data>
@@ -128,7 +129,9 @@
   <data name="Dividends_Payments" xml:space="preserve"><value>Pagos</value></data>
   <data name="Dividends_Subtitle" xml:space="preserve"><value>Todos los pagos, por año, mes, país y divisa</value></data>
   <data name="Dividends_WithheldNote" xml:space="preserve"><value>La retención solo viene de los informes CSV; la API no la proporciona.</value></data>
+  <data name="Error_Circuit" xml:space="preserve"><value>Se perdió la conexión con el servidor.</value></data>
   <data name="Error_PageFailed" xml:space="preserve"><value>No se pudo cargar esta página.</value></data>
+  <data name="Error_Reload" xml:space="preserve"><value>Recargar</value></data>
   <data name="Error_Text" xml:space="preserve"><value>Se produjo un error al procesar la solicitud.</value></data>
   <data name="Error_Title" xml:space="preserve"><value>Algo salió mal</value></data>
   <data name="Gains_AcquiredOn" xml:space="preserve"><value>Fecha de adquisición</value></data>

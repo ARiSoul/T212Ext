@@ -2,6 +2,15 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.4.1 — Pages load on the server (2026-10-14)
+
+**Fixed**
+- **Blank page after signing in on the server.** The Docker image left out Blazor's script, so no page could start. The image now includes it, and CI checks that it loads.
+- **A refused Trading 212 key** (401) now also says to check the key's allowed IP addresses: a key restricted to another address is refused the same way as a wrong one.
+
+**Changed**
+- If the connection to the server is lost for good, a bar at the bottom says so, with a link to reload, instead of a page that no longer responds.
+
 ## 2.4.0 — Ready for the server (2026-10-13)
 
 Phase 4: T212Ext can run on the Hetzner server it shares with traceon, reachable from anywhere over HTTPS and protected by a sign-in. See [DEPLOYMENT.md](DEPLOYMENT.md).

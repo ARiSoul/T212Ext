@@ -134,5 +134,6 @@ The rules every change follows, for people and for coding assistants. Each rule 
 4. **Database work outside migrations is a script in `ops/db/`, safe to run twice.**
    - The app's login owns only its own database, and the app and its nightly backup use only that login.
    - `sa` is used only to create the database and login, and to restore (restore test, disaster restore).
-5. **CI builds the image and starts it** against a SQL Server: it must refuse to start without users and answer `/health` with one. A change to the `Dockerfile` or the compose file is checked there before it reaches the server.
+5. **CI builds the image and starts it** against a SQL Server: it must refuse to start without users, answer `/health` with one, and serve the Blazor script the sign-in page references (fingerprinted, as JavaScript). A change to the `Dockerfile` or the compose file is checked there before it reaches the server.
+   - *Why:* the Dockerfile restores from the project files alone, before any `.razor` file is there, and the SDK then leaves out `blazor.web.js` unless `RequiresAspNetWebAssets` is set in the csproj. The 2.4.0 image had no Blazor script: every page stayed blank after sign-in.
 6. **Server docs are commands to copy, one per block**, with `<placeholders>` for personal values ([DEPLOYMENT.md](DEPLOYMENT.md), [OPERATIONS.md](OPERATIONS.md)). They never show a secret's value.
