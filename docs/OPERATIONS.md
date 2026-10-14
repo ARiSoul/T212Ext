@@ -58,6 +58,8 @@ curl -s https://t212ext.<your-domain>/health
 
 **Changing only `.env`** needs no build: `docker compose up -d` recreates the container with the new values.
 
+**A command the new version adds** (such as `new-vapid-keys` in 2.7.0) needs the new image first: `docker compose run` uses the image already built, and an older one does not know the command, so it starts a second copy of the app instead (stop it with Ctrl+C). After `git pull`, run `docker compose build`, then the command, then `docker compose up -d`.
+
 **Changing the domain:** a new DNS record, then edit `~/traceon/caddy-sites/t212ext.caddy` and validate before reloading, as in [DEPLOYMENT.md](DEPLOYMENT.md#8-https-through-the-shared-caddy). Never reload without validating: a broken site file would keep Caddy, and every site on the server, from starting again.
 
 A sync cut short by the restart keeps what it saved (history jobs save page by page), and the sync on startup carries on.
