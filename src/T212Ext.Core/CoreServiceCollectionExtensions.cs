@@ -2,6 +2,7 @@ using Arisoul.T212Ext.Client;
 using Arisoul.T212Ext.Core.Accounts;
 using Arisoul.T212Ext.Core.Data;
 using Arisoul.T212Ext.Core.Import;
+using Arisoul.T212Ext.Core.Notifications;
 using Arisoul.T212Ext.Core.Queries;
 using Arisoul.T212Ext.Core.Rates;
 using Arisoul.T212Ext.Core.Reports;
@@ -32,6 +33,7 @@ public static class CoreServiceCollectionExtensions
         services.AddOptions<T212Options>().Bind(configuration.GetSection(T212Options.Section));
         services.AddOptions<SyncOptions>().Bind(configuration.GetSection(SyncOptions.Section));
         services.AddOptions<ReportOptions>().Bind(configuration.GetSection(ReportOptions.Section));
+        services.AddOptions<PushOptions>().Bind(configuration.GetSection(PushOptions.Section));
         services.AddSingleton<AccountRegistry>();
 
         services.AddT212Client();
@@ -41,6 +43,10 @@ public static class CoreServiceCollectionExtensions
         services.AddScoped<CsvImportService>();
         services.AddScoped<ReportImporter>();
         services.AddScoped<ReportQueries>();
+        services.AddScoped<PushDevices>();
+        services.AddScoped<Notifier>();
+        services.AddHttpClient(WebPushSender.HttpClientName, client => client.Timeout = TimeSpan.FromSeconds(30));
+        services.TryAddSingleton<IPushSender, WebPushSender>();
         services.AddScoped<DividendQueries>();
         services.AddScoped<OverviewQueries>();
         services.AddScoped<AnalyticsQueries>();

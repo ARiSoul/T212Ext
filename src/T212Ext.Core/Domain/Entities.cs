@@ -295,6 +295,9 @@ public enum SyncJob
 
     /// <summary>CSV reports asked for through the API and imported (<see cref="AccountReport"/>).</summary>
     Reports,
+
+    /// <summary>Push notifications after the sync: new dividends, the monthly summary.</summary>
+    Notifications,
 }
 
 /// <summary>Progress of one history job of one account.</summary>
@@ -365,4 +368,46 @@ public class AccountReport
     public int DividendsMatched { get; set; }
     public int TransactionsAdded { get; set; }
     public int TransactionsMatched { get; set; }
+}
+
+/// <summary>
+/// A browser or installed app where someone turned on notifications: its Web Push subscription.
+/// Removed when it is turned off there, or when the push service says it no longer exists.
+/// </summary>
+public class PushDevice
+{
+    public long Id { get; set; }
+
+    /// <summary>Who turned it on (a user of <c>Auth:Users</c>).</summary>
+    public required string Username { get; set; }
+
+    /// <summary>The push service's address for this device. It is the device's secret: never logged.</summary>
+    public required string Endpoint { get; set; }
+
+    /// <summary>SHA-256 of <see cref="Endpoint"/> (hex), unique: endpoints are too long to index.</summary>
+    public required string EndpointHash { get; set; }
+
+    public required string P256dh { get; set; }
+    public required string Auth { get; set; }
+
+    /// <summary>What the person sees in the list, e.g. "Android · Chrome".</summary>
+    public required string Label { get; set; }
+
+    /// <summary>The app's language on that device when it was turned on: the notifications use it.</summary>
+    public required string Culture { get; set; }
+
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? LastUsedAt { get; set; }
+}
+
+/// <summary>What has been notified already, so nothing is announced twice. One row.</summary>
+public class NotificationState
+{
+    public int Id { get; set; }
+
+    /// <summary>The highest dividend id already announced (or seen when notifications started).</summary>
+    public long? LastDividendId { get; set; }
+
+    /// <summary>The first day of the last month summed up.</summary>
+    public DateOnly? LastSummaryMonth { get; set; }
 }

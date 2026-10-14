@@ -226,6 +226,7 @@
   <data name="Nav_Import" xml:space="preserve"><value>Import CSV</value></data>
   <data name="Nav_Income" xml:space="preserve"><value>Income by instrument</value></data>
   <data name="Nav_Menu" xml:space="preserve"><value>Menu</value></data>
+  <data name="Nav_Notifications" xml:space="preserve"><value>Notifications</value></data>
   <data name="Nav_Orders" xml:space="preserve"><value>Orders</value></data>
   <data name="Nav_Overview" xml:space="preserve"><value>Overview</value></data>
   <data name="Nav_Positions" xml:space="preserve"><value>Positions</value></data>
@@ -246,6 +247,40 @@
   <data name="Positions_SnapshotOf" xml:space="preserve"><value>Open positions on {0}</value></data>
   <data name="Positions_Subtitle" xml:space="preserve"><value>Open positions from the latest snapshot</value></data>
   <data name="Positions_YieldOnCost" xml:space="preserve"><value>Yield on cost {0}</value></data>
+  <data name="Push_AndMore" xml:space="preserve"><value>and {0} more</value></data>
+  <data name="Push_Denied" xml:space="preserve"><value>Notifications are blocked for this site. Allow them in the browser's site settings, then reload the page.</value></data>
+  <data name="Push_Device" xml:space="preserve"><value>Device</value></data>
+  <data name="Push_Devices" xml:space="preserve"><value>Devices with notifications on</value></data>
+  <data name="Push_Dividend_Title" xml:space="preserve"><value>Dividend received</value></data>
+  <data name="Push_Dividends_Title" xml:space="preserve"><value>{0} dividends received</value></data>
+  <data name="Push_Failed" xml:space="preserve"><value>Notifications could not be turned on: {0}</value></data>
+  <data name="Push_InstallFirst" xml:space="preserve"><value>On the iPhone, notifications work only in the installed app: tap Share, then Add to Home Screen, and open T212Ext from its icon.</value></data>
+  <data name="Push_LastSent" xml:space="preserve"><value>Last notification</value></data>
+  <data name="Push_NoDevices" xml:space="preserve"><value>No device yet.</value></data>
+  <data name="Push_NotConfigured" xml:space="preserve"><value>Notifications are not set up on the server (Push__PublicKey, Push__PrivateKey and Push__Subject in .env; see the deployment guide).</value></data>
+  <data name="Push_Off" xml:space="preserve"><value>Off</value></data>
+  <data name="Push_On" xml:space="preserve"><value>On</value></data>
+  <data name="Push_Refused" xml:space="preserve"><value>The server did not accept this device (its push service is unknown, or there are too many devices).</value></data>
+  <data name="Push_SendTest" xml:space="preserve"><value>Send a test</value></data>
+  <data name="Push_Since" xml:space="preserve"><value>On since</value></data>
+  <data name="Push_Subtitle" xml:space="preserve"><value>A notification on the phone or the computer when a dividend arrives, and a summary every month.</value></data>
+  <data name="Push_Summary_Body" xml:space="preserve"><value>{0} from {1} payments.</value></data>
+  <data name="Push_Summary_Change" xml:space="preserve"><value>{0} on the same month a year before</value></data>
+  <data name="Push_Summary_Title" xml:space="preserve"><value>Dividends in {0}</value></data>
+  <data name="Push_TestFailed" xml:space="preserve"><value>The test could not be sent. Turn notifications off and on again.</value></data>
+  <data name="Push_TestSent" xml:space="preserve"><value>Test sent. It should show in a few seconds.</value></data>
+  <data name="Push_Test_Body" xml:space="preserve"><value>You will hear here when a dividend arrives.</value></data>
+  <data name="Push_Test_Title" xml:space="preserve"><value>Notifications are on</value></data>
+  <data name="Push_ThisDevice" xml:space="preserve"><value>This device</value></data>
+  <data name="Push_ThisOne" xml:space="preserve"><value>this one</value></data>
+  <data name="Push_TurnOff" xml:space="preserve"><value>Turn off</value></data>
+  <data name="Push_TurnOn" xml:space="preserve"><value>Turn on here</value></data>
+  <data name="Push_TurnedOff" xml:space="preserve"><value>Notifications are off for this device.</value></data>
+  <data name="Push_TurnedOn" xml:space="preserve"><value>Notifications are on for this device.</value></data>
+  <data name="Push_Unsupported" xml:space="preserve"><value>This browser cannot show notifications.</value></data>
+  <data name="Push_WhatDividends" xml:space="preserve"><value>Each dividend that arrives, after the sync that finds it (one notification for several at once).</value></data>
+  <data name="Push_WhatSummary" xml:space="preserve"><value>Early each month, the dividends of the month before, compared with the same month a year earlier.</value></data>
+  <data name="Push_WhatYouGet" xml:space="preserve"><value>What you get</value></data>
   <data name="Pwa_Description" xml:space="preserve"><value>Your Trading 212 dividends, history and IRS report.</value></data>
   <data name="Quadro11_Account" xml:space="preserve"><value>account number {0}, institution country {1} (check your client agreement)</value></data>
   <data name="Quadro11_Text" xml:space="preserve"><value>Securities and deposit accounts at institutions outside Portugal must be identified every year, even without income. A Trading 212 account has no IBAN: its number goes in “Outros números de identificação”.</value></data>
@@ -286,6 +321,7 @@
   <data name="SyncJob_Dividends" xml:space="preserve"><value>Dividends</value></data>
   <data name="SyncJob_ExchangeRates" xml:space="preserve"><value>Exchange rates</value></data>
   <data name="SyncJob_Instruments" xml:space="preserve"><value>Instruments</value></data>
+  <data name="SyncJob_Notifications" xml:space="preserve"><value>Notifications</value></data>
   <data name="SyncJob_Orders" xml:space="preserve"><value>Orders</value></data>
   <data name="SyncJob_Reports" xml:space="preserve"><value>CSV reports</value></data>
   <data name="SyncJob_Snapshot" xml:space="preserve"><value>Snapshot</value></data>

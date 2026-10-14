@@ -12,6 +12,7 @@ Read [docs/CONVENTIONS.md](docs/CONVENTIONS.md) before changing code, and follow
   - `Sync/`: synchronizer, runner, worker;
   - `Import/`: CSV parser and import;
   - `Reports/`: CSV reports asked for through the API during the sync (`ReportImporter`);
+  - `Notifications/`: Web Push devices and what is announced after the sync (`PushDevices`, `Notifier`);
   - `Analytics/`: dividend figures, computed in memory from plain facts;
   - `Rates/`: ECB exchange rates (source, updater, `RateTable`);
   - `Tax/`: the IRS report (`IrsReport`; rules in docs/TAX.md);

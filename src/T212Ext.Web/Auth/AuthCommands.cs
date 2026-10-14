@@ -5,12 +5,13 @@ namespace Arisoul.T212Ext.Web.Auth;
 /// <summary>
 /// Command-line helpers to set up users without the app running:
 /// <c>hash-password</c> prints the hash for <c>Auth:Users:N:PasswordHash</c>, and
-/// <c>new-totp-secret [username]</c> prints a secret for <c>Auth:Users:N:TotpSecret</c>.
+/// <c>new-totp-secret [username]</c> prints a secret for <c>Auth:Users:N:TotpSecret</c>, and
+/// <c>new-vapid-keys</c> prints the keys for notifications (<c>Push:PublicKey</c>, <c>Push:PrivateKey</c>).
 /// Neither touches the database or the network.
 /// </summary>
 public static class AuthCommands
 {
-    public static bool IsCommand(string[] args) => args is ["hash-password", ..] or ["new-totp-secret", ..];
+    public static bool IsCommand(string[] args) => args is ["hash-password", ..] or ["new-totp-secret", ..] or ["new-vapid-keys", ..];
 
     public static int Run(string[] args, TextReader input, TextWriter output, TextWriter error)
     {
@@ -38,6 +39,14 @@ public static class AuthCommands
                 error.WriteLine();
                 error.WriteLine("Add it to an authenticator app as a setup key (time-based, 6 digits), or open this link on the phone:");
                 error.WriteLine(Totp.ProvisioningUri(secret, username));
+                return 0;
+
+            case ["new-vapid-keys", ..]:
+                var (publicKey, privateKey) = Core.Notifications.PushOptions.NewKeys();
+                output.WriteLine($"Push__PublicKey={publicKey}");
+                output.WriteLine($"Push__PrivateKey={privateKey}");
+                error.WriteLine();
+                error.WriteLine("Put both lines in .env, with Push__Subject=mailto:<your address>. Changing them later turns notifications off on every device until it is turned on again.");
                 return 0;
 
             default:

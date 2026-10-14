@@ -14,6 +14,7 @@ First-time setup of T212Ext on the Hetzner server that also runs traceon. Day-to
 8. [HTTPS through the shared Caddy](#8-https-through-the-shared-caddy)
 9. [First data](#9-first-data)
 10. [Backups and monitoring](#10-backups-and-monitoring)
+11. [Notifications (optional)](#11-notifications-optional)
 
 ## 1. How it fits on the server
 
@@ -250,3 +251,35 @@ Nightly backup at 03:45 UTC, and the restore test on Sundays at 04:15:
 **Monitoring.** In the uptime service, a keyword monitor on `https://t212ext.<your-domain>/health`, keyword `Healthy`, every 5 minutes.
 
 Done. From now on, updates follow [OPERATIONS.md](OPERATIONS.md#1-deploying-an-update), and each version's extra steps are in [UPGRADING.md](UPGRADING.md).
+
+## 11. Notifications (optional)
+
+A notification on the phone or the computer when a dividend arrives, and a summary at the start of each month. They need a pair of VAPID keys, which identify the server to the browsers' push services:
+
+```bash
+cd ~/t212ext && docker compose run --rm t212ext-web new-vapid-keys
+```
+
+It prints two lines, `Push__PublicKey=…` and `Push__PrivateKey=…`. Put them in `.env`, with a contact address for the push services:
+
+```bash
+nano ~/t212ext/.env
+```
+
+```
+Push__Subject=mailto:<your address>
+```
+
+The private key is a secret like the others. Then recreate the container:
+
+```bash
+cd ~/t212ext && docker compose up -d
+```
+
+On each device, open **Notifications** in the menu and tap **Turn on here**, then **Send a test**.
+
+- **iPhone and iPad:** only in the installed app (iOS 16.4 or later): Share → Add to Home Screen, open T212Ext from its icon, then turn them on.
+- **Android:** in Chrome or in the installed app. If they arrive late, allow the browser (or the app) to run in the background in the phone's battery settings.
+- **Computer:** in the browser, which must be running for them to show.
+
+The first run after turning them on only takes note of what is there: the history never arrives as notifications.

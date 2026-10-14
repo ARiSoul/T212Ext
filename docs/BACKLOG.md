@@ -4,6 +4,7 @@ The roadmap by phase, then ideas and known limitations not yet planned. When an 
 
 Done so far:
 - **2.0.0, phase 1 (foundations):** API client, database, scheduled sync, CSV import, first pages, tests.
+- **2.7.0:** notifications (Web Push): new dividends and a monthly summary, in each device's language; a page to turn them on per device.
 - **2.6.0:** installable app (PWA): manifest in the chosen language, icons, a service worker that caches nothing.
 - **2.5.0:** automatic CSV reports: asked for through the API during the sync, imported like an uploaded file, listed on the import page.
 - **2.4.0, phase 4 (deployment):** sign-in with password and authenticator code, Docker image and compose sharing only the reverse proxy and SQL Server with traceon (neutral `edge` and `data` networks, own login), data protection keys on a volume, own encrypted backups, CI check of the image, DEPLOYMENT and OPERATIONS docs.
@@ -20,7 +21,7 @@ Done so far:
 
 - [IRS report follow-ups](#irs-report-follow-ups)
 - [Deployment follow-ups](#deployment-follow-ups)
-- [Phase 5 — Extras (2.6 and later)](#phase-5--extras-26-and-later)
+- [Phase 5 — Extras (2.8 and later)](#phase-5--extras-28-and-later)
 - [App and grid follow-ups](#app-and-grid-follow-ups)
 - [Known limitations and technical debt](#known-limitations-and-technical-debt)
 - [Product ideas](#product-ideas)
@@ -50,9 +51,8 @@ Phase 4 shipped as **2.4.0**: see [DEPLOYMENT.md](DEPLOYMENT.md). Left for later
 | 4.11 | **Image from CI** | Build the image in GitHub Actions and pull it on the server (GHCR), instead of building on the server. Worth it only if the server's builds get slow. |
 | 4.12 | **Infrastructure project** | Move Caddy, SQL Server and the shared networks out of traceon's compose into a project of their own, with both apps as equal guests. Worth it with a third app, or before touching traceon's SQL Server for another reason. Moving SQL Server means a short downtime and a backup and restore of every database. |
 
-## Phase 5 — Extras (2.6 and later)
+## Phase 5 — Extras (2.8 and later)
 
-- **Notifications:** a Web Push when a dividend arrives, and a monthly summary. traceon already has VAPID and Web Push.
 - **Upcoming dividends calendar** from an external provider (EODHD, Financial Modeling Prep, …). It also makes a real forward estimate possible. Check each provider's licence for personal use first.
 - **Goals:** for example, "dividends cover X% of my monthly expenses", with progress over time.
 - **Dividend growth per instrument:** the yearly growth of the dividend per share (from `GrossAmountPerShare`), and the cuts.
@@ -69,6 +69,7 @@ Recorded 2026-10-13 with the 2.1 work.
 - **Instrument page:** a link to the instrument's page at Trading 212.
 - **UI tests with bUnit** for the grid component and the pages' empty and error states.
 - **A theme preference per account** once there is sign-in (today, per browser).
+- **Notification choices:** per device, which notifications to get (dividends, monthly summary), and quiet hours.
 
 ## Known limitations and technical debt
 

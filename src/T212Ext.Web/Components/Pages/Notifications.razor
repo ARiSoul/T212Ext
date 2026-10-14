@@ -1,0 +1,198 @@
+@page "/notifications"
+@using System.Globalization
+@using Arisoul.T212Ext.Core.Notifications
+@implements IDisposable
+@inject PushDevices Devices
+@inject IJSRuntime JS
+@inject IStringLocalizer<SharedResource> L
+
+<PageTitle>@L["Nav_Notifications"] · T212Ext</PageTitle>
+
+<div class="page-header">
+    <div class="me-auto">
+        <h1>@L["Nav_Notifications"]</h1>
+        <p>@L["Push_Subtitle"]</p>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h2 class="h6">@L["Push_ThisDevice"]</h2>
+
+        @if (!Devices.IsConfigured)
+        {
+            <div class="alert alert-info mb-0">@L["Push_NotConfigured"]</div>
+        }
+        else if (_status is null)
+        {
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        }
+        else if (!_status.Supported)
+        {
+            <div class="alert alert-info mb-0">@(_status.Ios && !_status.Standalone ? L["Push_InstallFirst"] : L["Push_Unsupported"])</div>
+        }
+        else if (_status.Permission == "denied")
+        {
+            <div class="alert alert-warning mb-0">@L["Push_Denied"]</div>
+        }
+        else
+        {
+            <p class="mb-3">
+                @if (IsOnHere)
+                {
+                    <span class="badge text-bg-success"><i class="bi bi-bell-fill"></i> @L["Push_On"]</span>
+                }
+                else
+                {
+                    <span class="badge badge-soft"><i class="bi bi-bell-slash"></i> @L["Push_Off"]</span>
+                }
+                <span class="small text-body-secondary ms-1">@_status.Label</span>
+            </p>
+
+            <div class="d-flex flex-wrap gap-2">
+                @* Bound in JavaScript (t212ext.push.bindEnable): permission is asked within the click itself. *@
+                <button type="button" class="btn btn-primary @(IsOnHere ? "d-none" : "")" @ref="_enableButton" disabled="@_busy">
+                    <i class="bi bi-bell"></i> @L["Push_TurnOn"]
+                </button>
+                @if (IsOnHere)
+                {
+                    <button type="button" class="btn btn-outline-secondary" @onclick="SendTestAsync" disabled="@_busy"><i class="bi bi-send"></i> @L["Push_SendTest"]</button>
+                    <button type="button" class="btn btn-outline-danger" @onclick="TurnOffAsync" disabled="@_busy"><i class="bi bi-bell-slash"></i> @L["Push_TurnOff"]</button>
+                }
+            </div>
+        }
+
+        @if (_message is not null)
+        {
+            <div class="alert @(_messageIsError ? "alert-warning" : "alert-success") mt-3 mb-0">@_message</div>
+        }
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h2 class="h6">@L["Push_WhatYouGet"]</h2>
+        <ul class="mb-0">
+            <li>@L["Push_WhatDividends"]</li>
+            <li>@L["Push_WhatSummary"]</li>
+        </ul>
+    </div>
+</div>
+
+<h2 class="h5">@L["Push_Devices"]</h2>
+<DataGrid TItem="PushDeviceRow" Items="_devices" Columns="Columns" StorageKey="push-devices" ExportFileName="devices"
+          DefaultSortKey="created" DefaultSortDescending="true" EmptyText="@L["Push_NoDevices"]" />
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    private sealed record PushStatus(bool Supported, string Permission, bool Ios, bool Standalone, string Label);
+
+    private PushStatus? _status;
+    private string? _thisHash;
+    private IReadOnlyList<PushDeviceRow>? _devices;
+    private ElementReference _enableButton;
+    private DotNetObjectReference<Notifications>? _self;
+    private bool _bound;
+    private bool _busy;
+    private string? _message;
+    private bool _messageIsError;
+
+    private bool IsOnHere => _thisHash is not null && _devices?.Any(d => d.EndpointHash == _thisHash) == true;
+
+    private IReadOnlyList<GridColumn<PushDeviceRow>> Columns => [
+        new() { Key = "label", Title = L["Push_Device"], Value = d => d.Label, MobileTitle = true,
+                Template = d => @<span>@d.Label @if (d.EndpointHash == _thisHash) { <span class="badge badge-soft ms-1">@L["Push_ThisOne"]</span> }</span> },
+        new() { Key = "user", Title = L["Login_Username"], Value = d => d.Username, Filterable = true, HideBelow = "md" },
+        new() { Key = "created", Title = L["Push_Since"], Value = d => d.CreatedAt, Text = d => Fmt.DateTime(d.CreatedAt) },
+        new() { Key = "used", Title = L["Push_LastSent"], Value = d => d.LastUsedAt, Text = d => Fmt.DateTime(d.LastUsedAt), HideBelow = "md" },
+        new() { Key = "remove", Title = "", Value = d => "", Template = d => @<button type="button" class="btn btn-sm btn-outline-danger" title="@L["Common_Delete"]" aria-label="@L["Common_Delete"]" @onclick="() => RemoveAsync(d.EndpointHash)"><i class="bi bi-trash"></i></button> },
+    ];
+
+    protected override async Task OnInitializedAsync() => _devices = await Devices.ListAsync();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && Devices.IsConfigured)
+        {
+            _status = await JS.InvokeAsync<PushStatus>("t212ext.push.status");
+            if (_status.Supported)
+            {
+                var current = await JS.InvokeAsync<PushSubscriptionInfo?>("t212ext.push.current");
+                _thisHash = current is null ? null : PushDevices.Hash(current.Endpoint);
+            }
+            StateHasChanged();
+            return;
+        }
+
+        // The button exists once the status is known; bind it once.
+        if (!_bound && _status is { Supported: true } && _status.Permission != "denied" && Devices.PublicKey is { } key)
+        {
+            _bound = true;
+            _self = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("t212ext.push.bindEnable", _enableButton, _self, key);
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnSubscribed(PushSubscriptionInfo subscription, string label)
+    {
+        var user = (await AuthenticationState!).User.Identity?.Name ?? "local";
+        if (await Devices.RegisterAsync(user, subscription, label, CultureInfo.CurrentUICulture))
+        {
+            _thisHash = PushDevices.Hash(subscription.Endpoint);
+            Show(L["Push_TurnedOn"], error: false);
+        }
+        else
+        {
+            Show(L["Push_Refused"], error: true);
+        }
+        _devices = await Devices.ListAsync();
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void OnSubscribeFailed(string reason)
+    {
+        if (reason == "denied")
+            _status = _status! with { Permission = "denied" };
+        else
+            Show(string.Format(L["Push_Failed"], reason), error: true);
+        StateHasChanged();
+    }
+
+    private async Task SendTestAsync()
+    {
+        _busy = true;
+        Show(await Devices.SendTestAsync(_thisHash!) ? L["Push_TestSent"] : L["Push_TestFailed"], error: false);
+        _devices = await Devices.ListAsync();
+        _busy = false;
+    }
+
+    private async Task TurnOffAsync()
+    {
+        _busy = true;
+        await JS.InvokeVoidAsync("t212ext.push.unsubscribe");
+        await Devices.RemoveAsync(_thisHash!);
+        _thisHash = null;
+        _devices = await Devices.ListAsync();
+        Show(L["Push_TurnedOff"], error: false);
+        _busy = false;
+    }
+
+    private async Task RemoveAsync(string endpointHash)
+    {
+        if (endpointHash == _thisHash)
+        {
+            await TurnOffAsync();
+            return;
+        }
+        await Devices.RemoveAsync(endpointHash);
+        _devices = await Devices.ListAsync();
+    }
+
+    private void Show(string message, bool error) => (_message, _messageIsError) = (message, error);
+
+    public void Dispose() => _self?.Dispose();
+}
