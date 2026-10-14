@@ -238,6 +238,7 @@ public class T212ApiClientTests
 
         Assert.True(error.IsUnauthorized);
         Assert.Contains("'invest'", error.Message);
+        Assert.Contains("IP addresses", error.Message);   // a key restricted to another address also answers 401
         Assert.DoesNotContain("secret-456", error.Message);
         Assert.Single(harness.Handler.Requests);
     }

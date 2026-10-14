@@ -79,6 +79,7 @@
   <data name="Col_YieldOnCost" xml:space="preserve"><value>Yield on cost</value></data>
   <data name="Common_Account" xml:space="preserve"><value>Account</value></data>
   <data name="Common_AllAccounts" xml:space="preserve"><value>All accounts</value></data>
+  <data name="Common_Close" xml:space="preserve"><value>Close</value></data>
   <data name="Common_Delete" xml:space="preserve"><value>Delete</value></data>
   <data name="Common_Failed" xml:space="preserve"><value>Failed</value></data>
   <data name="Common_Loading" xml:space="preserve"><value>Loading…</value></data>
@@ -128,7 +129,9 @@
   <data name="Dividends_Payments" xml:space="preserve"><value>Payments</value></data>
   <data name="Dividends_Subtitle" xml:space="preserve"><value>Every payment, by year, month, country and currency</value></data>
   <data name="Dividends_WithheldNote" xml:space="preserve"><value>Tax withheld comes from the CSV reports only; the API does not give it.</value></data>
+  <data name="Error_Circuit" xml:space="preserve"><value>The connection to the server was lost.</value></data>
   <data name="Error_PageFailed" xml:space="preserve"><value>This page could not be loaded.</value></data>
+  <data name="Error_Reload" xml:space="preserve"><value>Reload</value></data>
   <data name="Error_Text" xml:space="preserve"><value>An error occurred while processing your request.</value></data>
   <data name="Error_Title" xml:space="preserve"><value>Something went wrong</value></data>
   <data name="Gains_AcquiredOn" xml:space="preserve"><value>Purchase date</value></data>

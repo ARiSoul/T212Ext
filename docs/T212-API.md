@@ -28,6 +28,8 @@ What we know about the [Trading 212 public API](https://docs.trading212.com), as
   | `history:orders` | `GET /equity/history/orders` |
   | `history:transactions` | `GET /equity/history/transactions` |
 - Keys can be restricted to IP addresses. Use this on the server.
+  - **A request from an address the key does not allow answers 401**, the same as a wrong key or secret, not 403. Seen on the first deploy (2026-10-14): a typo in the allowed address. The 401 message names this cause too.
+  - The key's address is the server's IPv4 one (`curl -4 -s https://ifconfig.me`); containers go out through it.
 - The secret is shown only once, when the key is created.
 
 ## Endpoints we use

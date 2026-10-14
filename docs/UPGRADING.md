@@ -4,6 +4,12 @@ Deploy steps for the versions that are not yet in production.
 
 The usual deploy command and checks are in [OPERATIONS.md](OPERATIONS.md#1-deploying-an-update).
 
+## 2.4.1
+
+Only the usual deploy ([OPERATIONS.md](OPERATIONS.md#1-deploying-an-update)). If 2.4.0 is not fully set up yet, carry on with [DEPLOYMENT.md](DEPLOYMENT.md) after it: nothing in the setup changes.
+
+- **Try afterwards:** sign in; the overview must show, not a blank page.
+
 ## 2.4.0 — First deployment
 
 There is no production yet: this version is the first one on the server. Follow [DEPLOYMENT.md](DEPLOYMENT.md) from the start.

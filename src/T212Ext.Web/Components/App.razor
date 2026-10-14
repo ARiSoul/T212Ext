@@ -1,4 +1,5 @@
 @using System.Globalization
+@inject IStringLocalizer<SharedResource> L
 <!DOCTYPE html>
 <html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
 
@@ -28,6 +29,11 @@
 
 <body>
     <Routes @rendermode="RenderMode" />
+    @* Shown by Blazor when the connection to the server fails for good, instead of a frozen page. *@
+    <div id="blazor-error-ui" role="alert" data-nosnippet>
+        @L["Error_Circuit"] <a href="" class="reload">@L["Error_Reload"]</a>
+        <span class="dismiss" role="button" aria-label="@L["Common_Close"]">×</span>
+    </div>
     <ReconnectModal />
     <script src="@Assets["js/app.js"]"></script>
     <script src="@Assets["_framework/blazor.web.js"]"></script>

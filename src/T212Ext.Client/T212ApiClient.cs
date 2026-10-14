@@ -210,9 +210,9 @@ public sealed class T212ApiClient(
         var message = response.StatusCode switch
         {
             HttpStatusCode.Unauthorized when account.IsLegacyKey =>
-                $"Trading 212 refused the API key of account '{account.Key}' (401). It has no secret: if it is an older key, Trading 212 may no longer accept it; generate a new key pair. Check too that the key was made for {account.Environment}.",
+                $"Trading 212 refused the API key of account '{account.Key}' (401). It has no secret: if it is an older key, Trading 212 may no longer accept it; generate a new key pair. Check too that the key was made for {account.Environment}, and that its allowed IP addresses include this server's.",
             HttpStatusCode.Unauthorized =>
-                $"Trading 212 refused the API key of account '{account.Key}' (401). Check the key and the secret, and that the key was made for {account.Environment}.",
+                $"Trading 212 refused the API key of account '{account.Key}' (401). Check the key and the secret, that the key was made for {account.Environment}, and that its allowed IP addresses include this server's.",
             HttpStatusCode.Forbidden =>
                 $"The API key of account '{account.Key}' lacks the permission for {endpoint.Path} (403). {content}".TrimEnd(),
             HttpStatusCode.TooManyRequests =>

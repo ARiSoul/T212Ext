@@ -4,6 +4,9 @@
     <TargetFramework>net10.0</TargetFramework>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
     <UserSecretsId>arisoul-t212ext-web</UserSecretsId>
+    <!-- Brings blazor.web.js (Microsoft.AspNetCore.App.Internal.Assets). The SDK adds it only when
+         .razor files exist at restore time, and the Dockerfile restores from the project files alone. -->
+    <RequiresAspNetWebAssets>true</RequiresAspNetWebAssets>
   </PropertyGroup>
 
   <ItemGroup>
