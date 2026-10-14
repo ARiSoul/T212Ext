@@ -123,7 +123,14 @@ The rules every change follows, for people and for coding assistants. Each rule 
 
 1. **The server runs what the repository holds.** Its settings are only in `.env`; tracked files are never edited there, so `git pull` always applies cleanly.
 2. **A new setting the server needs goes, in the same PR, to `.env.example`, the settings table in the README, and the version's section in `UPGRADING.md`.**
-3. **The container publishes no port.** HTTPS is traceon's Caddy, on traceon's Docker network. The app trusts forwarded headers only because nothing else can reach it.
-4. **Database work outside migrations is a script in `ops/db/`, safe to run twice.** The app's login owns only its own database; `sa` is used only by those scripts and traceon's backups.
+3. **T212Ext depends on the server's shared infrastructure, never on another app.**
+   - It joins only the external networks `edge` (the reverse proxy) and `data` (SQL Server as `sqlserver`), never another project's network, and publishes no port.
+   - Its site is a file in the proxy's sites folder; its backups, scripts and secrets are its own. Nothing in this repository calls another app's scripts.
+   - Where the infrastructure lives (today traceon's compose project) is a setting with a default (`SA_ENV_FILE`, `DB_CONTAINER`), not something the app is built around.
+   - The app trusts forwarded headers only because nothing but the proxy can reach it.
+   - *Why:* the two apps are independent; a change in one must not break the other, and either could move to another server.
+4. **Database work outside migrations is a script in `ops/db/`, safe to run twice.**
+   - The app's login owns only its own database, and the app and its nightly backup use only that login.
+   - `sa` is used only to create the database and login, and to restore (restore test, disaster restore).
 5. **CI builds the image and starts it** against a SQL Server: it must refuse to start without users and answer `/health` with one. A change to the `Dockerfile` or the compose file is checked there before it reaches the server.
 6. **Server docs are commands to copy, one per block**, with `<placeholders>` for personal values ([DEPLOYMENT.md](DEPLOYMENT.md), [OPERATIONS.md](OPERATIONS.md)). They never show a secret's value.

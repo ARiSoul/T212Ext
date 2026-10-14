@@ -4,7 +4,7 @@ What changed in each version, for the person using the app. Versions follow [sem
 
 ## 2.4.0 — Ready for the server (2026-10-13)
 
-Phase 4: T212Ext can run on the Hetzner server next to traceon, reachable from anywhere over HTTPS and protected by a sign-in. See [DEPLOYMENT.md](DEPLOYMENT.md).
+Phase 4: T212Ext can run on the Hetzner server it shares with traceon, reachable from anywhere over HTTPS and protected by a sign-in. See [DEPLOYMENT.md](DEPLOYMENT.md).
 
 **New**
 - **Sign-in.** Every page needs it once users are configured:
@@ -13,9 +13,9 @@ Phase 4: T212Ext can run on the Hetzner server next to traceon, reachable from a
   - after 5 wrong attempts in a minute, the page asks to wait;
   - a sign-out button at the top right.
 - **Running on the server:**
-  - a Docker image and a compose file that join traceon's network, behind its Caddy;
-  - its own database and login on traceon's SQL Server, created by a script;
-  - nightly encrypted backups through traceon's backup script;
+  - a Docker image and a compose file; the two apps stay independent and share only the reverse proxy and SQL Server, through two neutral networks;
+  - its own database and login on the shared SQL Server, created by a script;
+  - its own nightly encrypted backups, off the server, with a weekly restore test;
   - [DEPLOYMENT.md](DEPLOYMENT.md) for the first setup and [OPERATIONS.md](OPERATIONS.md) for updates, users, secrets and restores.
 
 **Changed**

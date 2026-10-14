@@ -1,5 +1,6 @@
-# Site block for traceon's Caddy (docs/DEPLOYMENT.md, "HTTPS through traceon's Caddy").
+# T212Ext's site for the server's shared Caddy (docs/DEPLOYMENT.md, "HTTPS through the shared Caddy").
 # Copy to ~/traceon/caddy-sites/t212ext.caddy and put the real domain in place of the example.
-dividends.example.com {
+# Caddy reaches the app over the "edge" network and gets the certificate on its own.
+t212ext.example.com {
     reverse_proxy t212ext:8080
 }

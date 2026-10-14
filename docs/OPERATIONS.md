@@ -1,6 +1,6 @@
 # Operations
 
-Running T212Ext on the server once it is set up ([DEPLOYMENT.md](DEPLOYMENT.md)). The server, SQL Server, Caddy, the backup storage and the `sql` helper are traceon's: see traceon's `docs/OPERATIONS.md` for those.
+Running T212Ext on the server once it is set up ([DEPLOYMENT.md](DEPLOYMENT.md)). The shared infrastructure (Caddy, SQL Server, the networks `edge` and `data`) lives in traceon's compose project: its `docs/OPERATIONS.md` covers it, and its section "Other apps on this server" says what it keeps stable for T212Ext.
 
 ## Contents
 
@@ -15,10 +15,16 @@ Running T212Ext on the server once it is set up ([DEPLOYMENT.md](DEPLOYMENT.md))
 
 ## Conventions
 
-- Server: `ssh deploy@<ip>`, repository in `~/t212ext`, traceon in `~/traceon`.
+- Server: `ssh deploy@<ip>`, repository in `~/t212ext`. The shared infrastructure is in `~/traceon`.
 - Settings and secrets live only in `~/t212ext/.env` (template: [.env.example](../.env.example)). Never paste their values into chats, issues or logs.
 - The working tree has no local changes (`git status` shows nothing modified). Do not edit tracked files on the server.
-- `sql "..."` is traceon's helper (traceon `docs/OPERATIONS.md`, Conventions); it runs as `sa`. For this app's database, start the query with `USE T212Ext;`.
+- `t212sql "..."` runs a query in the `T212Ext` database as the app's own login (it cannot touch anything else). It is a shell function that reads the password from `.env` without printing it; define it in each SSH session, or append it once to `~/.bashrc`:
+
+```bash
+t212sql() { docker exec -e SQLCMDPASSWORD="$(grep -E '^T212EXT_DB_PASSWORD=' ~/t212ext/.env | cut -d= -f2-)" traceon-db /opt/mssql-tools18/bin/sqlcmd -S localhost -U t212ext -d T212Ext -C -b -Q "$1"; }
+```
+
+- `sql "..."` is the infrastructure's `sa` helper (traceon `docs/OPERATIONS.md`, Conventions). Only the restore below needs it.
 
 ## 1. Deploying an update
 
@@ -28,7 +34,7 @@ After a PR is merged to `main` (and its tag created):
 2. Take a backup:
 
 ```bash
-DB_NAME=T212Ext ~/traceon/ops/backup/traceon-backup.sh
+~/t212ext/ops/backup/t212ext-backup.sh
 ```
 
 3. Pull and rebuild:
@@ -46,7 +52,7 @@ docker compose ps
 ```
 
 ```bash
-curl -s https://<T212EXT_DOMAIN>/health
+curl -s https://t212ext.<your-domain>/health
 ```
 
 **Changing only `.env`** needs no build: `docker compose up -d` recreates the container with the new values.
@@ -90,7 +96,7 @@ Logs rotate at 5 files of 10 MB. Worth knowing:
 cd ~/t212ext && docker compose restart t212ext
 ```
 
-Memory and CPU next to traceon:
+Memory and CPU of every container on the server:
 
 ```bash
 docker stats --no-stream
@@ -126,31 +132,40 @@ A session lasts 14 days from the last visit.
 | Password, authenticator secret | `Auth__Users__N__*` | Section 4. |
 | Trading 212 key and secret | `T212__Accounts__N__*` | Section 5. |
 | Data protection keys | volume `t212ext_keys` | Section 4, "sign out everywhere". Never in `.env`. |
+| Backup passphrase | `~/.config/t212ext/backup.passphrase` | Only for new backups: keep the old one in the password manager as long as backups made with it exist (5 weeks). |
 
 If a secret leaks, change it first and investigate afterwards.
 
 ## 7. Backups and restore
 
-**Nightly**, by traceon's script with `DB_NAME=T212Ext` (cron line in [DEPLOYMENT.md](DEPLOYMENT.md#10-backups-and-monitoring)): encrypted, 7 daily and 4 weekly copies in `/var/backups/traceon` (files `T212Ext-*.bak.gz.gpg`), mirrored to the Storage Box.
+**Nightly** `ops/backup/t212ext-backup.sh`, as the app's login, and **weekly** the restore test (cron lines in [DEPLOYMENT.md](DEPLOYMENT.md#10-backups-and-monitoring)): encrypted, 7 daily and 4 weekly copies in `/var/backups/t212ext` (files `T212Ext-*.bak.gz.gpg`), mirrored to the Storage Box folder `t212ext-backups`.
 
 ```bash
 tail -n 5 ~/t212ext-backup.log
 ```
 
-**Restore test** (restores into a throwaway `T212Ext_RestoreTest`, compares row counts, drops it; the live database is only read):
-
 ```bash
-DB_NAME=T212Ext ~/traceon/ops/backup/traceon-restore-test.sh
+tail -n 20 ~/t212ext-restore-test.log
 ```
 
-**Disaster restore** (replaces the live database). Stop the app, then follow traceon's "Disaster restore" with `T212Ext` in place of `TraceonDb`:
+**Restore test by hand** (restores into a throwaway `T212Ext_RestoreTest`, compares row counts, drops it; the live database is only read). Now and then, test the **Storage Box copy**, the real disaster case:
+
+```bash
+mkdir -p /tmp/t212ext-restore && rsync -a -e "ssh -p 23 -i ~/.ssh/storagebox_ed25519" <u123456>@<u123456>.your-storagebox.de:t212ext-backups/daily/ /tmp/t212ext-restore/
+```
+
+```bash
+~/t212ext/ops/backup/t212ext-restore-test.sh "$(ls -1t /tmp/t212ext-restore/T212Ext-* | head -n1)"
+```
+
+**Disaster restore** (replaces the live database; needs `sa`). On a new server, first write the passphrase from the password manager to `~/.config/t212ext/backup.passphrase` and fetch the file from the Storage Box (command above).
 
 ```bash
 cd ~/t212ext && docker compose stop t212ext
 ```
 
 ```bash
-gpg --batch --pinentry-mode loopback --passphrase-file ~/.config/traceon/backup.passphrase -d <T212Ext-file.bak.gz.gpg> | gunzip > /tmp/t212ext-restore.bak
+gpg --batch --pinentry-mode loopback --passphrase-file ~/.config/t212ext/backup.passphrase -d <T212Ext-file.bak.gz.gpg> | gunzip > /tmp/t212ext-restore.bak
 ```
 
 ```bash
@@ -167,20 +182,22 @@ On a new server, run `~/t212ext/ops/db/create-database.sh` now: it maps the rest
 docker exec traceon-db rm -f /var/opt/mssql/backup/t212ext-restore.bak && cd ~/t212ext && docker compose start t212ext
 ```
 
-What a backup does not hold: `.env` (keep the secrets in the password manager) and the data protection keys (losing them only signs everyone out).
+What a backup does not hold: `.env` and `backup.env` (keep the secrets in the password manager) and the data protection keys (losing them only signs everyone out).
 
 ## 8. Database
 
 Size, against SQL Server Express's 10 GB per database (years of history stay far below):
 
 ```bash
-sql "SELECT SUM(size) * 8 / 1024 AS DataMB FROM sys.master_files WHERE database_id = DB_ID('T212Ext') AND type = 0;"
+t212sql "SELECT SUM(size) * 8 / 1024 AS DataMB FROM sys.database_files WHERE type = 0;"
 ```
 
-State (must be `ONLINE`, recovery `SIMPLE`):
+State (must be `ONLINE` and `SIMPLE`):
 
 ```bash
-sql "SELECT name, state_desc, recovery_model_desc FROM sys.databases WHERE name = 'T212Ext';"
+t212sql "SELECT CAST(DATABASEPROPERTYEX('T212Ext', 'Status') AS nvarchar(20)) AS State, CAST(DATABASEPROPERTYEX('T212Ext', 'Recovery') AS nvarchar(20)) AS Recovery;"
 ```
 
-Read-only queries from your PC with SSMS: the same SSH tunnel as traceon's (traceon `docs/OPERATIONS.md`, Database), database `T212Ext`. Prefer the `t212ext` login to `sa`.
+Read-only queries from your PC with SSMS: the infrastructure's SSH tunnel (traceon `docs/OPERATIONS.md`, Database), signed in as `t212ext` (password from `.env`), database `T212Ext`.
+
+The SQL Server is shared: restarting it, changing its edition or upgrading it (in traceon's project) also stops T212Ext for that time. The app retries the database for about a minute at startup; while running, an action during the restart may fail, and works again once SQL Server is back.

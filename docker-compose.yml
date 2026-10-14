@@ -1,6 +1,8 @@
 # T212Ext on the server, next to traceon (docs/DEPLOYMENT.md).
-# It joins traceon's Docker network: traceon's Caddy serves it over HTTPS as "t212ext:8080", and it
-# reaches traceon's SQL Server as "sqlserver" with its own login. It publishes no port.
+# It talks only to the server's shared infrastructure, never to another app:
+#   edge: the reverse proxy (Caddy) serves it over HTTPS as "t212ext:8080";
+#   data: it reaches SQL Server as "sqlserver", with a login of its own.
+# Both networks are created once by hand (docker network create edge / data). It publishes no port.
 
 # Log rotation (Docker's json-file driver has no limit by default)
 x-logging: &default-logging
@@ -23,7 +25,8 @@ services:
     volumes:
       - keys:/data/keys
     networks:
-      - traceon
+      - edge
+      - data
     logging: *default-logging
     restart: unless-stopped
 
@@ -32,6 +35,7 @@ volumes:
   keys:
 
 networks:
-  traceon:
+  edge:
     external: true
-    name: ${TRACEON_NETWORK:-traceon_default}
+  data:
+    external: true

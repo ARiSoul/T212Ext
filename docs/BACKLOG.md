@@ -4,7 +4,7 @@ The roadmap by phase, then ideas and known limitations not yet planned. When an 
 
 Done so far:
 - **2.0.0, phase 1 (foundations):** API client, database, scheduled sync, CSV import, first pages, tests.
-- **2.4.0, phase 4 (deployment):** sign-in with password and authenticator code, Docker image and compose next to traceon (its Caddy, network and SQL Server, own login), data protection keys on a volume, backups through traceon's script, CI check of the image, DEPLOYMENT and OPERATIONS docs.
+- **2.4.0, phase 4 (deployment):** sign-in with password and authenticator code, Docker image and compose sharing only the reverse proxy and SQL Server with traceon (neutral `edge` and `data` networks, own login), data protection keys on a volume, own encrypted backups, CI check of the image, DEPLOYMENT and OPERATIONS docs.
 - **2.3.0:** capital gains for Anexo J quadro 9.2A (FIFO, ECB rates, splits), quadro 11 account details.
 - **2.2.0, phase 3 (IRS report):** Anexo J quadro 8A from dividends, ECB rates, source country per instrument, Portuguese dividends and interest apart, CSV export and print.
 - **2.1.0, phase 2 (dividend dashboard):**
@@ -47,6 +47,7 @@ Phase 4 shipped as **2.4.0**: see [DEPLOYMENT.md](DEPLOYMENT.md). Left for later
 | 4.9 | **Content-Security-Policy** | The app already sends `X-Frame-Options`, `X-Content-Type-Options` and `Referrer-Policy`. A CSP needs care: the theme script in `App.razor` is inline, and Blazor and ApexCharts need their own allowances. |
 | 4.10 | **Sign-in history** | A small table of recent sign-ins (time, address, success), shown on a page, instead of only the logs. |
 | 4.11 | **Image from CI** | Build the image in GitHub Actions and pull it on the server (GHCR), instead of building on the server. Worth it only if the server's builds get slow. |
+| 4.12 | **Infrastructure project** | Move Caddy, SQL Server and the shared networks out of traceon's compose into a project of their own, with both apps as equal guests. Worth it with a third app, or before touching traceon's SQL Server for another reason. Moving SQL Server means a short downtime and a backup and restore of every database. |
 
 ## Phase 5 — Extras (2.5 and later)
 

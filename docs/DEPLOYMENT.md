@@ -1,43 +1,55 @@
 # Deployment
 
-First-time setup of T212Ext on the Hetzner server that already runs traceon. Day-to-day work (updates, backups, logs, users) is in [OPERATIONS.md](OPERATIONS.md).
+First-time setup of T212Ext on the Hetzner server that also runs traceon. Day-to-day work (updates, backups, logs, users) is in [OPERATIONS.md](OPERATIONS.md).
 
 ## Contents
 
-1. [How it fits next to traceon](#1-how-it-fits-next-to-traceon)
+1. [How it fits on the server](#1-how-it-fits-on-the-server)
 2. [Before you start](#2-before-you-start)
 3. [Get the code and the settings file](#3-get-the-code-and-the-settings-file)
 4. [Database](#4-database)
 5. [Sign-in](#5-sign-in)
 6. [Trading 212 API key](#6-trading-212-api-key)
 7. [Start it](#7-start-it)
-8. [HTTPS through traceon's Caddy](#8-https-through-traceons-caddy)
+8. [HTTPS through the shared Caddy](#8-https-through-the-shared-caddy)
 9. [First data](#9-first-data)
 10. [Backups and monitoring](#10-backups-and-monitoring)
 
-## 1. How it fits next to traceon
+## 1. How it fits on the server
+
+T212Ext and traceon are independent apps, each its own Docker Compose project. They share only the server's infrastructure: the reverse proxy, which alone can own ports 80 and 443, and SQL Server, so the small server runs one instance (SQL Server on Linux needs 2 GB of memory each). That infrastructure lives in traceon's compose project today; T212Ext reaches it only through two neutral Docker networks, never traceon's own.
 
 ```
-Internet ──443──▶ traceon's Caddy ──▶ t212ext:8080 ──▶ sqlserver (traceon-db), database T212Ext
-                  (traceon-caddy)     (this app)        own login "t212ext"
+t212ext.<your-domain> ─┐
+traceon's domains     ─┴─▶ server :443 ─▶ Caddy ─┬─ edge ──▶ t212ext:8080 ─┐
+                                                 └─ (traceon's own network) ─▶ traceon
+                                                                             │
+                           SQL Server ◀── data ──────────────────────────────┘
+                           database T212Ext, login "t212ext"
 ```
 
 - **One container, `t212ext`**, built from this repository's `Dockerfile` by its `docker-compose.yml`. It publishes no port.
-- **It joins traceon's Docker network** (`traceon_default`): traceon's Caddy reaches it as `t212ext:8080`, and it reaches traceon's SQL Server as `sqlserver`.
-- **HTTPS is traceon's Caddy**, with one more site file (section 8). Certificates are automatic, as for traceon.
-- **The database `T212Ext` lives on traceon's SQL Server Express**, with its own login that can touch nothing else. No second SQL Server, so no extra memory.
-- **Backups** reuse traceon's script with `DB_NAME=T212Ext` (section 10).
+- **Network `edge`:** the proxy and the apps it serves. Caddy reaches the app as `t212ext:8080`. Caddy picks the app by domain; each domain gets its own certificate automatically.
+- **Network `data`:** the apps and SQL Server, reached as `sqlserver`. T212Ext has its own database and a login that can touch nothing else.
+- **T212Ext cannot reach traceon's containers**, nor traceon T212Ext's. Different domains also mean the browser never mixes their cookies.
+- **Backups are the app's own** ([ops/backup](../ops/backup)): signed in with the app's login, to a folder of their own on the Storage Box.
 - **Sign-in** is the app's own: users with a password and, preferably, an authenticator code, set in `.env`. Every page needs it; only `/login` and `/health` are open.
 - **Data protection keys** (they encrypt the sign-in and language cookies) are on a Docker volume, so restarts and new images do not sign you out.
 
 ## 2. Before you start
 
-- traceon running on the server in `~/traceon` (its `docs/DEPLOYMENT.md`), as the `deploy` user over SSH.
-- **traceon's Caddy reads extra site files from `~/traceon/caddy-sites/`.** If `~/traceon/Caddyfile` has no `import /etc/caddy/sites/*.caddy` line, update traceon first.
-- **A domain for the app**, for example `dividends.<your-domain>`, with an `A` record (and `AAAA` if the server has IPv6) to the server's address. Check it before section 8:
+- The server, with the `deploy` user over SSH, and traceon running in `~/traceon` (its `docs/DEPLOYMENT.md`).
+- **The shared infrastructure:** the networks `edge` and `data` exist, Caddy is on `edge` and reads site files from `~/traceon/caddy-sites/`, and SQL Server is on `data`. These come with traceon's version that introduced them (its `UPGRADING.md`). Check:
 
 ```bash
-dig +short dividends.<your-domain>
+docker network inspect edge data --format '{{.Name}}: {{range .Containers}}{{.Name}} {{end}}'
+```
+
+  Expected: `edge: traceon-caddy` and `data: traceon-db`. If the networks are missing, update traceon first.
+- **A domain for the app**, for example `t212ext.<your-domain>`, with an `A` record (and `AAAA` if the server has IPv6) to the server's address. Check it before section 8:
+
+```bash
+dig +short t212ext.<your-domain>
 ```
 
 - An **authenticator app** on your phone (any TOTP app: Google Authenticator, Microsoft Authenticator, 1Password, Bitwarden, Aegis).
@@ -52,7 +64,7 @@ cd ~ && git clone https://github.com/ARiSoul/T212Ext.git t212ext
 cd ~/t212ext && cp .env.example .env && chmod 600 .env
 ```
 
-`.env` holds every secret of the app and is not committed. As with traceon, the server's working tree has no other local changes: `git status` shows nothing modified.
+`.env` holds every secret of the app and is not committed. The server's working tree has no other local changes: `git status` shows nothing modified.
 
 ## 4. Database
 
@@ -62,7 +74,7 @@ Generate the database password straight into `.env` (it is never shown):
 cd ~/t212ext && sed -i "s|^T212EXT_DB_PASSWORD=.*|T212EXT_DB_PASSWORD=$(openssl rand -base64 33 | tr -d '/+=\n')|" .env
 ```
 
-Create the database and its login on traceon's SQL Server. The script reads the `sa` password from `~/traceon/.env` and the new one from `~/t212ext/.env`, and passes both through the environment, never on a command line:
+Create the database and its login. Creating a database needs SQL Server's `sa`, so the script reads its password from where the infrastructure keeps it (`~/traceon/.env` by default; `SA_ENV_FILE`, `SA_ENV_KEY` and `DB_CONTAINER` change that) and the new one from `~/t212ext/.env`, and passes both through the environment, never on a command line:
 
 ```bash
 ~/t212ext/ops/db/create-database.sh
@@ -70,7 +82,7 @@ Create the database and its login on traceon's SQL Server. The script reads the 
 
 It ends with a line `T212Ext  SIMPLE  ONLINE`. It is safe to run again; it also resets the login's password to the one in `.env` (that is how the password is changed, see [OPERATIONS.md](OPERATIONS.md#6-changing-secrets)).
 
-What it does ([ops/db/create-database.sql](../ops/db/create-database.sql)): creates the database `T212Ext` with the simple recovery model (nightly full backups, no log backups), a login `t212ext`, and makes it owner of that database only. The app applies its migrations itself when it starts.
+What it does ([ops/db/create-database.sql](../ops/db/create-database.sql)): creates the database `T212Ext` with the simple recovery model (nightly full backups, no log backups), a login `t212ext`, and makes it owner of that database only. The app applies its migrations itself when it starts, and the nightly backup uses the same login: after this step, nothing of T212Ext needs `sa` except the weekly restore test.
 
 ## 5. Sign-in
 
@@ -96,7 +108,7 @@ cd ~/t212ext && docker compose run --rm t212ext new-totp-secret <username>
 
 It prints a secret (32 letters and digits) and an `otpauth://` link. Put the secret in `Auth__Users__0__TotpSecret=`, and add it to the authenticator app as a "setup key" (time-based). Keep a copy in the password manager: it is the only way to recover the codes if the phone is lost.
 
-`docker compose run` needs `T212EXT_DB_PASSWORD` already in `.env` (section 4), since compose reads the whole file.
+`docker compose run` needs `T212EXT_DB_PASSWORD` already in `.env` (section 4), since compose reads the whole file, and the networks of section 2.
 
 A second person gets a second block (`Auth__Users__1__Username`, …).
 
@@ -132,15 +144,9 @@ docker compose ps
 docker compose logs --tail 50 t212ext
 ```
 
-Expected: `Now listening on: http://[::]:8080`, then the sync jobs. Errors about the database mean section 4 (or `T212EXT_DB_PASSWORD` changed without running the script); an error about `Auth:Users` means section 5.
+Expected: `Now listening on: http://[::]:8080`, then the sync jobs. Errors about the database mean section 4 (or `T212EXT_DB_PASSWORD` changed without running the script); an error about `Auth:Users` means section 5; `network edge declared as external, but could not be found` means section 2.
 
-**If the network is not found** (`network traceon_default declared as external, but could not be found`): traceon's project has another name. List the networks and set `TRACEON_NETWORK=<name>` in `.env`:
-
-```bash
-docker network ls --filter name=traceon
-```
-
-## 8. HTTPS through traceon's Caddy
+## 8. HTTPS through the shared Caddy
 
 The site file comes from [ops/caddy/t212ext.caddy.example](../ops/caddy/t212ext.caddy.example):
 
@@ -148,7 +154,7 @@ The site file comes from [ops/caddy/t212ext.caddy.example](../ops/caddy/t212ext.
 cp ~/t212ext/ops/caddy/t212ext.caddy.example ~/traceon/caddy-sites/t212ext.caddy && nano ~/traceon/caddy-sites/t212ext.caddy
 ```
 
-Replace `dividends.example.com` with your domain. Then reload Caddy (no downtime for traceon):
+Replace `t212ext.example.com` with your domain. Then reload Caddy (no downtime for the other sites):
 
 ```bash
 docker exec traceon-caddy caddy reload --config /etc/caddy/Caddyfile
@@ -157,10 +163,10 @@ docker exec traceon-caddy caddy reload --config /etc/caddy/Caddyfile
 Caddy gets the certificate within a few seconds. Check:
 
 ```bash
-curl -s https://dividends.<your-domain>/health
+curl -s https://t212ext.<your-domain>/health
 ```
 
-It must answer `Healthy`. Then open `https://dividends.<your-domain>` and sign in.
+It must answer `Healthy`. Then open `https://t212ext.<your-domain>` and sign in.
 
 ## 9. First data
 
@@ -174,28 +180,63 @@ The sync on startup fetches what the API gives (positions, orders, dividends and
 
 ## 10. Backups and monitoring
 
-**Nightly backup.** traceon's backup script backs up any database with `DB_NAME`: same encryption, same retention (7 daily, 4 weekly) and the same Storage Box. Add a second line to the crontab, a quarter of an hour after traceon's:
+The scripts are in [ops/backup](../ops/backup): `t212ext-backup.sh` every night, `t212ext-restore-test.sh` every week. Encrypted (gpg, AES256), 7 daily and 4 weekly copies, mirrored to a Hetzner Storage Box folder of their own. The Storage Box and its SSH key can be the ones traceon's backups already use (traceon `docs/OPERATIONS.md`, Backups); the folder and the passphrase are T212Ext's.
+
+**Storage Box folder** (with the existing key, `~/.ssh/storagebox_ed25519`):
+
+```bash
+ssh -p 23 -i ~/.ssh/storagebox_ed25519 <u123456>@<u123456>.your-storagebox.de mkdir t212ext-backups
+```
+
+**Configuration** (`backup.env` is not committed). Fill in `REMOTE`; the rest has working defaults:
+
+```bash
+cd ~/t212ext && cp ops/backup/backup.env.example ops/backup/backup.env && nano ops/backup/backup.env
+```
+
+**Passphrase:**
+
+```bash
+mkdir -p ~/.config/t212ext && chmod 700 ~/.config/t212ext && openssl rand -base64 32 > ~/.config/t212ext/backup.passphrase && chmod 600 ~/.config/t212ext/backup.passphrase
+```
+
+Show it once and store it in the password manager as "T212Ext backup passphrase". **Without a copy outside the server, the backups cannot be read if the server is lost.**
+
+```bash
+cat ~/.config/t212ext/backup.passphrase
+```
+
+**Local folder:**
+
+```bash
+sudo mkdir -p /var/backups/t212ext && sudo chown deploy:deploy /var/backups/t212ext
+```
+
+**First run by hand**, then the restore test (it restores into a throwaway database, compares row counts with the live one and drops it):
+
+```bash
+~/t212ext/ops/backup/t212ext-backup.sh
+```
+
+```bash
+~/t212ext/ops/backup/t212ext-restore-test.sh
+```
+
+**Cron:**
 
 ```bash
 crontab -e
 ```
 
-```
-45 3 * * * DB_NAME=T212Ext /home/deploy/traceon/ops/backup/traceon-backup.sh >> /home/deploy/t212ext-backup.log 2>&1
-```
+Nightly backup at 03:45 UTC, and the restore test on Sundays at 04:15:
 
-Run it once by hand and check the restore:
-
-```bash
-DB_NAME=T212Ext ~/traceon/ops/backup/traceon-backup.sh
+```
+45 3 * * * /home/deploy/t212ext/ops/backup/t212ext-backup.sh >> /home/deploy/t212ext-backup.log 2>&1
+15 4 * * 0 /home/deploy/t212ext/ops/backup/t212ext-restore-test.sh >> /home/deploy/t212ext-restore-test.log 2>&1
 ```
 
-```bash
-DB_NAME=T212Ext ~/traceon/ops/backup/traceon-restore-test.sh
-```
+**Dead man's switch (optional):** a check of its own on healthchecks.io (period 1 day, grace 2 hours), its ping URL in `PING_URL` in `backup.env`. The script pings it on success and `<PING_URL>/fail` on error.
 
-Both pings go to the same dead man's switch as traceon's (`PING_URL` in traceon's `backup.env`): a failure of either sends the alert.
-
-**Monitoring.** In the same uptime service as traceon, a keyword monitor on `https://dividends.<your-domain>/health`, keyword `Healthy`, every 5 minutes.
+**Monitoring.** In the uptime service, a keyword monitor on `https://t212ext.<your-domain>/health`, keyword `Healthy`, every 5 minutes.
 
 Done. From now on, updates follow [OPERATIONS.md](OPERATIONS.md#1-deploying-an-update), and each version's extra steps are in [UPGRADING.md](UPGRADING.md).

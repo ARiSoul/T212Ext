@@ -52,7 +52,7 @@ The grids remember your choices.
 
 **Hosting**
 - **Sign-in** with a password and an authenticator code (TOTP), for running on a server.
-- **Docker** image and compose file to run next to traceon on the same server, behind its Caddy, with its database on traceon's SQL Server. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+- **Docker** image and compose file for the server it shares with traceon: independent apps that share only the reverse proxy (HTTPS) and SQL Server, through neutral networks. Own database login, own encrypted backups. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 Next: see [docs/BACKLOG.md](docs/BACKLOG.md).
 
@@ -63,7 +63,7 @@ Next: see [docs/BACKLOG.md](docs/BACKLOG.md).
 | **App** | ASP.NET Core 10, Blazor Web App (Interactive Server), Bootstrap 5, Bootstrap Icons, Blazor-ApexCharts |
 | **Sync** | `BackgroundService` in the same process, typed `HttpClient` |
 | **Database** | SQL Server (LocalDB in development, Express in production), EF Core 10 with migrations |
-| **Hosting** | Docker Compose next to traceon, behind its Caddy (HTTPS); cookie sign-in with TOTP |
+| **Hosting** | Docker Compose behind the server's shared Caddy (HTTPS) and SQL Server; cookie sign-in with TOTP |
 | **Tests** | xUnit; integration tests against a throwaway SQL Server database |
 
 ## Getting started
@@ -190,7 +190,7 @@ tests/
   T212Ext.Client.Tests/
   T212Ext.Core.Tests/
   T212Ext.Web.Tests/
-ops/                          Server scripts: database setup (db/), Caddy site (caddy/)
+ops/                          Server scripts: database setup (db/), backups (backup/), Caddy site (caddy/)
 Dockerfile, docker-compose.yml, .env.example   The server deployment (docs/DEPLOYMENT.md)
 docs/                         See docs/README.md
 ```
@@ -203,7 +203,7 @@ docs/                         See docs/README.md
 | [docs/CONVENTIONS.md](docs/CONVENTIONS.md) | Rules every change follows |
 | [docs/TAX.md](docs/TAX.md) | The IRS report: rules, sources, what is still to confirm |
 | [docs/T212-API.md](docs/T212-API.md) | What we know about the Trading 212 API: auth, limits, quirks, terms |
-| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | First-time setup on the server, next to traceon |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | First-time setup on the server it shares with traceon |
 | [docs/OPERATIONS.md](docs/OPERATIONS.md) | Updates, logs, users, secrets, backups on the server |
 | [docs/BACKLOG.md](docs/BACKLOG.md) | Roadmap and ideas |
 | [docs/RELEASE-NOTES.md](docs/RELEASE-NOTES.md) | What changed in each version |
