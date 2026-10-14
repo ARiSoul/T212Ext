@@ -46,3 +46,8 @@ window.t212ext = (() => {
 
     return { storage, theme, downloadText };
 })();
+
+// Installable app: the service worker caches nothing (see service-worker.js).
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js').catch(() => { /* not installable here; the site still works */ });
+}

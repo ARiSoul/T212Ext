@@ -80,6 +80,7 @@ app.UseAntiforgery();
 app.MapStaticAssets().AllowAnonymous();
 app.MapHealthChecks("/health").AllowAnonymous();
 app.MapT212ExtAuth();
+app.MapPwa();
 
 app.MapGet("/language", (string culture, string? returnUrl, HttpContext context) =>
 {

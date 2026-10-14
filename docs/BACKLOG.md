@@ -4,6 +4,7 @@ The roadmap by phase, then ideas and known limitations not yet planned. When an 
 
 Done so far:
 - **2.0.0, phase 1 (foundations):** API client, database, scheduled sync, CSV import, first pages, tests.
+- **2.6.0:** installable app (PWA): manifest in the chosen language, icons, a service worker that caches nothing.
 - **2.5.0:** automatic CSV reports: asked for through the API during the sync, imported like an uploaded file, listed on the import page.
 - **2.4.0, phase 4 (deployment):** sign-in with password and authenticator code, Docker image and compose sharing only the reverse proxy and SQL Server with traceon (neutral `edge` and `data` networks, own login), data protection keys on a volume, own encrypted backups, CI check of the image, DEPLOYMENT and OPERATIONS docs.
 - **2.3.0:** capital gains for Anexo J quadro 9.2A (FIFO, ECB rates, splits), quadro 11 account details.
@@ -44,7 +45,6 @@ Phase 4 shipped as **2.4.0**: see [DEPLOYMENT.md](DEPLOYMENT.md). Left for later
 
 | # | Item | Notes |
 |---|---|---|
-| 4.8 | **PWA** | A manifest and icons so the site installs on the phone's home screen, as traceon. Offline makes no sense for a server app; a small service worker only if the browser needs one to offer the install. |
 | 4.9 | **Content-Security-Policy** | The app already sends `X-Frame-Options`, `X-Content-Type-Options` and `Referrer-Policy`. A CSP needs care: the theme script in `App.razor` is inline, and Blazor and ApexCharts need their own allowances. |
 | 4.10 | **Sign-in history** | A small table of recent sign-ins (time, address, success), shown on a page, instead of only the logs. |
 | 4.11 | **Image from CI** | Build the image in GitHub Actions and pull it on the server (GHCR), instead of building on the server. Worth it only if the server's builds get slow. |

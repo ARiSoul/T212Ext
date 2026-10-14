@@ -122,6 +122,9 @@ The rules every change follows, for people and for coding assistants. Each rule 
    - *Why:* the app holds a whole portfolio and tax history, and is reachable from the internet.
 10. **A page that sets or clears a cookie is a plain form**, not interactive: it is marked `[ExcludeFromInteractiveRouting]` and posts to an endpoint with `<AntiforgeryToken />` (`Login.razor`, the sign-out button). Every other page is interactive.
 11. **Redirects go only to local paths** (`SignInService.SafeReturnUrl`): the sign-in and language links cannot send anyone to another site.
+12. **The installable app (PWA) caches nothing.** The service worker (`wwwroot/service-worker.js`) exists to make the app installable and, later, to show notifications; every page loads from the server.
+    - *Why:* a Blazor Server page needs the server anyway, and a cached page could show stale figures or keep an old version after a deploy.
+    - The manifest is built per request (`Pwa.cs`) so its texts follow the chosen language; it, the service worker and the icons are open without sign-in (the browser fetches them before anyone signs in).
 
 ## 5. Deployment (`Dockerfile`, `docker-compose.yml`, `ops/`)
 
