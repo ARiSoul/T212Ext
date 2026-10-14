@@ -122,9 +122,14 @@ The rules every change follows, for people and for coding assistants. Each rule 
    - *Why:* the app holds a whole portfolio and tax history, and is reachable from the internet.
 10. **A page that sets or clears a cookie is a plain form**, not interactive: it is marked `[ExcludeFromInteractiveRouting]` and posts to an endpoint with `<AntiforgeryToken />` (`Login.razor`, the sign-out button). Every other page is interactive.
 11. **Redirects go only to local paths** (`SignInService.SafeReturnUrl`): the sign-in and language links cannot send anyone to another site.
-12. **The installable app (PWA) caches nothing.** The service worker (`wwwroot/service-worker.js`) exists to make the app installable and, later, to show notifications; every page loads from the server.
+12. **The installable app (PWA) caches nothing.** The service worker (`wwwroot/service-worker.js`) exists to make the app installable and to show notifications; every page loads from the server.
     - *Why:* a Blazor Server page needs the server anyway, and a cached page could show stale figures or keep an old version after a deploy.
     - The manifest is built per request (`Pwa.cs`) so its texts follow the chosen language; it, the service worker and the icons are open without sign-in (the browser fetches them before anyone signs in).
+13. **Notifications are written in each device's language and never repeat or flood.**
+    - The texts come from the translations (`Services/PushTexts.cs`), in the language the device had when they were turned on.
+    - What was announced is in `NotificationState`. The first run only takes note of where things stand; only dividends paid in the last 7 days are announced.
+    - A subscription must point to a known push service over HTTPS (`PushDevices.IsPushServiceUrl`): the server posts to that address.
+    - Permission is asked within the click itself (a native handler, `t212ext.push.bindEnable`), not after a round trip to the server: Safari refuses it otherwise.
 
 ## 5. Deployment (`Dockerfile`, `docker-compose.yml`, `ops/`)
 

@@ -17,6 +17,8 @@ public class T212ExtDbContext(DbContextOptions<T212ExtDbContext> options) : DbCo
     public DbSet<InstrumentSetting> InstrumentSettings => Set<InstrumentSetting>();
     public DbSet<StockSplit> StockSplits => Set<StockSplit>();
     public DbSet<AccountReport> AccountReports => Set<AccountReport>();
+    public DbSet<PushDevice> PushDevices => Set<PushDevice>();
+    public DbSet<NotificationState> NotificationStates => Set<NotificationState>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {

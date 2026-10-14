@@ -226,6 +226,7 @@
   <data name="Nav_Import" xml:space="preserve"><value>Importar CSV</value></data>
   <data name="Nav_Income" xml:space="preserve"><value>Ingresos por activo</value></data>
   <data name="Nav_Menu" xml:space="preserve"><value>Menú</value></data>
+  <data name="Nav_Notifications" xml:space="preserve"><value>Notificaciones</value></data>
   <data name="Nav_Orders" xml:space="preserve"><value>Órdenes</value></data>
   <data name="Nav_Overview" xml:space="preserve"><value>Resumen</value></data>
   <data name="Nav_Positions" xml:space="preserve"><value>Posiciones</value></data>
@@ -246,6 +247,40 @@
   <data name="Positions_SnapshotOf" xml:space="preserve"><value>Posiciones abiertas el {0}</value></data>
   <data name="Positions_Subtitle" xml:space="preserve"><value>Posiciones abiertas de la última instantánea</value></data>
   <data name="Positions_YieldOnCost" xml:space="preserve"><value>Rentabilidad s/ coste {0}</value></data>
+  <data name="Push_AndMore" xml:space="preserve"><value>y {0} más</value></data>
+  <data name="Push_Denied" xml:space="preserve"><value>Las notificaciones están bloqueadas para este sitio. Permítelas en los ajustes del sitio del navegador y recarga la página.</value></data>
+  <data name="Push_Device" xml:space="preserve"><value>Dispositivo</value></data>
+  <data name="Push_Devices" xml:space="preserve"><value>Dispositivos con notificaciones activadas</value></data>
+  <data name="Push_Dividend_Title" xml:space="preserve"><value>Dividendo recibido</value></data>
+  <data name="Push_Dividends_Title" xml:space="preserve"><value>{0} dividendos recibidos</value></data>
+  <data name="Push_Failed" xml:space="preserve"><value>No se pudieron activar las notificaciones: {0}</value></data>
+  <data name="Push_InstallFirst" xml:space="preserve"><value>En el iPhone, las notificaciones solo funcionan en la app instalada: toca Compartir, luego Añadir a pantalla de inicio, y abre T212Ext desde su icono.</value></data>
+  <data name="Push_LastSent" xml:space="preserve"><value>Última notificación</value></data>
+  <data name="Push_NoDevices" xml:space="preserve"><value>Aún ningún dispositivo.</value></data>
+  <data name="Push_NotConfigured" xml:space="preserve"><value>Las notificaciones no están configuradas en el servidor (Push__PublicKey, Push__PrivateKey y Push__Subject en .env; mira la guía de instalación).</value></data>
+  <data name="Push_Off" xml:space="preserve"><value>Desactivadas</value></data>
+  <data name="Push_On" xml:space="preserve"><value>Activadas</value></data>
+  <data name="Push_Refused" xml:space="preserve"><value>El servidor no aceptó este dispositivo (servicio de notificaciones desconocido, o demasiados dispositivos).</value></data>
+  <data name="Push_SendTest" xml:space="preserve"><value>Enviar una prueba</value></data>
+  <data name="Push_Since" xml:space="preserve"><value>Activado desde</value></data>
+  <data name="Push_Subtitle" xml:space="preserve"><value>Una notificación en el móvil o el ordenador cuando llega un dividendo, y un resumen cada mes.</value></data>
+  <data name="Push_Summary_Body" xml:space="preserve"><value>{0} en {1} pagos.</value></data>
+  <data name="Push_Summary_Change" xml:space="preserve"><value>{0} frente al año anterior</value></data>
+  <data name="Push_Summary_Title" xml:space="preserve"><value>Dividendos de {0}</value></data>
+  <data name="Push_TestFailed" xml:space="preserve"><value>No se pudo enviar la prueba. Desactiva y vuelve a activar las notificaciones.</value></data>
+  <data name="Push_TestSent" xml:space="preserve"><value>Prueba enviada. Debería aparecer en unos segundos.</value></data>
+  <data name="Push_Test_Body" xml:space="preserve"><value>Te avisaremos aquí cuando llegue un dividendo.</value></data>
+  <data name="Push_Test_Title" xml:space="preserve"><value>Las notificaciones están activadas</value></data>
+  <data name="Push_ThisDevice" xml:space="preserve"><value>Este dispositivo</value></data>
+  <data name="Push_ThisOne" xml:space="preserve"><value>este</value></data>
+  <data name="Push_TurnOff" xml:space="preserve"><value>Desactivar</value></data>
+  <data name="Push_TurnOn" xml:space="preserve"><value>Activar en este dispositivo</value></data>
+  <data name="Push_TurnedOff" xml:space="preserve"><value>Las notificaciones están desactivadas en este dispositivo.</value></data>
+  <data name="Push_TurnedOn" xml:space="preserve"><value>Las notificaciones están activadas en este dispositivo.</value></data>
+  <data name="Push_Unsupported" xml:space="preserve"><value>Este navegador no puede mostrar notificaciones.</value></data>
+  <data name="Push_WhatDividends" xml:space="preserve"><value>Cada dividendo que llega, tras la sincronización que lo encuentra (una sola notificación para varios a la vez).</value></data>
+  <data name="Push_WhatSummary" xml:space="preserve"><value>A principios de cada mes, los dividendos del mes anterior, comparados con el mismo mes del año anterior.</value></data>
+  <data name="Push_WhatYouGet" xml:space="preserve"><value>Qué recibes</value></data>
   <data name="Pwa_Description" xml:space="preserve"><value>Tus dividendos, historial e informe del IRS de Trading 212.</value></data>
   <data name="Quadro11_Account" xml:space="preserve"><value>número de cuenta {0}, país de la entidad {1} (compruébalo en el contrato)</value></data>
   <data name="Quadro11_Text" xml:space="preserve"><value>Las cuentas de valores y de depósito en entidades fuera de Portugal deben identificarse cada año, aunque no generen rentas. Una cuenta de Trading 212 no tiene IBAN: su número va en “Outros números de identificação”.</value></data>
@@ -286,6 +321,7 @@
   <data name="SyncJob_Dividends" xml:space="preserve"><value>Dividendos</value></data>
   <data name="SyncJob_ExchangeRates" xml:space="preserve"><value>Tipos de cambio</value></data>
   <data name="SyncJob_Instruments" xml:space="preserve"><value>Instrumentos</value></data>
+  <data name="SyncJob_Notifications" xml:space="preserve"><value>Notificaciones</value></data>
   <data name="SyncJob_Orders" xml:space="preserve"><value>Órdenes</value></data>
   <data name="SyncJob_Reports" xml:space="preserve"><value>Informes CSV</value></data>
   <data name="SyncJob_Snapshot" xml:space="preserve"><value>Instantánea</value></data>

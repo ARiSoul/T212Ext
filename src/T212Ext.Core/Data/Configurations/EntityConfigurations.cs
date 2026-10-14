@@ -164,6 +164,27 @@ internal sealed class AccountReportConfiguration : IEntityTypeConfiguration<Acco
     }
 }
 
+internal sealed class PushDeviceConfiguration : IEntityTypeConfiguration<PushDevice>
+{
+    public void Configure(EntityTypeBuilder<PushDevice> builder)
+    {
+        builder.Property(d => d.Username).HasMaxLength(Lengths.Name);
+        builder.Property(d => d.Endpoint).HasMaxLength(2048);
+        builder.Property(d => d.EndpointHash).HasMaxLength(64);
+        builder.Property(d => d.P256dh).HasMaxLength(200);
+        builder.Property(d => d.Auth).HasMaxLength(100);
+        builder.Property(d => d.Label).HasMaxLength(100);
+        builder.Property(d => d.Culture).HasMaxLength(Lengths.Key);
+        builder.HasIndex(d => d.EndpointHash).IsUnique();
+    }
+}
+
+internal sealed class NotificationStateConfiguration : IEntityTypeConfiguration<NotificationState>
+{
+    public void Configure(EntityTypeBuilder<NotificationState> builder) =>
+        builder.Property(s => s.Id).ValueGeneratedNever();
+}
+
 internal sealed class ExchangeRateConfiguration : IEntityTypeConfiguration<ExchangeRate>
 {
     public void Configure(EntityTypeBuilder<ExchangeRate> builder)

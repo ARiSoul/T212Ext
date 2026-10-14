@@ -1,6 +1,7 @@
 using System.Globalization;
 using ApexCharts;
 using Arisoul.T212Ext.Core;
+using Arisoul.T212Ext.Core.Notifications;
 using Arisoul.T212Ext.Web;
 using Arisoul.T212Ext.Web.Auth;
 using Arisoul.T212Ext.Web.Components;
@@ -36,6 +37,7 @@ builder.Services.AddApexCharts();
 builder.Services.AddScoped<ThemeService>();
 builder.Services.AddScoped<BrowserStorage>();
 builder.Services.AddScoped<AccountContext>();
+builder.Services.AddSingleton<IPushTexts, PushTexts>();
 
 var app = builder.Build();
 

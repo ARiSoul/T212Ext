@@ -3,6 +3,7 @@ using Arisoul.T212Ext.Core.Accounts;
 using Arisoul.T212Ext.Core.Data;
 using Arisoul.T212Ext.Core.Data.Configurations;
 using Arisoul.T212Ext.Core.Domain;
+using Arisoul.T212Ext.Core.Notifications;
 using Arisoul.T212Ext.Core.Rates;
 using Arisoul.T212Ext.Core.Reports;
 using Microsoft.EntityFrameworkCore;
@@ -39,6 +40,7 @@ public sealed class SyncRunner(
     IDbContextFactory<T212ExtDbContext> dbFactory,
     ExchangeRateUpdater rateUpdater,
     ReportImporter reportImporter,
+    Notifier notifier,
     IOptions<SyncOptions> options,
     IOptions<ReportOptions> reportOptions,
     TimeProvider time,
@@ -115,6 +117,13 @@ public sealed class SyncRunner(
         // After the dividends, so the rates cover every currency they need (the tax report uses them).
         Progress?.Invoke(SyncJob.ExchangeRates.ToString());
         await RunJobAsync(null, SyncJob.ExchangeRates, async ct => new JobResult(await rateUpdater.UpdateAsync(ct), 0), cancellationToken);
+
+        // Last, so it sees everything this sync brought.
+        if (notifier.IsConfigured)
+        {
+            Progress?.Invoke(SyncJob.Notifications.ToString());
+            await RunJobAsync(null, SyncJob.Notifications, notifier.RunAsync, cancellationToken);
+        }
 
         logger.LogInformation("Sync finished ({Reason})", request.Reason);
         return true;

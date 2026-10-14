@@ -482,6 +482,22 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                     b.ToTable("InstrumentSettings");
                 });
 
+            modelBuilder.Entity("Arisoul.T212Ext.Core.Domain.NotificationState", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<long?>("LastDividendId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateOnly?>("LastSummaryMonth")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("NotificationStates");
+                });
+
             modelBuilder.Entity("Arisoul.T212Ext.Core.Domain.PortfolioSnapshot", b =>
                 {
                     b.Property<long>("Id")
@@ -541,6 +557,63 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Snapshots");
+                });
+
+            modelBuilder.Entity("Arisoul.T212Ext.Core.Domain.PushDevice", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Auth")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Culture")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Endpoint")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
+
+                    b.Property<string>("EndpointHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTimeOffset?>("LastUsedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("P256dh")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EndpointHash")
+                        .IsUnique();
+
+                    b.ToTable("PushDevices");
                 });
 
             modelBuilder.Entity("Arisoul.T212Ext.Core.Domain.StockSplit", b =>

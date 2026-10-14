@@ -12,6 +12,7 @@ Running T212Ext on the server once it is set up ([DEPLOYMENT.md](DEPLOYMENT.md))
 6. [Changing secrets](#6-changing-secrets)
 7. [Backups and restore](#7-backups-and-restore)
 8. [Database](#8-database)
+9. [Notifications](#9-notifications)
 
 ## Conventions
 
@@ -135,6 +136,7 @@ A session lasts 14 days from the last visit.
 | Password, authenticator secret | `Auth__Users__N__*` | Section 4. |
 | Trading 212 key and secret | `T212__Accounts__N__*` | Section 5. |
 | Data protection keys | volume `t212ext_keys` | Section 4, "sign out everywhere". Never in `.env`. |
+| VAPID keys (notifications) | `Push__PublicKey`, `Push__PrivateKey` | Section 9. |
 | Backup passphrase | `~/.config/t212ext/backup.passphrase` | Only for new backups: keep the old one in the password manager as long as backups made with it exist (5 weeks). |
 
 If a secret leaks, change it first and investigate afterwards.
@@ -204,3 +206,12 @@ t212sql "SELECT CAST(DATABASEPROPERTYEX('T212Ext', 'Status') AS nvarchar(20)) AS
 Read-only queries from your PC with SSMS: the infrastructure's SSH tunnel (traceon `docs/OPERATIONS.md`, Database), signed in as `t212ext` (password from `.env`), database `T212Ext`.
 
 The SQL Server is shared: restarting it, changing its edition or upgrading it (in traceon's project) also stops T212Ext for that time. The app retries the database for about a minute at startup; while running, an action during the restart may fail, and works again once SQL Server is back.
+
+## 9. Notifications
+
+Set up in [DEPLOYMENT.md](DEPLOYMENT.md#11-notifications-optional). The **Notifications** page lists the devices with notifications on, when each got its last one, and removes them.
+
+- **What is sent:** after each sync, the dividends that arrived (paid in the last 7 days, so a report's old rows are never announced); after the first sync of a month, the month before. The **Sync log** shows the job "Notifications" with how many devices took them.
+- **A device stops getting them:** the push service told the server it no longer exists (the app was uninstalled, the browser's data cleared), and the server removed it. Turn them on again there.
+- **Changing the VAPID keys** (if the private one leaked): `new-vapid-keys`, the two lines in `.env`, `docker compose up -d`. Every device then needs **Turn on here** again; the old subscriptions stop working, and the server removes them at the next notification.
+- **Turning them off for everyone:** empty `Push__PublicKey` in `.env` and `docker compose up -d`. The devices stay listed and work again once the keys are back.

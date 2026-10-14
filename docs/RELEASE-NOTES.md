@@ -2,6 +2,17 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.7.0 — Notifications (2026-10-15)
+
+**New**
+- **Notifications** on the phone or the computer:
+  - when a dividend arrives (after the sync that finds it; several at once in one notification);
+  - early each month, the dividends of the month before, compared with the same month a year earlier;
+  - in the language the app had on that device; a tap opens the dividends.
+- **Notifications page** (menu): turn them on or off on this device, send a test, and see and remove the devices that get them. On the iPhone they work in the installed app (2.6.0).
+- Turning them on never sends the history: only what arrives from then on.
+- New settings `Push:*` (the server's VAPID keys); without them notifications stay off.
+
 ## 2.6.0 — Install it on the phone (2026-10-15)
 
 **New**

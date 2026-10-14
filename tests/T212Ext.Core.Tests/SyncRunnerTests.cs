@@ -3,6 +3,7 @@ using Arisoul.T212Ext.Client;
 using Arisoul.T212Ext.Core.Accounts;
 using Arisoul.T212Ext.Core.Domain;
 using Arisoul.T212Ext.Core.Import;
+using Arisoul.T212Ext.Core.Notifications;
 using Arisoul.T212Ext.Core.Rates;
 using Arisoul.T212Ext.Core.Reports;
 using Arisoul.T212Ext.Core.Sync;
@@ -33,6 +34,7 @@ public class SyncRunnerTests(DatabaseFixture database)
             database,
             new ExchangeRateUpdater(database, new FakeRateSource(), _time, NullLogger<ExchangeRateUpdater>.Instance),
             new ReportImporter(database, new CsvImportService(database, _time), reportOptions, _time, NullLogger<ReportImporter>.Instance),
+            new Notifier(database, Push.Devices(database, new FakePushSender(), _time, new PushOptions()), new FakePushTexts(), _time),
             Options.Create(new SyncOptions { InstrumentsMaxAge = TimeSpan.FromDays(1) }),
             reportOptions,
             _time,

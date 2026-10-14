@@ -44,7 +44,98 @@ window.t212ext = (() => {
         URL.revokeObjectURL(url);
     }
 
-    return { storage, theme, downloadText };
+    // Web Push, for the notifications page. Subscriptions go to .NET as plain strings.
+    const push = (() => {
+        const supported = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+        const standalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+
+        // The service worker's registration, without hanging when it never registered.
+        async function registration() {
+            return (await navigator.serviceWorker.getRegistration('/')) || navigator.serviceWorker.register('/service-worker.js');
+        }
+
+        function toInfo(subscription) {
+            const json = subscription.toJSON();
+            return { endpoint: json.endpoint, p256dh: json.keys.p256dh, auth: json.keys.auth };
+        }
+
+        function keyBytes(base64Url) {
+            const base64 = (base64Url + '='.repeat((4 - base64Url.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/');
+            return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+        }
+
+        function sameKey(subscription, publicKey) {
+            const current = subscription.options && subscription.options.applicationServerKey;
+            if (!current) return false;
+            const a = new Uint8Array(current), b = keyBytes(publicKey);
+            return a.length === b.length && a.every((v, i) => v === b[i]);
+        }
+
+        // "Android · Chrome", "iPhone · Safari (app)": how the device shows in the list.
+        function label() {
+            const ua = navigator.userAgent;
+            const os = /iPhone/.test(ua) ? 'iPhone' : /iPad/.test(ua) ? 'iPad' : /Android/.test(ua) ? 'Android'
+                : /Windows/.test(ua) ? 'Windows' : /Mac OS X/.test(ua) ? 'Mac' : /Linux/.test(ua) ? 'Linux' : '?';
+            const browser = /Edg\//.test(ua) ? 'Edge' : /Firefox\//.test(ua) ? 'Firefox' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : '?';
+            return `${os} · ${browser}${standalone() ? ' (app)' : ''}`;
+        }
+
+        return {
+            status() {
+                return {
+                    supported: supported(),
+                    permission: supported() ? Notification.permission : 'unsupported',
+                    ios: /iPhone|iPad|iPod/.test(navigator.userAgent),
+                    standalone: standalone(),
+                    label: label(),
+                };
+            },
+            // Null too when the service worker cannot register (some embedded browsers).
+            async current() {
+                if (!supported()) return null;
+                try {
+                    const subscription = await (await registration()).pushManager.getSubscription();
+                    return subscription ? toInfo(subscription) : null;
+                } catch {
+                    return null;
+                }
+            },
+            // A native click handler: browsers (Safari above all) ask for permission only within the
+            // click itself, which a round trip to the server would lose. .NET hears back through dotNetRef.
+            bindEnable(button, dotNetRef, publicKey) {
+                button.onclick = async () => {
+                    try {
+                        if (await Notification.requestPermission() !== 'granted') {
+                            await dotNetRef.invokeMethodAsync('OnSubscribeFailed', 'denied');
+                            return;
+                        }
+                        const reg = await registration();
+                        let subscription = await reg.pushManager.getSubscription();
+                        // Made with other keys (the server's changed): it cannot be used, so renew it.
+                        if (subscription && !sameKey(subscription, publicKey)) {
+                            await subscription.unsubscribe();
+                            subscription = null;
+                        }
+                        subscription = subscription || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(publicKey) });
+                        await dotNetRef.invokeMethodAsync('OnSubscribed', toInfo(subscription), label());
+                    } catch (e) {
+                        await dotNetRef.invokeMethodAsync('OnSubscribeFailed', String(e && e.message || e));
+                    }
+                };
+            },
+            async unsubscribe() {
+                if (!supported()) return;
+                try {
+                    const subscription = await (await registration()).pushManager.getSubscription();
+                    if (subscription) await subscription.unsubscribe();
+                } catch {
+                    // Nothing subscribed here: the server's record is removed anyway.
+                }
+            },
+        };
+    })();
+
+    return { storage, theme, downloadText, push };
 })();
 
 // Installable app: the service worker caches nothing (see service-worker.js).
