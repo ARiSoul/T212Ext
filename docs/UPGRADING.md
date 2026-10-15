@@ -4,17 +4,12 @@ Deploy steps for the versions that are not yet in production.
 
 The usual deploy command and checks are in [OPERATIONS.md](OPERATIONS.md#1-deploying-an-update).
 
-**Production runs 2.15.0** (since 2026-10-15).
+**Production runs 2.17.0** (since 2026-10-15).
 
-## 2.16.0
+## 2.17.1
 
-- **Migration** `AddSignInAttempts`: one new table, applied when the app starts.
-- **Try afterwards:** sign out and in again, then open "Sign-ins" (menu, Data): your sign-in is there, with your address and device. A wrong password tried once shows as "Wrong password or code".
-
-## 2.17.0
-
-- Only the usual deploy: no migration, no new setting.
-- **Try afterwards:** reload with the browser's developer tools open (F12, Console): no "Content Security Policy" errors on the overview (charts), the calendar and the notifications page; the theme still applies at once. `curl -sI https://t212.arisoul.org/login | grep -i content-security` shows the policy.
+- Only the usual deploy.
+- **Try afterwards:** the console (F12) on the page where the `blob:` error showed: it no longer appears.
 
 ## How this file works
 
