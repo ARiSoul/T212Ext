@@ -2,6 +2,12 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.11.0 — Dividend types in your language (2026-10-15)
+
+**New**
+- **Dividend types are translated** on the dividends page and each instrument's page: "Dividendos pagos por empresas dos EUA" instead of "Dividends paid by us corporations", the same name whether the dividend came from the API or a CSV report. A payment received instead of a dividend while the shares were lent shows its type with "(compensação, ações emprestadas)".
+- **"Open at Trading 212"** on an instrument's page, for US and London instruments.
+
 ## 2.10.0 — Instrument icons (2026-10-15)
 
 **New**

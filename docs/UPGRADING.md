@@ -4,7 +4,12 @@ Deploy steps for the versions that are not yet in production.
 
 The usual deploy command and checks are in [OPERATIONS.md](OPERATIONS.md#1-deploying-an-update).
 
-**Production runs 2.10.0** (since 2026-10-15). No version is waiting to be deployed.
+**Production runs 2.10.0** (since 2026-10-15).
+
+## 2.11.0
+
+- Only the usual deploy: no migration, no new setting.
+- **Try afterwards:** the dividends page in Portuguese shows translated types; an American instrument's page has "Abrir na Trading 212", which opens its page there.
 
 ## How this file works
 

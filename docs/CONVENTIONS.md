@@ -93,6 +93,7 @@ The rules every change follows, for people and for coding assistants. Each rule 
    - This includes `title`, `aria-*` and placeholders. Only logs are exempt.
    - Every key exists in the three files with the same `{0}` placeholders; `LocalizationTests` checks it, and that every `L["Key"]` used exists.
    - Codes from Trading 212 that have no translation go through `Labels.Humanize`, so new codes still read well.
+   - Dividend types go through `Labels.DividendType`: the API's codes and the CSV's words map to one key (`DividendType_*`), and "…_MANUFACTURED_PAYMENT" is its base type with a note. `LabelsTests` checks that every type of the API spec is translated.
    - The language is a cookie set by `/language`; the page reloads to apply it. `/language` only redirects to local URLs.
 2. **Every list is a `DataGrid`** (`Components/Grid`), with search, filters, sorting, totals, paging, CSV export, a column chooser and saved views.
    - Columns give a raw `Value` (for sorting and totals) and the `Text` shown.
