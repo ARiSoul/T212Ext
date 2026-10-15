@@ -171,6 +171,27 @@ public class AuthOptionsTests
 
 public class AuthCommandsTests
 {
+    [Theory]
+    [InlineData(new[] { "new-feature-command" }, true)]
+    [InlineData(new[] { "hash-passwrd" }, true)]
+    [InlineData(new[] { "hash-password" }, false)]
+    [InlineData(new[] { "--urls", "http://localhost:5000" }, false)]
+    [InlineData(new[] { "/environment", "Development" }, false)]
+    [InlineData(new[] { "Sync:Enabled=false" }, false)]
+    [InlineData(new string[0], false)]
+    public void A_plain_word_that_is_no_command_is_unknown_but_settings_are_not(string[] args, bool unknown) =>
+        Assert.Equal(unknown, AuthCommands.IsUnknownCommand(args));
+
+    [Fact]
+    public void An_unknown_command_says_which_ones_exist_and_fails()
+    {
+        var error = new StringWriter();
+
+        Assert.Equal(2, AuthCommands.Unknown(["new-feature-command"], error));
+        Assert.Contains("Unknown command 'new-feature-command'", error.ToString());
+        Assert.Contains("new-vapid-keys", error.ToString());
+    }
+
     private static (int Exit, string Output, string Error) Run(string input, params string[] args)
     {
         var output = new StringWriter();

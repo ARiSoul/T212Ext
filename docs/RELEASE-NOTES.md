@@ -14,6 +14,11 @@ See [TAX.md](TAX.md). To check, not tax advice.
 **Changed**
 - Interest on cash is code E21, now confirmed; share lending shows "E21 or E22" (no official source picks one; both are taxed alike).
 
+## 2.7.1 — Unknown commands are refused (2026-10-15)
+
+**Fixed**
+- A command the app does not know (for example one a newer version adds, run on the old image) is refused with the list of the known ones, instead of starting a second copy of the app.
+
 ## 2.7.0 — Notifications (2026-10-15)
 
 **New**

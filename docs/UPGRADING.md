@@ -4,7 +4,12 @@ Deploy steps for the versions that are not yet in production.
 
 The usual deploy command and checks are in [OPERATIONS.md](OPERATIONS.md#1-deploying-an-update).
 
-**Production runs 2.7.0** (since 2026-10-15). No version is waiting to be deployed.
+**Production runs 2.7.0** (since 2026-10-15).
+
+## 2.7.1
+
+- Only the usual deploy.
+- **Try afterwards:** `docker compose run --rm t212ext-web no-such-command` must answer "Unknown command" and stop.
 
 ## 2.8.0
 

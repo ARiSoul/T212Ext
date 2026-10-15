@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Localization;
 
 if (AuthCommands.IsCommand(args))
     return AuthCommands.Run(args, Console.In, Console.Out, Console.Error);
+if (AuthCommands.IsUnknownCommand(args))
+    return AuthCommands.Unknown(args, Console.Error);
 
 var builder = WebApplication.CreateBuilder(args);
 
