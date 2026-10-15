@@ -21,6 +21,12 @@
             <p>@_income.Ticker@(_income.Isin is null ? "" : $" · {_income.Isin}")@(_income.Country is null ? "" : $" · {Labels.Country(L, _income.Country)}")</p>
         }
     </div>
+    @if (Labels.TradingPage(_income?.Ticker) is { } tradingPage)
+    {
+        <a class="btn btn-sm btn-outline-secondary d-print-none" href="@tradingPage" target="_blank" rel="noopener noreferrer">
+            <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> @L["Instrument_OpenAtTrading212"]
+        </a>
+    }
 </div>
 
 @if (_income is not null)
@@ -101,7 +107,7 @@
     private IReadOnlyList<GridColumn<DividendRow>> Columns => [
         new() { Key = "paid", Title = L["Col_Paid"], Value = r => r.PaidOn, Text = r => Fmt.Date(r.PaidOn), MobileTitle = true,
                 Filterable = true, FilterKey = r => r.PaidOn.UtcDateTime.Year.ToString(), FilterValuesDescending = true, RangeFilter = true },
-        new() { Key = "type", Title = L["Col_Type"], Value = r => Labels.Humanize(r.Type), Filterable = true, HideBelow = "lg" },
+        new() { Key = "type", Title = L["Col_Type"], Value = r => Labels.DividendType(L, r.Type), Filterable = true, HideBelow = "lg" },
         new() { Key = "shares", Title = L["Col_Shares"], Value = r => r.Quantity, Text = r => Fmt.Number(r.Quantity), AlignEnd = true },
         new() { Key = "gross", Title = L["Col_GrossPerShare"], Value = r => r.GrossAmountPerShare,
                 Text = r => r.GrossAmountPerShare is null ? "—" : $"{Fmt.Number(r.GrossAmountPerShare)} {r.InstrumentCurrency}", AlignEnd = true },

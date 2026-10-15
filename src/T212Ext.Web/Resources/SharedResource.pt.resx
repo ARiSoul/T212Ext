@@ -131,6 +131,36 @@
   <data name="Country_US" xml:space="preserve"><value>Estados Unidos</value></data>
   <data name="Country_VG" xml:space="preserve"><value>Ilhas Virgens Britânicas</value></data>
   <data name="Country_XS" xml:space="preserve"><value>Internacional (XS)</value></data>
+  <data name="DividendType_BONUS" xml:space="preserve"><value>Bónus</value></data>
+  <data name="DividendType_CAPITAL_GAINS" xml:space="preserve"><value>Mais-valias</value></data>
+  <data name="DividendType_CAPITAL_GAINS_DISTRIBUTION" xml:space="preserve"><value>Distribuição de mais-valias</value></data>
+  <data name="DividendType_CAPITAL_GAINS_DISTRIBUTION_NON_US" xml:space="preserve"><value>Distribuição de mais-valias (fora dos EUA)</value></data>
+  <data name="DividendType_DEMERGER" xml:space="preserve"><value>Cisão</value></data>
+  <data name="DividendType_DIVIDEND" xml:space="preserve"><value>Dividendo</value></data>
+  <data name="DividendType_DIVIDENDS_PAID_BY_FOREIGN_CORPORATIONS" xml:space="preserve"><value>Dividendos pagos por empresas estrangeiras</value></data>
+  <data name="DividendType_DIVIDENDS_PAID_BY_US_CORPORATIONS" xml:space="preserve"><value>Dividendos pagos por empresas dos EUA</value></data>
+  <data name="DividendType_INTEREST" xml:space="preserve"><value>Juros</value></data>
+  <data name="DividendType_INTEREST_PAID_BY_FOREIGN_CORPORATIONS" xml:space="preserve"><value>Juros pagos por empresas estrangeiras</value></data>
+  <data name="DividendType_INTEREST_PAID_BY_US_OBLIGORS" xml:space="preserve"><value>Juros pagos por devedores dos EUA</value></data>
+  <data name="DividendType_INTERIM_LIQUIDATION" xml:space="preserve"><value>Liquidação parcial</value></data>
+  <data name="DividendType_LONG_TERM_CAPITAL_GAINS" xml:space="preserve"><value>Mais-valias de longo prazo</value></data>
+  <data name="DividendType_MULTIPLE_1042S_TAX_COMPONENTS" xml:space="preserve"><value>Vários componentes fiscais 1042-S</value></data>
+  <data name="DividendType_Manufactured" xml:space="preserve"><value>{0} (compensação, ações emprestadas)</value></data>
+  <data name="DividendType_ORDINARY" xml:space="preserve"><value>Ordinário</value></data>
+  <data name="DividendType_OTHER_DIVIDEND_EQUIVALENT" xml:space="preserve"><value>Outro equivalente a dividendo</value></data>
+  <data name="DividendType_OTHER_INCOME" xml:space="preserve"><value>Outros rendimentos</value></data>
+  <data name="DividendType_PROPERTY_INCOME" xml:space="preserve"><value>Rendimento imobiliário</value></data>
+  <data name="DividendType_PROPERTY_INCOME_DISTRIBUTION" xml:space="preserve"><value>Distribuição de rendimento imobiliário</value></data>
+  <data name="DividendType_PTP_UNCHARACTERISED_INCOME" xml:space="preserve"><value>Rendimento não caracterizado de PTP</value></data>
+  <data name="DividendType_PUBLICLY_TRADED_PARTNERSHIP_DISTRIBUTION" xml:space="preserve"><value>Distribuição de sociedade cotada (PTP)</value></data>
+  <data name="DividendType_QUALIFIED_INVESTMENT_ENTITY" xml:space="preserve"><value>Entidade de investimento qualificada (REIT)</value></data>
+  <data name="DividendType_REAL_PROPERTY_INCOME_AND_NATURAL_RESOURCES_ROYALTIES" xml:space="preserve"><value>Rendimentos imobiliários e royalties de recursos naturais</value></data>
+  <data name="DividendType_RETURN_OF_CAPITAL" xml:space="preserve"><value>Devolução de capital</value></data>
+  <data name="DividendType_RETURN_OF_CAPITAL_NON_US" xml:space="preserve"><value>Devolução de capital (fora dos EUA)</value></data>
+  <data name="DividendType_SHORT_TERM_CAPITAL_GAINS" xml:space="preserve"><value>Mais-valias de curto prazo</value></data>
+  <data name="DividendType_TAX_EVENT_1446F_FOR_PUBLICLY_TRADED_SECURITIES" xml:space="preserve"><value>Evento fiscal 1446(f), títulos cotados</value></data>
+  <data name="DividendType_TAX_EXEMPTED" xml:space="preserve"><value>Isento de imposto</value></data>
+  <data name="DividendType_TRUST_DISTRIBUTION" xml:space="preserve"><value>Distribuição de trust</value></data>
   <data name="Dividends_Empty" xml:space="preserve"><value>Ainda não há dividendos. Sincronize ou importe um relatório CSV.</value></data>
   <data name="Dividends_Payments" xml:space="preserve"><value>Pagamentos</value></data>
   <data name="Dividends_Subtitle" xml:space="preserve"><value>Todos os pagamentos, por ano, mês, país e moeda</value></data>
@@ -226,6 +256,7 @@
   <data name="Income_NotHeld" xml:space="preserve"><value>Não está em carteira</value></data>
   <data name="Income_SharesHeld" xml:space="preserve"><value>{0} ações em carteira</value></data>
   <data name="Income_Subtitle" xml:space="preserve"><value>O que cada ativo já lhe pagou. Escolha um para ver o histórico.</value></data>
+  <data name="Instrument_OpenAtTrading212" xml:space="preserve"><value>Abrir na Trading 212</value></data>
   <data name="Language_Label" xml:space="preserve"><value>Língua</value></data>
   <data name="Login_Code" xml:space="preserve"><value>Código da aplicação de autenticação</value></data>
   <data name="Login_CodeHint" xml:space="preserve"><value>Os 6 dígitos que a aplicação de autenticação mostra.</value></data>

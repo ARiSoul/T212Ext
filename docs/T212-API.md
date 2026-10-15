@@ -52,6 +52,11 @@ The old endpoints `account/info`, `account/cash`, `portfolio` and `portfolio/{ti
 - Trading 212's apps show logos from a public bucket, by ticker: `https://trading212equities.s3.eu-central-1.amazonaws.com/{ticker}.png` (e.g. `AAPL_US_EQ.png`, 240×240 PNG). An unknown ticker answers 403. Checked on 2026-10-15.
 - It is not documented and may change: T212Ext falls back to Parqet's logos by ISIN (`https://assets.parqet.com/logos/isin/{isin}`, SVG or PNG, 404 when unknown), then to an avatar.
 
+## Instrument pages (not part of the API)
+
+- Public pages at `https://www.trading212.com/trading-instruments/invest/{symbol}.{market}`: `BLK.US`, `SOFI.US` for US stocks, `AAPE.GB` for London (found 2026-10-15; the site answers 403 to non-browser requests, so it was checked through search results).
+- From the API's tickers: `AAPL_US_EQ` → `AAPL.US`; London's lowercase `l` suffix (`VUSAl_EQ`) → `VUSA.GB`. The other exchanges' suffixes (`d`, `p`, `a`…) have no confirmed address, so the instrument page shows no link for them.
+
 ## Rate limits
 
 - **Per account**, whatever the key or IP. Bursts are allowed.

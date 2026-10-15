@@ -107,7 +107,7 @@
                 Template = r => @<InstrumentLabel Ticker="@r.Ticker" Isin="@r.Isin" Name="@r.InstrumentName" /> },
         new() { Key = "ticker", Title = L["Col_Ticker"], Value = r => r.Ticker, HideBelow = "xxl" },
         new() { Key = "country", Title = L["Col_Country"], Value = r => Labels.Country(L, DividendAnalytics.CountryOf(r.Isin)), Filterable = true, HideBelow = "xl" },
-        new() { Key = "type", Title = L["Col_Type"], Value = r => Labels.Humanize(r.Type), Filterable = true, HideBelow = "xl", HideOnMobile = true },
+        new() { Key = "type", Title = L["Col_Type"], Value = r => Labels.DividendType(L, r.Type), Filterable = true, HideBelow = "xl", HideOnMobile = true },
         new() { Key = "shares", Title = L["Col_Shares"], Value = r => r.Quantity, Text = r => Fmt.Number(r.Quantity), AlignEnd = true, HideBelow = "xl",
                 Summaries = GridColumn<DividendRow>.Numeric },
         new() { Key = "gross", Title = L["Col_GrossPerShare"], Value = r => r.GrossAmountPerShare,
