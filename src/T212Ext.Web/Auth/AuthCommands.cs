@@ -11,7 +11,24 @@ namespace Arisoul.T212Ext.Web.Auth;
 /// </summary>
 public static class AuthCommands
 {
-    public static bool IsCommand(string[] args) => args is ["hash-password", ..] or ["new-totp-secret", ..] or ["new-vapid-keys", ..];
+    public static readonly IReadOnlyList<string> Names = ["hash-password", "new-totp-secret", "new-vapid-keys"];
+
+    public static bool IsCommand(string[] args) => args is [var first, ..] && Names.Contains(first);
+
+    /// <summary>
+    /// A first argument that reads as a command (a plain word) but is not one, such as a command a
+    /// newer version adds. The app then refuses to start instead of starting a second copy of itself.
+    /// Settings stay allowed: <c>--urls …</c>, <c>/key value</c> and <c>key=value</c>.
+    /// </summary>
+    public static bool IsUnknownCommand(string[] args) =>
+        args is [var first, ..] && !IsCommand(args) && first.Length > 0 && first[0] is not ('-' or '/') && !first.Contains('=');
+
+    public static int Unknown(string[] args, TextWriter error)
+    {
+        error.WriteLine($"Unknown command '{args[0]}'. This version knows: {string.Join(", ", Names)}.");
+        error.WriteLine("A command added by a newer version needs its image first: git pull, then docker compose build.");
+        return 2;
+    }
 
     public static int Run(string[] args, TextReader input, TextWriter output, TextWriter error)
     {

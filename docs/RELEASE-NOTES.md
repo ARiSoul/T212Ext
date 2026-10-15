@@ -2,6 +2,11 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.7.1 — Unknown commands are refused (2026-10-15)
+
+**Fixed**
+- A command the app does not know (for example one a newer version adds, run on the old image) is refused with the list of the known ones, instead of starting a second copy of the app.
+
 ## 2.7.0 — Notifications (2026-10-15)
 
 **New**
