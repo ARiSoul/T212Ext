@@ -2,6 +2,13 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.17.0 — Content-Security-Policy (2026-10-15)
+
+**Security**
+- Every page now tells the browser to run scripts only from this site, or the page's own inline scripts with a code that changes on every request (a nonce). Text that slipped into a page could not run a script, nor load anything from another site.
+- The page can no longer be shown inside another site's frame (as before), nor send forms or connect anywhere but this site.
+- Nothing changes in use: the theme, the charts, the notifications and the installable app work as before.
+
 ## 2.16.0 — Sign-in history (2026-10-15)
 
 **New**

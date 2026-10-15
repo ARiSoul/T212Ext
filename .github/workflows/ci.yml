@@ -107,8 +107,16 @@ jobs:
           for i in $(seq 1 60); do curl -fsS localhost:8080/health && break; sleep 3; done
           test "$(curl -fsS localhost:8080/health)" = Healthy
           test "$(curl -s -o /dev/null -w '%{http_code}' localhost:8080/)" = 302
-          curl -fsS localhost:8080/login -o login.html
+          curl -fsS -D login.headers localhost:8080/login -o login.html
           grep -q 'name="Password"' login.html
+
+          # The Content-Security-Policy (2.17.0): inline scripts run only with the request's nonce, and the
+          # page's own inline scripts (the theme, the import map) carry it.
+          nonce="$(grep -i '^content-security-policy:' login.headers | grep -oE "'nonce-[0-9A-F]+'" | head -n1 | cut -c8- | tr -d "'")"
+          test -n "$nonce"
+          grep -qi "^content-security-policy:.*frame-ancestors 'none'" login.headers
+          grep -qF "<script nonce=\"$nonce\">" login.html
+          grep -E '<script[^>]*importmap' login.html | grep -qF "nonce=\"$nonce\""
 
           # The Blazor script must be a known, fingerprinted asset that loads as JavaScript (2.4.1: the
           # image once lacked it, and every page stayed blank after sign-in).

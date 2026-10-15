@@ -151,6 +151,12 @@ The rules every change follows, for people and for coding assistants. Each rule 
     - An unknown username is recorded as such, never as typed: it may be a password typed in the wrong field. The person signing in is never told which part was wrong.
     - Recording never stops a sign-in: a database failure is logged. Rows are kept 90 days and 5,000 at most; attempts refused by the rate limit are not recorded.
     - *Why:* the app faces the internet; the logs rotate and are read only on the server. *(2.16.0)*
+16. **Every response carries a Content-Security-Policy** (`SecurityHeaders.cs`): everything from this site only, and inline scripts only with the request's nonce.
+    - An inline `<script>` needs `nonce="@Nonce"` (see `App.razor`); better, put the code in `wwwroot/js`. Never `'unsafe-inline'` for scripts.
+    - Two allowances, on purpose: `'unsafe-eval'` (Blazor-ApexCharts turns the chart formatters, sent as text, into functions) and `style-src 'unsafe-inline'` (Blazor and ApexCharts write inline styles).
+    - Something new from another site (a script, a font, an API called from the browser) needs its source in the policy, in the same PR. An endpoint may send a stricter policy of its own (the logos' sandbox).
+    - CI checks the header and the nonces on the sign-in page; check the browser console for "Content Security Policy" after changing the page's head.
+    - *Why:* the app faces the internet and holds one person's finances; injected markup must not be able to run a script. *(2.17.0)*
 
 ## 5. Deployment (`Dockerfile`, `docker-compose.yml`, `ops/`)
 
