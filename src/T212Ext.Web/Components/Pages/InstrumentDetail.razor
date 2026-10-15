@@ -9,7 +9,13 @@
 <div class="page-header">
     <div class="me-auto">
         <a class="small text-decoration-none" href="income"><i class="bi bi-arrow-left"></i> @L["Nav_Income"]</a>
-        <h1 class="mt-1">@Title</h1>
+        <h1 class="mt-1 d-flex align-items-center gap-2">
+            @if (_income is not null)
+            {
+                <InstrumentLabel Ticker="@_income.Ticker" Isin="@_income.Isin" Size="40" ShowName="false" />
+            }
+            @Title
+        </h1>
         @if (_income is not null)
         {
             <p>@_income.Ticker@(_income.Isin is null ? "" : $" · {_income.Isin}")@(_income.Country is null ? "" : $" · {Labels.Country(L, _income.Country)}")</p>

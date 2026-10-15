@@ -21,6 +21,12 @@ The usual deploy command and checks are in [OPERATIONS.md](OPERATIONS.md#1-deplo
 - Only the usual deploy: no migration, no new setting.
 - **Try afterwards:** on the dividends page, hide a column, filter a range of dates, save it as a view, reset, and open the view again.
 
+## 2.10.0
+
+- **Migration** `AddInstrumentLogos`: one new table, applied when the app starts.
+- **Optional setting:** `Logos__Enabled=false` in `.env` to show only avatars (no fetching).
+- **Try afterwards:** the dividends and positions pages show the logos; the first visit fetches them, so they may appear a moment later.
+
 ## How this file works
 
 - Each version section lists only what is extra to the usual deploy command: migrations to be aware of, new settings, and what to try afterwards.

@@ -48,7 +48,8 @@
     private string? Currency => _dashboard?.Currency;
 
     private IReadOnlyList<GridColumn<PositionIncome>> Columns => [
-        new() { Key = "instrument", Title = L["Col_Instrument"], Value = p => p.Name ?? p.Ticker, MobileTitle = true },
+        new() { Key = "instrument", Title = L["Col_Instrument"], Value = p => p.Name ?? p.Ticker, MobileTitle = true,
+                Template = p => @<InstrumentLabel Ticker="@p.Ticker" Isin="@p.Isin" Name="@p.Name" /> },
         new() { Key = "ticker", Title = L["Col_Ticker"], Value = p => p.Ticker, HideBelow = "xl" },
         new() { Key = "country", Title = L["Col_Country"], Value = p => Labels.Country(L, DividendAnalytics.CountryOf(p.Isin)), Filterable = true, HideBelow = "xl", HideOnMobile = true },
         new() { Key = "shares", Title = L["Col_Shares"], Value = p => p.Quantity, Text = p => Fmt.Number(p.Quantity), AlignEnd = true, HideBelow = "lg" },

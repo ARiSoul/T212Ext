@@ -185,6 +185,17 @@ internal sealed class NotificationStateConfiguration : IEntityTypeConfiguration<
         builder.Property(s => s.Id).ValueGeneratedNever();
 }
 
+internal sealed class InstrumentLogoConfiguration : IEntityTypeConfiguration<InstrumentLogo>
+{
+    public void Configure(EntityTypeBuilder<InstrumentLogo> builder)
+    {
+        builder.HasKey(l => l.Key);
+        builder.Property(l => l.Key).HasMaxLength(Lengths.Ticker);
+        builder.Property(l => l.ContentType).HasMaxLength(Lengths.Key);
+        builder.Property(l => l.Source).HasMaxLength(20);
+    }
+}
+
 internal sealed class ExchangeRateConfiguration : IEntityTypeConfiguration<ExchangeRate>
 {
     public void Configure(EntityTypeBuilder<ExchangeRate> builder)

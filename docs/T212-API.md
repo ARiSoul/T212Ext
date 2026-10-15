@@ -47,6 +47,11 @@ What we know about the [Trading 212 public API](https://docs.trading212.com), as
 
 The old endpoints `account/info`, `account/cash`, `portfolio` and `portfolio/{ticker}` (used by T212Ext 1.x) are gone from the spec. Pies are deprecated.
 
+## Instrument logos (not part of the API)
+
+- Trading 212's apps show logos from a public bucket, by ticker: `https://trading212equities.s3.eu-central-1.amazonaws.com/{ticker}.png` (e.g. `AAPL_US_EQ.png`, 240×240 PNG). An unknown ticker answers 403. Checked on 2026-10-15.
+- It is not documented and may change: T212Ext falls back to Parqet's logos by ISIN (`https://assets.parqet.com/logos/isin/{isin}`, SVG or PNG, 404 when unknown), then to an avatar.
+
 ## Rate limits
 
 - **Per account**, whatever the key or IP. Bursts are allowed.

@@ -131,6 +131,10 @@ The rules every change follows, for people and for coding assistants. Each rule 
     - What was announced is in `NotificationState`. The first run only takes note of where things stand; only dividends paid in the last 7 days are announced.
     - A subscription must point to a known push service over HTTPS (`PushDevices.IsPushServiceUrl`): the server posts to that address.
     - Permission is asked within the click itself (a native handler, `t212ext.push.bindEnable`), not after a round trip to the server: Safari refuses it otherwise.
+14. **Instruments show their icon** (`Components/Shared/InstrumentLabel`) wherever they are listed: the logo, or an avatar with the ticker's code.
+    - The browser asks only this app (`/logos/{ticker}?isin=…`). The server fetches each logo once from fixed hosts (Trading 212's images by ticker, then Parqet's by ISIN), keeps it in `InstrumentLogos`, and asks again only after weeks. `Logos:Enabled=false` keeps it to avatars.
+    - Logos are served with a sandboxing Content-Security-Policy: a third party's SVG opened on its own can run nothing.
+    - Avatar colours are fixed in `Logos.cs` (image content, white text at 5.3:1 or more); the logo's white plate is the `--app-logo-bg` token.
 
 ## 5. Deployment (`Dockerfile`, `docker-compose.yml`, `ops/`)
 

@@ -216,7 +216,8 @@ else
 
     private IReadOnlyList<GridColumn<IrsDividend>> DividendColumns => [
         new() { Key = "paid", Title = L["Col_Paid"], Value = d => d.Source.PaidOn, Text = d => Fmt.Date(d.Source.PaidOn) },
-        new() { Key = "instrument", Title = L["Col_Instrument"], Value = d => d.Source.Name ?? d.Source.Ticker, MobileTitle = true },
+        new() { Key = "instrument", Title = L["Col_Instrument"], Value = d => d.Source.Name ?? d.Source.Ticker, MobileTitle = true,
+                Template = d => @<InstrumentLabel Ticker="@d.Source.Ticker" Isin="@d.Source.Isin" Name="@d.Source.Name" /> },
         new() { Key = "country", Title = L["Col_Country"], Value = d => Labels.Country(L, d.Country), Filterable = true, HideBelow = "lg" },
         new() { Key = "check", Title = L["Tax_Check"], Value = d => FlagsText(d.Flags), Filterable = true, FilterKey = d => d.Flags is IrsFlags.None ? L["Common_Ok"].Value : FlagsText(d.Flags),
                 Template = d => @<span class="@(d.Flags is IrsFlags.None ? "text-positive" : "text-negative") small">@(d.Flags is IrsFlags.None ? L["Common_Ok"].Value : FlagsText(d.Flags))</span> },

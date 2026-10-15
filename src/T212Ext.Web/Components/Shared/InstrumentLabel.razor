@@ -1,0 +1,18 @@
+@* An instrument's icon (logo, or an avatar with its code) and name. *@
+<span class="instrument-label">
+    <img class="instrument-logo" src="@Source" alt="" width="@Size" height="@Size" loading="lazy" decoding="async" />
+    @if (ShowName)
+    {
+        <span class="instrument-name">@(Name ?? Ticker)</span>
+    }
+</span>
+
+@code {
+    [Parameter, EditorRequired] public string Ticker { get; set; } = "";
+    [Parameter] public string? Isin { get; set; }
+    [Parameter] public string? Name { get; set; }
+    [Parameter] public int Size { get; set; } = 24;
+    [Parameter] public bool ShowName { get; set; } = true;
+
+    private string Source => $"logos/{Uri.EscapeDataString(Ticker)}" + (Isin is null ? "" : $"?isin={Uri.EscapeDataString(Isin)}");
+}

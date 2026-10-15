@@ -2,6 +2,14 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.10.0 — Instrument icons (2026-10-15)
+
+**New**
+- **Every instrument shows its icon** in dividends, income by instrument, positions, orders and both IRS tabs, and large on each instrument's page:
+  - the logo Trading 212's app shows, or, when it has none, one found by ISIN;
+  - otherwise a coloured avatar with the ticker's code, always the same colour for the same ticker.
+- The server fetches each logo once and keeps it: your browser never contacts those sites. `Logos__Enabled=false` keeps it to avatars.
+
 ## 2.9.0 — Grids: columns, views and dates (2026-10-15)
 
 **New**, in every list:
