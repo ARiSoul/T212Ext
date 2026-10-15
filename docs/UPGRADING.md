@@ -4,12 +4,7 @@ Deploy steps for the versions that are not yet in production.
 
 The usual deploy command and checks are in [OPERATIONS.md](OPERATIONS.md#1-deploying-an-update).
 
-**Production runs 2.17.0** (since 2026-10-15).
-
-## 2.17.1
-
-- Only the usual deploy.
-- **Try afterwards:** the console (F12) on the page where the `blob:` error showed: it no longer appears.
+**Production runs 2.17.1** (since 2026-10-15). No version is waiting to be deployed.
 
 ## How this file works
 
