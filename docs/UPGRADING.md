@@ -4,12 +4,7 @@ Deploy steps for the versions that are not yet in production.
 
 The usual deploy command and checks are in [OPERATIONS.md](OPERATIONS.md#1-deploying-an-update).
 
-**Production runs 2.17.1** (since 2026-10-15).
-
-## 2.18.0
-
-- **Migration** `AddNotificationChoices`: new columns on the devices (all kinds on for the existing ones) and the week's state; applied when the app starts.
-- **Try afterwards:** on the phone, the Notifications page: "On this device" shows the three kinds on; turn one off, set quiet hours, save, and the list shows them. Next Monday morning, the week's notice (if anything is expected).
+**Production runs 2.18.0** (since 2026-10-15). No version is waiting to be deployed.
 
 ## How this file works
 
