@@ -1,0 +1,84 @@
+@page "/sign-ins"
+@using Arisoul.T212Ext.Core.Security
+@using Arisoul.T212Ext.Web.Auth
+@using Microsoft.Extensions.Options
+@inject SignInHistory History
+@inject IOptions<AuthOptions> Auth
+@inject TimeProvider Time
+@inject IStringLocalizer<SharedResource> L
+
+<PageTitle>@L["Nav_SignIns"] · T212Ext</PageTitle>
+
+<div class="page-header">
+    <div class="me-auto">
+        <h1>@L["Nav_SignIns"]</h1>
+        <p>@string.Format(L["SignIns_Subtitle"], SignInHistory.KeepDays)</p>
+    </div>
+</div>
+
+@if (!Auth.Value.Enabled)
+{
+    <div class="alert alert-info">@L["SignIns_AuthOff"]</div>
+}
+
+@if (_rows is { } rows)
+{
+    var now = Time.GetUtcNow();
+    var day = rows.Where(r => r.At > now.AddDays(-1)).ToList();
+    var month = rows.Where(r => r.At > now.AddDays(-30)).ToList();
+    var failedDay = day.Count(r => r.Outcome != SignInOutcome.Succeeded);
+    var failedMonth = month.Count(r => r.Outcome != SignInOutcome.Succeeded);
+    var previous = rows.Where(r => r.Outcome == SignInOutcome.Succeeded && r.Username == _username).Skip(1).FirstOrDefault();
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-lg-3"><Stat Icon="bi-shield-exclamation" Label="@L["SignIns_Failed24h"]" Value="@failedDay.ToString()" ValueClass="@(failedDay > 0 ? "text-negative" : "")"
+                                         Hint="@L["SignIns_FailedHint"]" /></div>
+        <div class="col-6 col-lg-3"><Stat Icon="bi-shield" Label="@L["SignIns_Failed30d"]" Value="@failedMonth.ToString()"
+                                         Hint="@string.Format(L["SignIns_UnknownUsers"], month.Count(r => r.Outcome == SignInOutcome.UnknownUser))" /></div>
+        <div class="col-6 col-lg-3"><Stat Icon="bi-check2-circle" Label="@L["SignIns_Succeeded30d"]" Value="@month.Count(r => r.Outcome == SignInOutcome.Succeeded).ToString()"
+                                         Hint="@string.Format(L["SignIns_Addresses"], month.Where(r => r.Outcome == SignInOutcome.Succeeded).Select(r => r.Address).Distinct().Count())" /></div>
+        <div class="col-6 col-lg-3"><Stat Icon="bi-clock-history" Label="@L["SignIns_Previous"]" Value="@(previous is null ? "—" : Fmt.DateTime(previous.At))"
+                                         Hint="@(previous is null ? L["SignIns_PreviousNone"] : $"{previous.Address} · {UserAgents.Describe(previous.UserAgent)}")" /></div>
+    </div>
+}
+
+<DataGrid TItem="SignInRow" Items="_rows" Columns="Columns" StorageKey="sign-ins" ExportFileName="sign-ins"
+          DefaultSortKey="at" DefaultSortDescending="true" EmptyText="@L["SignIns_Empty"]" />
+<p class="small text-body-secondary mt-2">@L["SignIns_Note"]</p>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    private IReadOnlyList<SignInRow>? _rows;
+    private string? _username;
+
+    private IReadOnlyList<GridColumn<SignInRow>> Columns => [
+        new() { Key = "at", Title = L["SignIns_When"], Value = r => r.At, Text = r => Fmt.DateTime(r.At), MobileTitle = true,
+                Filterable = true, FilterKey = r => r.At.ToLocalTime().ToString("yyyy-MM"), FilterValuesDescending = true, RangeFilter = true },
+        new() { Key = "outcome", Title = L["SignIns_Outcome"], Value = r => Outcome(r.Outcome), Filterable = true,
+                Template = r => @<span class="badge @OutcomeClass(r.Outcome)">@Outcome(r.Outcome)</span> },
+        new() { Key = "user", Title = L["Login_Username"], Value = r => r.Username ?? "—", Filterable = true, HideBelow = "md" },
+        new() { Key = "address", Title = L["SignIns_Address"], Value = r => r.Address ?? "—", Filterable = true },
+        new() { Key = "device", Title = L["SignIns_Device"], Value = r => UserAgents.Describe(r.UserAgent) ?? "—", Filterable = true, HideBelow = "lg", HideOnMobile = true },
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _username = AuthenticationState is null ? null : (await AuthenticationState).User.Identity?.Name;
+        _rows = await History.ListAsync();
+    }
+
+    private string Outcome(SignInOutcome outcome) => outcome switch
+    {
+        SignInOutcome.Succeeded => L["SignIns_Succeeded"],
+        SignInOutcome.UnknownUser => L["SignIns_UnknownUser"],
+        _ => L["SignIns_Failed"],
+    };
+
+    private static string OutcomeClass(SignInOutcome outcome) => outcome switch
+    {
+        SignInOutcome.Succeeded => "text-bg-success",
+        SignInOutcome.UnknownUser => "text-bg-warning",
+        _ => "text-bg-danger",
+    };
+}

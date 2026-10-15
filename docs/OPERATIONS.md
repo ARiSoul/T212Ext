@@ -91,7 +91,7 @@ docker compose logs -f --since 10m t212ext-web
 
 Logs rotate at 5 files of 10 MB. Worth knowing:
 
-- `Failed sign-in for <user> from <address>`: a wrong password or code. After 5 attempts a minute from one address the sign-in page asks to wait.
+- `Failed sign-in for <user> from <address>`: a wrong password or code. After 5 attempts a minute from one address the sign-in page asks to wait. The **Sign-ins** page keeps every attempt of the last 90 days (section 4).
 - `API key refused; remaining jobs skipped`: Trading 212 answered 401, so the key was revoked or expired; see section 5.
 - `Sync job <job> failed for account <id>`: the **Sync log** page has the detail. A 403 there means the key lacks a permission ([T212-API.md](T212-API.md)).
 - `asked for report <id>` and `imported report <id>`: the automatic CSV reports. Their list, with what each one added, is on the **Import CSV** page; `report <id> could not be imported` comes with the reason, and the period is asked for again on the next sync.
@@ -123,6 +123,8 @@ cd ~/t212ext && docker compose down && docker volume rm t212ext_keys && docker c
 - **Locked out** (no password, no code): set a new hash and remove the `TotpSecret` line in `.env`, `docker compose up -d`, sign in, then set up a new secret.
 
 A session lasts 14 days from the last visit.
+
+**Sign-ins page** (menu, Data): every attempt of the last 90 days, with the address and the device, and your previous sign-in. A sign-in you do not recognise: change the password (above), which ends every session, and check the Trading 212 keys (section 5). Many failures from one address are refused by the rate limit; for a lasting flood, block the address in Caddy.
 
 ## 5. Trading 212 accounts
 

@@ -147,6 +147,10 @@ The rules every change follows, for people and for coding assistants. Each rule 
     - The browser asks only this app (`/logos/{ticker}?isin=…`). The server fetches each logo once from fixed hosts (Trading 212's images by ticker, then Parqet's by ISIN), keeps it in `InstrumentLogos`, and asks again only after weeks. `Logos:Enabled=false` keeps it to avatars.
     - Logos are served with a sandboxing Content-Security-Policy: a third party's SVG opened on its own can run nothing.
     - Avatar colours are fixed in `Logos.cs` (image content, white text at 5.3:1 or more); the logo's white plate is the `--app-logo-bg` token.
+15. **Every sign-in attempt that is checked is recorded** (`Core/Security/SignInHistory`, the **Sign-ins** page): when, the configured user, the outcome, the address and the User-Agent.
+    - An unknown username is recorded as such, never as typed: it may be a password typed in the wrong field. The person signing in is never told which part was wrong.
+    - Recording never stops a sign-in: a database failure is logged. Rows are kept 90 days and 5,000 at most; attempts refused by the rate limit are not recorded.
+    - *Why:* the app faces the internet; the logs rotate and are read only on the server. *(2.16.0)*
 
 ## 5. Deployment (`Dockerfile`, `docker-compose.yml`, `ops/`)
 

@@ -232,3 +232,15 @@ internal sealed class StockSplitConfiguration : IEntityTypeConfiguration<StockSp
         builder.HasIndex(s => new { s.Isin, s.Date }).IsUnique();
     }
 }
+
+internal sealed class SignInAttemptConfiguration : IEntityTypeConfiguration<SignInAttempt>
+{
+    public void Configure(EntityTypeBuilder<SignInAttempt> builder)
+    {
+        builder.Property(a => a.Username).HasMaxLength(Lengths.Name);
+        builder.Property(a => a.Outcome).HasConversion<string>().HasMaxLength(20);
+        builder.Property(a => a.Address).HasMaxLength(64);
+        builder.Property(a => a.UserAgent).HasMaxLength(Security.SignInHistory.MaxUserAgent);
+        builder.HasIndex(a => a.At);
+    }
+}

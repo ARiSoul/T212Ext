@@ -7,6 +7,7 @@ using Arisoul.T212Ext.Core.Notifications;
 using Arisoul.T212Ext.Core.Queries;
 using Arisoul.T212Ext.Core.Rates;
 using Arisoul.T212Ext.Core.Reports;
+using Arisoul.T212Ext.Core.Security;
 using Arisoul.T212Ext.Core.Sync;
 using Arisoul.T212Ext.Core.Tax;
 using Microsoft.Data.SqlClient;
@@ -47,6 +48,7 @@ public static class CoreServiceCollectionExtensions
         services.AddScoped<ReportQueries>();
         services.AddScoped<GoalQueries>();
         services.AddScoped<PushDevices>();
+        services.AddScoped<SignInHistory>();
         services.AddSingleton<InstrumentLogos>();
         services.AddHttpClient(InstrumentLogos.HttpClientName, client =>
         {

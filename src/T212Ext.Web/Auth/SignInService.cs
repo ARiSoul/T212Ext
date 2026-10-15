@@ -21,25 +21,33 @@ public sealed class SignInService(IOptions<AuthOptions> options, TimeProvider ti
 
     public bool RequiresCode => options.Value.Users.Any(u => !string.IsNullOrEmpty(u.TotpSecret));
 
-    public AuthUser? Check(string? username, string? password, string? code)
+    public AuthUser? Check(string? username, string? password, string? code) => Verify(username, password, code).User;
+
+    /// <summary>
+    /// The user when all is right; otherwise null, with <see cref="SignInCheck.Known"/> saying whether the
+    /// username exists (for the sign-in history only: the person signing in is never told).
+    /// </summary>
+    public SignInCheck Verify(string? username, string? password, string? code)
     {
         var user = options.Value.Users.FirstOrDefault(u => string.Equals(u.Username, username?.Trim(), StringComparison.OrdinalIgnoreCase));
         var passwordOk = Hasher.VerifyHashedPassword(user ?? new AuthUser(), user?.PasswordHash ?? DummyHash, password ?? "")
             is PasswordVerificationResult.Success or PasswordVerificationResult.SuccessRehashNeeded;
-        if (user is null || !passwordOk)
-            return null;
+        if (user is null)
+            return new SignInCheck(null, null);
+        if (!passwordOk)
+            return new SignInCheck(null, user);
 
         if (string.IsNullOrEmpty(user.TotpSecret))
-            return user;
+            return new SignInCheck(user, user);
 
         if (Totp.Match(user.TotpSecret, code, time.GetUtcNow()) is not { } step)
-            return null;
+            return new SignInCheck(null, user);
 
         // Replay: only a step later than the last one used signs in.
         var accepted = false;
         _lastStep.AddOrUpdate(user.Username, _ => { accepted = true; return step; },
             (_, last) => { accepted = step > last; return accepted ? step : last; });
-        return accepted ? user : null;
+        return new SignInCheck(accepted ? user : null, user);
     }
 
     public static string HashPassword(string password) => Hasher.HashPassword(new AuthUser(), password);
@@ -53,3 +61,7 @@ public sealed class SignInService(IOptions<AuthOptions> options, TimeProvider ti
             ? returnUrl
             : "/";
 }
+
+/// <param name="User">Signed in: everything was right.</param>
+/// <param name="Known">The configured user the username names, right or wrong; null when there is none.</param>
+public sealed record SignInCheck(AuthUser? User, AuthUser? Known);
