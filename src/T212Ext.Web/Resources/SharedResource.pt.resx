@@ -10,6 +10,23 @@
   <data name="Agg_OtherIncomeHint" xml:space="preserve"><value>Opcional, guardado só neste browser. Da nota de liquidação do ano, ou uma estimativa: salários, pensões e outros rendimentos englobados, depois das deduções. Na tributação conjunta, confirme no simulador da AT.</value></data>
   <data name="Agg_Title" xml:space="preserve"><value>Englobamento obrigatório</value></data>
   <data name="Agg_UnknownYear" xml:space="preserve"><value>A app ainda não conhece o último escalão de {0}: compare com a tabela do IRS desse ano.</value></data>
+  <data name="Calendar_Amount" xml:space="preserve"><value>Valor (est.)</value></data>
+  <data name="Calendar_BasedOn" xml:space="preserve"><value>Com base em</value></data>
+  <data name="Calendar_ByMonth" xml:space="preserve"><value>Previsto por mês</value></data>
+  <data name="Calendar_Empty" xml:space="preserve"><value>Nada previsto: nenhum ativo em carteira pagou dividendos nos últimos 13 meses.</value></data>
+  <data name="Calendar_Expected" xml:space="preserve"><value>Previsto</value></data>
+  <data name="Calendar_ExpectedOn" xml:space="preserve"><value>Previsto para</value></data>
+  <data name="Calendar_Late" xml:space="preserve"><value>Em atraso</value></data>
+  <data name="Calendar_LateHint" xml:space="preserve"><value>Esperados e não pagos</value></data>
+  <data name="Calendar_Next30" xml:space="preserve"><value>Próximos 30 dias</value></data>
+  <data name="Calendar_NextOne" xml:space="preserve"><value>Próximo pagamento</value></data>
+  <data name="Calendar_NoneIn30" xml:space="preserve"><value>Nenhum nos próximos 30 dias</value></data>
+  <data name="Calendar_Note" xml:space="preserve"><value>Estimativas, não anúncios: a Trading 212 não publica os dividendos futuros. Cada pagamento dos últimos 12 meses é esperado de novo um ano depois (a não ser que já tenha sido pago outra vez), líquido, vezes as ações que tens hoje; para ativos que pagam três ou mais vezes por ano, com o último valor por ação, e para ativos com menos de um ano de histórico, ao seu ritmo habitual. Ficam de fora os dividendos especiais, os bónus e as mais-valias distribuídas, e um ativo que não paga há 13 meses deixa de ser esperado. Os pagamentos "a qualquer momento" e "em atraso" não contam para os próximos 12 meses. As datas são de pagamento, com alguns dias de margem.</value></data>
+  <data name="Calendar_Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="Calendar_StatusDue" xml:space="preserve"><value>A qualquer momento</value></data>
+  <data name="Calendar_StatusEstimated" xml:space="preserve"><value>Estimado</value></data>
+  <data name="Calendar_StatusLate" xml:space="preserve"><value>Em atraso</value></data>
+  <data name="Calendar_Subtitle" xml:space="preserve"><value>Os dividendos que os teus ativos devem pagar nos próximos 12 meses, projetados a partir do que pagaram</value></data>
   <data name="CashType_DEPOSIT" xml:space="preserve"><value>Depósitos</value></data>
   <data name="CashType_DIVIDEND_ADJUSTMENT" xml:space="preserve"><value>Devoluções de retenção</value></data>
   <data name="CashType_FEE" xml:space="preserve"><value>Comissões</value></data>
@@ -316,6 +333,7 @@
   <data name="Login_Throttled" xml:space="preserve"><value>Demasiadas tentativas. Aguarde um minuto e tente de novo.</value></data>
   <data name="Login_Title" xml:space="preserve"><value>Iniciar sessão</value></data>
   <data name="Login_Username" xml:space="preserve"><value>Utilizador</value></data>
+  <data name="Nav_Calendar" xml:space="preserve"><value>Calendário</value></data>
   <data name="Nav_Cash" xml:space="preserve"><value>Movimentos de dinheiro</value></data>
   <data name="Nav_Data" xml:space="preserve"><value>Dados</value></data>
   <data name="Nav_Dividends" xml:space="preserve"><value>Dividendos</value></data>
@@ -340,7 +358,7 @@
   <data name="Overview_Subtitle" xml:space="preserve"><value>Rendimento de dividendos em {0}</value></data>
   <data name="Positions_Count" xml:space="preserve"><value>{0} posições</value></data>
   <data name="Positions_Empty" xml:space="preserve"><value>Ainda não há posições. Chegam com a primeira sincronização.</value></data>
-  <data name="Positions_Note" xml:space="preserve"><value>Os yields usam os dividendos líquidos dos últimos 12 meses. A estimativa para os próximos 12 meses assume que cada ativo paga por ação o mesmo que nos últimos 12.</value></data>
+  <data name="Positions_Note" xml:space="preserve"><value>Os yields usam os dividendos líquidos dos últimos 12 meses. A estimativa para os próximos 12 meses é a do calendário de dividendos: cada pagamento dos últimos 12 meses outra vez, vezes as ações de hoje.</value></data>
   <data name="Positions_SnapshotOf" xml:space="preserve"><value>Posições abertas em {0}</value></data>
   <data name="Positions_Subtitle" xml:space="preserve"><value>Posições abertas da última fotografia</value></data>
   <data name="Positions_YieldOnCost" xml:space="preserve"><value>Yield sobre custo {0}</value></data>
@@ -405,7 +423,7 @@
   <data name="Source_Csv" xml:space="preserve"><value>CSV</value></data>
   <data name="Stat_AllTime" xml:space="preserve"><value>Desde sempre</value></data>
   <data name="Stat_Forward" xml:space="preserve"><value>Próximos 12 meses (estimativa)</value></data>
-  <data name="Stat_ForwardHint" xml:space="preserve"><value>Últimos 12 meses por ação × ações em carteira hoje</value></data>
+  <data name="Stat_ForwardHint" xml:space="preserve"><value>O calendário de dividendos: pagamentos do último ano × ações de hoje</value></data>
   <data name="Stat_Last12Months" xml:space="preserve"><value>Últimos 12 meses</value></data>
   <data name="Stat_Payments" xml:space="preserve"><value>{0} pagamentos</value></data>
   <data name="Stat_PortfolioValue" xml:space="preserve"><value>Valor da carteira</value></data>

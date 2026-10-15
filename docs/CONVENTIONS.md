@@ -89,6 +89,12 @@ The rules every change follows, for people and for coding assistants. Each rule 
     - *Why:* the shares held and the exchange rate would otherwise move it, and a payment slipping into January would look like a cut. *(2.12.0)*
 13. **A goal is measured on the last 12 months' income a month** (`Analytics/GoalProgress.cs`): the last 12 months divided by 12, in the goal's currency. Withholding refunds always count, interest and share lending only when the goal says so. The date it would be reached assumes the last year's growth goes on, and is not given beyond 50 years.
     - *Why:* a single month swings with the payment calendar (quarterly payers bunch up), and a pace is all the history can honestly give. *(2.13.0)*
+14. **Upcoming dividends are projected from each holding's own payments** (`Analytics/DividendCalendar.cs`), and every figure "for the next 12 months" is the sum of that calendar.
+    - Each payment of the last 12 months is expected a year later, unless already paid again within the tolerance (half the usual gap, 10 to 45 days). Holdings that pay three or more times a year use the latest amount per share; the others keep each slot's own.
+    - Rows of one date add up across types, and share the amount per share across accounts. Bonus, capital gains, demerger and liquidation payments are left out, and so is a payment over twice the usual from a regular payer.
+    - Under a year of history, the usual gap fills the holes. No payment for 13 months: nothing expected. Over a gap and the tolerance since the last payment: one late row, nothing after it.
+    - Due and late rows are shown, but not counted in the next 12 months.
+    - *Why:* Trading 212 has no upcoming dividends and the providers that do are paid; one slot per payment keeps interim and final dividends apart, and keeping due rows out stops a late payment from being counted twice. *(2.14.0)*
 
 ## 4. App (`src/T212Ext.Web`)
 

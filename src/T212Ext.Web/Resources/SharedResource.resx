@@ -10,6 +10,23 @@
   <data name="Agg_OtherIncomeHint" xml:space="preserve"><value>Optional, kept only in this browser. From the year's settlement note, or an estimate: wages, pensions and other aggregated income after their deductions. With joint taxation, confirm with the AT simulator.</value></data>
   <data name="Agg_Title" xml:space="preserve"><value>Mandatory aggregation (englobamento)</value></data>
   <data name="Agg_UnknownYear" xml:space="preserve"><value>The app does not know the top bracket for {0} yet: compare with that year's IRS table.</value></data>
+  <data name="Calendar_Amount" xml:space="preserve"><value>Amount (est.)</value></data>
+  <data name="Calendar_BasedOn" xml:space="preserve"><value>Based on</value></data>
+  <data name="Calendar_ByMonth" xml:space="preserve"><value>Expected by month</value></data>
+  <data name="Calendar_Empty" xml:space="preserve"><value>Nothing expected: no holding paid dividends in the last 13 months.</value></data>
+  <data name="Calendar_Expected" xml:space="preserve"><value>Expected</value></data>
+  <data name="Calendar_ExpectedOn" xml:space="preserve"><value>Expected on</value></data>
+  <data name="Calendar_Late" xml:space="preserve"><value>Late</value></data>
+  <data name="Calendar_LateHint" xml:space="preserve"><value>Expected and not paid</value></data>
+  <data name="Calendar_Next30" xml:space="preserve"><value>Next 30 days</value></data>
+  <data name="Calendar_NextOne" xml:space="preserve"><value>Next payment</value></data>
+  <data name="Calendar_NoneIn30" xml:space="preserve"><value>None in the next 30 days</value></data>
+  <data name="Calendar_Note" xml:space="preserve"><value>Estimates, not announcements: Trading 212 does not publish upcoming dividends. Each payment of the last 12 months is expected again a year later (unless already paid again), net, times the shares you hold today; for holdings that pay three or more times a year, at the latest amount per share, and for holdings with under a year of history, at their usual pace. Special dividends, bonuses and capital gains distributions are left out, and a holding that has not paid for 13 months is not expected to. "Any day now" and "late" payments are not counted in the next 12 months. Dates are pay dates, give or take a few days.</value></data>
+  <data name="Calendar_Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Calendar_StatusDue" xml:space="preserve"><value>Any day now</value></data>
+  <data name="Calendar_StatusEstimated" xml:space="preserve"><value>Estimated</value></data>
+  <data name="Calendar_StatusLate" xml:space="preserve"><value>Late</value></data>
+  <data name="Calendar_Subtitle" xml:space="preserve"><value>The dividends your holdings are expected to pay in the next 12 months, projected from what they paid</value></data>
   <data name="CashType_DEPOSIT" xml:space="preserve"><value>Deposits</value></data>
   <data name="CashType_DIVIDEND_ADJUSTMENT" xml:space="preserve"><value>Withholding tax refunds</value></data>
   <data name="CashType_FEE" xml:space="preserve"><value>Fees</value></data>
@@ -316,6 +333,7 @@
   <data name="Login_Throttled" xml:space="preserve"><value>Too many attempts. Wait a minute and try again.</value></data>
   <data name="Login_Title" xml:space="preserve"><value>Sign in</value></data>
   <data name="Login_Username" xml:space="preserve"><value>Username</value></data>
+  <data name="Nav_Calendar" xml:space="preserve"><value>Calendar</value></data>
   <data name="Nav_Cash" xml:space="preserve"><value>Cash movements</value></data>
   <data name="Nav_Data" xml:space="preserve"><value>Data</value></data>
   <data name="Nav_Dividends" xml:space="preserve"><value>Dividends</value></data>
@@ -340,7 +358,7 @@
   <data name="Overview_Subtitle" xml:space="preserve"><value>Dividend income in {0}</value></data>
   <data name="Positions_Count" xml:space="preserve"><value>{0} positions</value></data>
   <data name="Positions_Empty" xml:space="preserve"><value>No positions yet. They come with the first sync.</value></data>
-  <data name="Positions_Note" xml:space="preserve"><value>Yields use the net dividends of the last 12 months. The estimate for the next 12 months assumes each holding pays per share what it paid in the last 12.</value></data>
+  <data name="Positions_Note" xml:space="preserve"><value>Yields use the net dividends of the last 12 months. The estimate for the next 12 months is the dividend calendar's: each payment of the last 12 months again, times the shares held today.</value></data>
   <data name="Positions_SnapshotOf" xml:space="preserve"><value>Open positions on {0}</value></data>
   <data name="Positions_Subtitle" xml:space="preserve"><value>Open positions from the latest snapshot</value></data>
   <data name="Positions_YieldOnCost" xml:space="preserve"><value>Yield on cost {0}</value></data>
@@ -405,7 +423,7 @@
   <data name="Source_Csv" xml:space="preserve"><value>CSV</value></data>
   <data name="Stat_AllTime" xml:space="preserve"><value>All time</value></data>
   <data name="Stat_Forward" xml:space="preserve"><value>Next 12 months (estimate)</value></data>
-  <data name="Stat_ForwardHint" xml:space="preserve"><value>Last 12 months per share × shares held today</value></data>
+  <data name="Stat_ForwardHint" xml:space="preserve"><value>The dividend calendar: last year's payments × shares held today</value></data>
   <data name="Stat_Last12Months" xml:space="preserve"><value>Last 12 months</value></data>
   <data name="Stat_Payments" xml:space="preserve"><value>{0} payments</value></data>
   <data name="Stat_PortfolioValue" xml:space="preserve"><value>Portfolio value</value></data>
