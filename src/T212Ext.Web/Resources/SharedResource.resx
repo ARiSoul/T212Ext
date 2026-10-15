@@ -374,22 +374,36 @@
   <data name="Positions_Subtitle" xml:space="preserve"><value>Open positions from the latest snapshot</value></data>
   <data name="Positions_YieldOnCost" xml:space="preserve"><value>Yield on cost {0}</value></data>
   <data name="Push_AndMore" xml:space="preserve"><value>and {0} more</value></data>
+  <data name="Push_ChoiceDividends" xml:space="preserve"><value>New dividends</value></data>
+  <data name="Push_ChoiceSummary" xml:space="preserve"><value>Monthly summary</value></data>
+  <data name="Push_ChoiceWeek" xml:space="preserve"><value>Payments expected this week (Monday morning)</value></data>
+  <data name="Push_Choices" xml:space="preserve"><value>On this device</value></data>
   <data name="Push_Denied" xml:space="preserve"><value>Notifications are blocked for this site. Allow them in the browser's site settings, then reload the page.</value></data>
   <data name="Push_Device" xml:space="preserve"><value>Device</value></data>
   <data name="Push_Devices" xml:space="preserve"><value>Devices with notifications on</value></data>
   <data name="Push_Dividend_Title" xml:space="preserve"><value>Dividend received</value></data>
   <data name="Push_Dividends_Title" xml:space="preserve"><value>{0} dividends received</value></data>
   <data name="Push_Failed" xml:space="preserve"><value>Notifications could not be turned on: {0}</value></data>
+  <data name="Push_Gets" xml:space="preserve"><value>Gets</value></data>
+  <data name="Push_GetsDividends" xml:space="preserve"><value>Dividends</value></data>
+  <data name="Push_GetsNothing" xml:space="preserve"><value>Nothing</value></data>
+  <data name="Push_GetsQuiet" xml:space="preserve"><value>quiet {0}–{1}</value></data>
+  <data name="Push_GetsSummary" xml:space="preserve"><value>Summary</value></data>
+  <data name="Push_GetsWeek" xml:space="preserve"><value>Week</value></data>
   <data name="Push_InstallFirst" xml:space="preserve"><value>On the iPhone, notifications work only in the installed app: tap Share, then Add to Home Screen, and open T212Ext from its icon.</value></data>
   <data name="Push_LastSent" xml:space="preserve"><value>Last notification</value></data>
   <data name="Push_NoDevices" xml:space="preserve"><value>No device yet.</value></data>
   <data name="Push_NotConfigured" xml:space="preserve"><value>Notifications are not set up on the server (Push__PublicKey, Push__PrivateKey and Push__Subject in .env; see the deployment guide).</value></data>
   <data name="Push_Off" xml:space="preserve"><value>Off</value></data>
   <data name="Push_On" xml:space="preserve"><value>On</value></data>
+  <data name="Push_Quiet" xml:space="preserve"><value>Quiet hours: no sound or vibration</value></data>
+  <data name="Push_QuietFrom" xml:space="preserve"><value>From</value></data>
+  <data name="Push_QuietHint" xml:space="preserve"><value>In this device's time zone ({0}). Notifications still arrive, silently.</value></data>
+  <data name="Push_QuietTo" xml:space="preserve"><value>to</value></data>
   <data name="Push_Refused" xml:space="preserve"><value>The server did not accept this device (its push service is unknown, or there are too many devices).</value></data>
   <data name="Push_SendTest" xml:space="preserve"><value>Send a test</value></data>
   <data name="Push_Since" xml:space="preserve"><value>On since</value></data>
-  <data name="Push_Subtitle" xml:space="preserve"><value>A notification on the phone or the computer when a dividend arrives, and a summary every month.</value></data>
+  <data name="Push_Subtitle" xml:space="preserve"><value>A notification on the phone or the computer when a dividend arrives, a summary every month, and the payments expected each week.</value></data>
   <data name="Push_Summary_Body" xml:space="preserve"><value>{0} from {1} payments.</value></data>
   <data name="Push_Summary_Change" xml:space="preserve"><value>{0} on the same month a year before</value></data>
   <data name="Push_Summary_Title" xml:space="preserve"><value>Dividends in {0}</value></data>
@@ -404,8 +418,11 @@
   <data name="Push_TurnedOff" xml:space="preserve"><value>Notifications are off for this device.</value></data>
   <data name="Push_TurnedOn" xml:space="preserve"><value>Notifications are on for this device.</value></data>
   <data name="Push_Unsupported" xml:space="preserve"><value>This browser cannot show notifications.</value></data>
+  <data name="Push_Week_Title" xml:space="preserve"><value>This week: {0} expected</value></data>
   <data name="Push_WhatDividends" xml:space="preserve"><value>Each dividend that arrives, after the sync that finds it (one notification for several at once).</value></data>
+  <data name="Push_WhatNote" xml:space="preserve"><value>Each device chooses which it gets, and its quiet hours, once notifications are on there.</value></data>
   <data name="Push_WhatSummary" xml:space="preserve"><value>Early each month, the dividends of the month before, compared with the same month a year earlier.</value></data>
+  <data name="Push_WhatWeek" xml:space="preserve"><value>On Monday morning, the payments the calendar expects that week (none expected, no notification).</value></data>
   <data name="Push_WhatYouGet" xml:space="preserve"><value>What you get</value></data>
   <data name="Pwa_Description" xml:space="preserve"><value>Your Trading 212 dividends, history and IRS report.</value></data>
   <data name="Quadro11_Account" xml:space="preserve"><value>account number {0}, institution country {1} (check your client agreement)</value></data>

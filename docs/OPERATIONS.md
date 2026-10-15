@@ -215,7 +215,8 @@ The SQL Server is shared: restarting it, changing its edition or upgrading it (i
 
 Set up in [DEPLOYMENT.md](DEPLOYMENT.md#11-notifications-optional). The **Notifications** page lists the devices with notifications on, when each got its last one, and removes them.
 
-- **What is sent:** after each sync, the dividends that arrived (paid in the last 7 days, so a report's old rows are never announced); after the first sync of a month, the month before. The **Sync log** shows the job "Notifications" with how many devices took them.
+- **What is sent:** after each sync, the dividends that arrived (paid in the last 7 days, so a report's old rows are never announced); after the first sync of a month, the month before; after the first sync from Monday 06:00 UTC, the payments the calendar expects that week (nothing expected, nothing sent). The **Sync log** shows the job "Notifications" with how many devices took them.
+- **Choices per device:** on the Notifications page, with notifications on, "On this device" turns each kind on or off and sets quiet hours (sent without sound or vibration). The list shows what each device gets.
 - **A device stops getting them:** the push service told the server it no longer exists (the app was uninstalled, the browser's data cleared), and the server removed it. Turn them on again there.
 - **Changing the VAPID keys** (if the private one leaked): `new-vapid-keys`, the two lines in `.env`, `docker compose up -d`. Every device then needs **Turn on here** again; the old subscriptions stop working, and the server removes them at the next notification.
 - **Turning them off for everyone:** empty `Push__PublicKey` in `.env` and `docker compose up -d`. The devices stay listed and work again once the keys are back.

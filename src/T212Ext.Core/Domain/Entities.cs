@@ -398,6 +398,26 @@ public class PushDevice
 
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? LastUsedAt { get; set; }
+
+    /// <summary>New dividends, as they arrive.</summary>
+    public bool NotifyDividends { get; set; } = true;
+
+    /// <summary>The month before, on the first days of a month.</summary>
+    public bool NotifySummary { get; set; } = true;
+
+    /// <summary>The payments expected this week, on Monday morning.</summary>
+    public bool NotifyWeek { get; set; } = true;
+
+    /// <summary>
+    /// From this time to <see cref="QuietTo"/> (in <see cref="TimeZone"/>; may cross midnight) a
+    /// notification still arrives, but without sound or vibration. Null: never quiet.
+    /// </summary>
+    public TimeOnly? QuietFrom { get; set; }
+
+    public TimeOnly? QuietTo { get; set; }
+
+    /// <summary>The device's time zone (IANA, from the browser), for the quiet hours. Null: UTC.</summary>
+    public string? TimeZone { get; set; }
 }
 
 /// <summary>What has been notified already, so nothing is announced twice. One row.</summary>
@@ -410,6 +430,9 @@ public class NotificationState
 
     /// <summary>The first day of the last month summed up.</summary>
     public DateOnly? LastSummaryMonth { get; set; }
+
+    /// <summary>The Monday of the last week whose expected payments were announced.</summary>
+    public DateOnly? LastWeekNotice { get; set; }
 }
 
 /// <summary>

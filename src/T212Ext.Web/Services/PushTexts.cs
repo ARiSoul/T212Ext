@@ -41,6 +41,14 @@ public sealed class PushTexts(IStringLocalizer<SharedResource> l) : IPushTexts
             string.Format(culture, l["Push_Summary_Body"], string.Join(", ", parts), month.Count));
     });
 
+    public PushText WeekAhead(CultureInfo culture, WeekNotice week) => In(culture, () =>
+    {
+        var total = string.Join(" + ", week.Totals.Select(t => Fmt.Money(t.Amount, t.Currency)));
+        var named = string.Join(", ", week.Payments.Take(Named).Select(p => $"{p.Name} {Fmt.Money(p.Amount, p.Currency)} ({Fmt.DayShort(p.On.DayOfWeek)})"));
+        var body = week.Payments.Count > Named ? $"{named} {string.Format(culture, l["Push_AndMore"], week.Payments.Count - Named)}" : named;
+        return new PushText(string.Format(culture, l["Push_Week_Title"], total), body);
+    });
+
     public PushText Test(CultureInfo culture) => In(culture, () => new PushText(l["Push_Test_Title"], l["Push_Test_Body"]));
 
     // The translations and Fmt read the current culture: set it for the time of one text.

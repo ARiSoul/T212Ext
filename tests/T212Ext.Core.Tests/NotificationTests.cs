@@ -1,6 +1,7 @@
 using System.Globalization;
 using Arisoul.T212Ext.Core.Domain;
 using Arisoul.T212Ext.Core.Notifications;
+using Arisoul.T212Ext.Core.Queries;
 using Arisoul.T212Ext.Core.Tests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,7 +32,7 @@ public class NotifierTests : IAsyncLifetime
     public Task DisposeAsync() => Task.CompletedTask;
 
     private PushDevices Devices => Push.Devices(_database, _sender, _time);
-    private Notifier Notifier => new(_database, Devices, new FakePushTexts(), _time);
+    private Notifier Notifier => new(_database, Devices, new FakePushTexts(), new AnalyticsQueries(_database, _time), _time);
 
     private async Task AddDividendAsync(DateTimeOffset paidOn, decimal amount, string name = "Apple", string currency = "EUR")
     {
@@ -120,6 +121,74 @@ public class NotifierTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task A_device_gets_only_the_topics_it_chose()
+    {
+        await AddDeviceAsync("pt-PT", "https://fcm.googleapis.com/fcm/send/all");
+        await AddDeviceAsync("es-ES", "https://fcm.googleapis.com/fcm/send/no-dividends");
+        await Devices.SetPreferencesAsync(PushDevices.Hash("https://fcm.googleapis.com/fcm/send/no-dividends"), new PushPreferences(false, true, true, null, null, null));
+        await Notifier.RunAsync(default);
+
+        await AddDividendAsync(Now.AddHours(-1), 1);
+        await Notifier.RunAsync(default);
+
+        Assert.Equal("https://fcm.googleapis.com/fcm/send/all", Assert.Single(_sender.Sent).Endpoint);
+    }
+
+    [Fact]
+    public async Task In_the_quiet_hours_of_its_time_zone_a_device_gets_it_silently()
+    {
+        await AddDeviceAsync("pt-PT", "https://fcm.googleapis.com/fcm/send/quiet");
+        await AddDeviceAsync("en-GB", "https://fcm.googleapis.com/fcm/send/loud");
+        await Devices.SetPreferencesAsync(PushDevices.Hash("https://fcm.googleapis.com/fcm/send/quiet"),
+            new PushPreferences(true, true, true, new TimeOnly(23, 0), new TimeOnly(8, 0), "Europe/Lisbon"));
+        await Notifier.RunAsync(default);
+
+        _time.Now = new DateTimeOffset(2031, 6, 15, 23, 30, 0, TimeSpan.Zero);   // 00:30 in Lisbon (summer time)
+        await AddDividendAsync(_time.Now.AddHours(-1), 1);
+        await Notifier.RunAsync(default);
+
+        var silent = _sender.Sent.ToDictionary(s => s.Endpoint, s => s.Message.GetProperty("silent").GetBoolean());
+        Assert.True(silent["https://fcm.googleapis.com/fcm/send/quiet"]);
+        Assert.False(silent["https://fcm.googleapis.com/fcm/send/loud"]);
+    }
+
+    [Fact]
+    public async Task On_monday_morning_the_payments_expected_that_week_are_announced_once()
+    {
+        // Its own currency: the calendar looks at every account in it.
+        var account = await _database.CreateAccountAsync("CHF");
+        await using (var db = _database.CreateDbContext())
+        {
+            db.Dividends.Add(new Dividend
+            {
+                AccountId = account.Id, Reference = Guid.NewGuid().ToString("N"), Sources = DataSources.Api, Ticker = "NOVNz_EQ", Isin = "CH0012005267",
+                InstrumentName = "Novartis", Type = "ORDINARY", PaidOn = new DateTimeOffset(2030, 6, 19, 10, 0, 0, TimeSpan.Zero), Quantity = 10, Amount = 6, Currency = "CHF",
+            });
+            db.Snapshots.Add(new PortfolioSnapshot
+            {
+                AccountId = account.Id, Date = new DateOnly(2031, 6, 15), TakenAt = Now, Currency = "CHF",
+                Positions = [new PositionSnapshot { Ticker = "NOVNz_EQ", Isin = "CH0012005267", Name = "Novartis", Quantity = 20 }],
+            });
+            await db.SaveChangesAsync();
+        }
+        await AddDeviceAsync();
+        await Notifier.RunAsync(default);   // Sunday: this week is taken as done
+
+        _time.Now = new DateTimeOffset(2031, 6, 16, 5, 0, 0, TimeSpan.Zero);   // Monday, too early
+        await Notifier.RunAsync(default);
+        Assert.DoesNotContain(_sender.Sent, s => s.Message.GetProperty("tag").GetString()!.StartsWith("week-"));
+
+        _time.Now = new DateTimeOffset(2031, 6, 16, 7, 0, 0, TimeSpan.Zero);
+        await Notifier.RunAsync(default);
+        await Notifier.RunAsync(default);
+
+        var (_, message) = Assert.Single(_sender.Sent, s => s.Message.GetProperty("tag").GetString()!.StartsWith("week-"));
+        Assert.Equal("pt-PT week 2031-06-16", message.GetProperty("title").GetString());
+        Assert.Equal("Novartis 12 CHF 06-19", message.GetProperty("body").GetString());   // 0.60 a share × 20 held
+        Assert.Equal("/calendar", message.GetProperty("url").GetString());
+    }
+
+    [Fact]
     public async Task Each_device_gets_its_language_and_a_device_the_push_service_forgot_is_removed()
     {
         await AddDeviceAsync("pt-PT", "https://fcm.googleapis.com/fcm/send/pt");
@@ -153,6 +222,31 @@ public class PushDevicesTests(DatabaseFixture database) : IAsyncLifetime
     public Task DisposeAsync() => Task.CompletedTask;
 
     private PushDevices Devices(PushOptions? options = null) => Push.Devices(database, _sender, _time, options);
+
+    [Theory]
+    [InlineData("23:00", "08:00", "Europe/Lisbon", "2031-01-15T23:30:00Z", true)]    // winter: Lisbon is UTC
+    [InlineData("23:00", "08:00", "Europe/Lisbon", "2031-06-15T22:30:00Z", true)]    // summer: 23:30 there
+    [InlineData("23:00", "08:00", "Europe/Lisbon", "2031-06-15T07:30:00Z", false)]   // 08:30 there
+    [InlineData("13:00", "14:00", null, "2031-06-15T13:30:00Z", true)]               // no zone: UTC
+    [InlineData("13:00", "14:00", "Not/AZone", "2031-06-15T14:30:00Z", false)]
+    [InlineData("09:00", "09:00", "Europe/Lisbon", "2031-06-15T08:00:00Z", false)]   // same ends: never
+    public void Quiet_hours_are_read_in_the_devices_time_zone_and_may_cross_midnight(string from, string to, string? zone, string now, bool quiet) =>
+        Assert.Equal(quiet, PushDevices.IsQuiet(new PushPreferences(true, true, true, TimeOnly.Parse(from), TimeOnly.Parse(to), zone), DateTimeOffset.Parse(now)));
+
+    [Fact]
+    public async Task Choices_are_saved_per_device_and_new_ones_get_everything()
+    {
+        await Devices().RegisterAsync("ricardo", Push.Subscription(), "A", CultureInfo.InvariantCulture, "Europe/Lisbon");
+        var hash = PushDevices.Hash(Push.Subscription().Endpoint);
+        Assert.Equal(new PushPreferences(true, true, true, null, null, "Europe/Lisbon"), await Devices().GetPreferencesAsync(hash));
+
+        Assert.True(await Devices().SetPreferencesAsync(hash, new PushPreferences(true, false, true, new TimeOnly(22, 0), new TimeOnly(7, 0), "Not/AZone")));
+        Assert.Equal(new PushPreferences(true, false, true, new TimeOnly(22, 0), new TimeOnly(7, 0), "Europe/Lisbon"), await Devices().GetPreferencesAsync(hash));
+
+        Assert.True(await Devices().SetPreferencesAsync(hash, new PushPreferences(true, true, false, new TimeOnly(22, 0), null, null)));
+        Assert.Equal(new PushPreferences(true, true, false, null, null, "Europe/Lisbon"), await Devices().GetPreferencesAsync(hash));   // half a range: none
+        Assert.False(await Devices().SetPreferencesAsync("unknown", new PushPreferences(true, true, true, null, null, null)));
+    }
 
     [Theory]
     [InlineData("https://fcm.googleapis.com/fcm/send/abc", true)]
