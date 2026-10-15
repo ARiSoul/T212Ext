@@ -238,6 +238,18 @@
   <data name="Grid_Summary_Sum" xml:space="preserve"><value>Soma</value></data>
   <data name="Grid_ViewName" xml:space="preserve"><value>Nome da vista</value></data>
   <data name="Grid_Views" xml:space="preserve"><value>Vistas</value></data>
+  <data name="Growth_Cagr" xml:space="preserve"><value>Crescimento médio anual</value></data>
+  <data name="Growth_CagrHint" xml:space="preserve"><value>Composto, em {0} ano(s)</value></data>
+  <data name="Growth_CagrNone" xml:space="preserve"><value>Precisa de dois anos comparáveis</value></data>
+  <data name="Growth_CutHint" xml:space="preserve"><value>O dividendo por ação foi cortado</value></data>
+  <data name="Growth_LastYear" xml:space="preserve"><value>Crescimento no último ano</value></data>
+  <data name="Growth_LastYearHint" xml:space="preserve"><value>Por ação, face ao ano anterior</value></data>
+  <data name="Growth_Note" xml:space="preserve"><value>Dividendo bruto por ação na moeda do ativo, para que nem as ações detidas nem o câmbio o alterem. Dois anos só se comparam quando tiveram o mesmo número de pagamentos (um pagamento que escorrega para janeiro pareceria um corte). * Ano em curso, não comparado. As devoluções de capital ficam de fora.</value></data>
+  <data name="Growth_PerShare" xml:space="preserve"><value>Por ação</value></data>
+  <data name="Growth_Streak" xml:space="preserve"><value>Anos seguidos a crescer</value></data>
+  <data name="Growth_StreakHint" xml:space="preserve"><value>Seguidos, até ao ano passado</value></data>
+  <data name="Growth_Title" xml:space="preserve"><value>Dividendo por ação, por ano</value></data>
+  <data name="Growth_VsYearBefore" xml:space="preserve"><value>Face ao ano anterior</value></data>
   <data name="Import_Cash" xml:space="preserve"><value>Movimentos de dinheiro: {0} novos, {1} já conhecidos</value></data>
   <data name="Import_Dividends" xml:space="preserve"><value>Dividendos: {0} novos, {1} já conhecidos</value></data>
   <data name="Import_Failed" xml:space="preserve"><value>A importação falhou. Veja o registo do servidor.</value></data>

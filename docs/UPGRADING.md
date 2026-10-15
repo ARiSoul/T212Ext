@@ -11,6 +11,11 @@ The usual deploy command and checks are in [OPERATIONS.md](OPERATIONS.md#1-deplo
 - Only the usual deploy: no migration, no new setting.
 - **Try afterwards:** the dividends page in Portuguese shows translated types; an American instrument's page has "Abrir na Trading 212", which opens its page there.
 
+## 2.12.0
+
+- Only the usual deploy: no migration, no new setting.
+- **Try afterwards:** an instrument held for some years (its page, "Dividend per share, by year"), and the growth columns on "Income by instrument".
+
 ## How this file works
 
 - Each version section lists only what is extra to the usual deploy command: migrations to be aware of, new settings, and what to try afterwards.

@@ -60,6 +60,21 @@
     </div>
 }
 
+@if (_growth is { Years.Count: > 0 } growth)
+{
+    <h2 class="section-title">@L["Growth_Title"]</h2>
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-lg-4"><Stat Icon="bi-graph-up" Label="@L["Growth_LastYear"]" Value="@(growth.LastGrowth is { } g ? Signed(g) : "—")"
+                                         ValueClass="@Fmt.SignClass(growth.LastGrowth)" Hint="@(growth.Cut ? L["Growth_CutHint"] : L["Growth_LastYearHint"])" /></div>
+        <div class="col-6 col-lg-4"><Stat Icon="bi-ladder" Label="@L["Growth_Streak"]" Value="@growth.GrowthStreak.ToString()" Hint="@L["Growth_StreakHint"]" /></div>
+        <div class="col-12 col-lg-4"><Stat Icon="bi-percent" Label="@L["Growth_Cagr"]" Value="@(growth.Cagr is { } c ? Signed(c) : "—")" ValueClass="@Fmt.SignClass(growth.Cagr)"
+                                          Hint="@(growth.Cagr is null ? L["Growth_CagrNone"] : string.Format(L["Growth_CagrHint"], growth.CagrYears))" /></div>
+    </div>
+    <DataGrid TItem="DividendYear" Items="growth.Years" Columns="YearColumns" StorageKey="instrument-growth" ExportFileName="@($"dividend-growth-{Instrument}")"
+              DefaultSortKey="year" DefaultSortDescending="true" DefaultPageSize="10" />
+    <p class="small text-body-secondary mt-2 mb-3">@L["Growth_Note"]</p>
+}
+
 @if (_income?.Isin is { } isin)
 {
     <div class="card mb-3">
@@ -89,6 +104,7 @@
     [Parameter] public string Instrument { get; set; } = "";
 
     private DividendDashboard? _dashboard;
+    private DividendGrowth? _growth;
     private InstrumentIncome? _income;
     private PositionIncome? _position;
     private IReadOnlyList<DividendRow>? _rows;
@@ -132,7 +148,19 @@
         _rows = await DividendQueries.GetDividendsAsync(AccountId, null, Instrument);
         _sourceCountry = _income?.Isin is { } isin ? await Settings.GetSourceCountryAsync(isin) : null;
         _chronological = [.. _rows.OrderBy(r => r.PaidOn)];
+        _growth = _income is null ? null : (await Analytics.GetGrowthAsync(AccountId)).FirstOrDefault(g => g.Key == DividendGrowthAnalysis.KeyOf(_income.Ticker, _income.Isin));
     }
+
+    private static string Signed(decimal fraction) => (fraction > 0 ? "+" : "") + Fmt.Percent(fraction, 1);
+
+    private IReadOnlyList<GridColumn<DividendYear>> YearColumns => [
+        new() { Key = "year", Title = L["Common_Year"], Value = y => y.Year, Text = y => y.Partial ? $"{y.Year} *" : y.Year.ToString(), MobileTitle = true },
+        new() { Key = "perShare", Title = L["Growth_PerShare"], Value = y => y.PerShare, Text = y => $"{Fmt.Number(Math.Round(y.PerShare, 4))} {_growth?.Currency}", AlignEnd = true },
+        new() { Key = "payments", Title = L["Col_Payments"], Value = y => y.Payments, AlignEnd = true },
+        new() { Key = "growth", Title = L["Growth_VsYearBefore"], Value = y => y.Growth, AlignEnd = true,
+                Text = y => y.Growth is { } g ? Signed(g) : "—",
+                Template = y => @<span class="@Fmt.SignClass(y.Growth)">@(y.Growth is { } g ? Signed(g) : "—")</span> },
+    ];
 
     private async Task OnSourceCountryChanged(ChangeEventArgs e)
     {

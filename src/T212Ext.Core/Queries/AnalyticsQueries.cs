@@ -23,6 +23,38 @@ public sealed class AnalyticsQueries(IDbContextFactory<T212ExtDbContext> dbFacto
         return [.. currencies.OrderByDescending(c => c.Count).Select(c => c.Key)];
     }
 
+    /// <summary>
+    /// The dividend growth of every instrument, from the dividend per share: the API's gross, else a
+    /// CSV row's net plus its withholding (when both are in the instrument's currency).
+    /// </summary>
+    public async Task<IReadOnlyList<DividendGrowth>> GetGrowthAsync(int? accountId, CancellationToken cancellationToken = default)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+        var rows = await db.Dividends.AsNoTracking()
+            .Where(d => accountId == null || d.AccountId == accountId)
+            .Select(d => new
+            {
+                d.Ticker, d.InstrumentName, d.Isin, d.InstrumentCurrency, d.PaidOn, d.Type, d.Quantity,
+                d.GrossAmountPerShare, d.NetAmountPerShare, d.WithholdingTax, d.WithholdingTaxCurrency,
+            })
+            .ToListAsync(cancellationToken);
+
+        var facts = rows
+            .Select(r => new
+            {
+                Row = r,
+                PerShare = r.GrossAmountPerShare
+                    ?? (r.NetAmountPerShare is { } net
+                        ? net + (r.WithholdingTax is { } tax && r.Quantity > 0 && r.WithholdingTaxCurrency == r.InstrumentCurrency ? Math.Abs(tax) / r.Quantity : 0)
+                        : (decimal?)null),
+            })
+            .Where(x => x.PerShare is not null)
+            .Select(x => new PerShareFact(x.Row.Ticker, x.Row.InstrumentName, x.Row.Isin, x.Row.InstrumentCurrency,
+                DateOnly.FromDateTime(x.Row.PaidOn.UtcDateTime), x.PerShare!.Value, x.Row.Type));
+
+        return DividendGrowthAnalysis.Compute(facts, time.GetUtcNow().Year);
+    }
+
     /// <summary>The dashboard of one currency. Without a currency, the most used one.</summary>
     public async Task<DividendDashboard?> GetDashboardAsync(int? accountId, string? currency = null, CancellationToken cancellationToken = default)
     {

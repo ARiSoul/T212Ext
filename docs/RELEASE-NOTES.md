@@ -2,6 +2,13 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.12.0 — Dividend growth (2026-10-15)
+
+**New**
+- **Each instrument's page** has "Dividend per share, by year": the dividend per share of every year, how many payments, and the change against the year before. On top: the growth last year (marked when it was a cut), how many years in a row it grew, and the average yearly growth.
+- **Income by instrument** shows the growth last year (red for a cut) and the years of growth, to sort and spot the cuts.
+- Measured per share in the instrument's currency, so buying more shares or the exchange rate do not move it. Two years are compared only with the same number of payments, so a payment that slips into January does not look like a cut.
+
 ## 2.11.0 — Dividend types in your language (2026-10-15)
 
 **New**
