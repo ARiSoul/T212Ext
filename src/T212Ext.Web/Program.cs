@@ -51,16 +51,9 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// No framing (the sign-in page cannot be overlaid by another site), no MIME sniffing, and no
-// full URLs (which can carry a year or an instrument) sent to other sites.
-app.Use((context, next) =>
-{
-    var headers = context.Response.Headers;
-    headers.XFrameOptions = "DENY";
-    headers.XContentTypeOptions = "nosniff";
-    headers["Referrer-Policy"] = "same-origin";
-    return next();
-});
+// No framing (the sign-in page cannot be overlaid by another site), no MIME sniffing, no full
+// URLs (which can carry a year or an instrument) sent to other sites, and a Content-Security-Policy.
+app.UseSecurityHeaders();
 
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
@@ -99,7 +92,8 @@ app.MapGet("/language", (string culture, string? returnUrl, HttpContext context)
 }).AllowAnonymous();
 
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+    // SecurityHeaders already sends frame-ancestors 'none'; Blazor's own 'self' policy is not needed.
+    .AddInteractiveServerRenderMode(options => options.ContentSecurityFrameAncestorsPolicy = null);
 
 app.Run();
 return 0;

@@ -11,6 +11,11 @@ The usual deploy command and checks are in [OPERATIONS.md](OPERATIONS.md#1-deplo
 - **Migration** `AddSignInAttempts`: one new table, applied when the app starts.
 - **Try afterwards:** sign out and in again, then open "Sign-ins" (menu, Data): your sign-in is there, with your address and device. A wrong password tried once shows as "Wrong password or code".
 
+## 2.17.0
+
+- Only the usual deploy: no migration, no new setting.
+- **Try afterwards:** reload with the browser's developer tools open (F12, Console): no "Content Security Policy" errors on the overview (charts), the calendar and the notifications page; the theme still applies at once. `curl -sI https://t212.arisoul.org/login | grep -i content-security` shows the policy.
+
 ## How this file works
 
 - Each version section lists only what is extra to the usual deploy command: migrations to be aware of, new settings, and what to try afterwards.

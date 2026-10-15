@@ -7,8 +7,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
-    @* Applies the saved theme before the first paint, so a dark page never flashes white. *@
-    <script>
+    @* Applies the saved theme before the first paint, so a dark page never flashes white. Inline
+       scripts run only with this request's nonce (SecurityHeaders). *@
+    <script nonce="@Nonce">
         (function () {
             try {
                 var choice = localStorage.getItem('t212ext.theme') || 'auto';
@@ -22,7 +23,7 @@
     <link rel="stylesheet" href="@Assets["lib/bootstrap-icons/font/bootstrap-icons.min.css"]" />
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["T212Ext.Web.styles.css"]" />
-    <ImportMap />
+    <ImportMap nonce="@Nonce" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     @* Installable app (Pwa.cs). With credentials, so the manifest comes in the chosen language. *@
     <link rel="manifest" href="manifest.webmanifest" crossorigin="use-credentials" />
@@ -56,6 +57,8 @@
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
+
+    private string Nonce => SecurityHeaders.Nonce(HttpContext);
 
     // The sign-in page is a plain form ([ExcludeFromInteractiveRouting]): it sets a cookie, which
     // only a normal request can do. Every other page is interactive.
