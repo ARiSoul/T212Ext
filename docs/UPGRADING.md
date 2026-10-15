@@ -26,6 +26,11 @@ The usual deploy command and checks are in [OPERATIONS.md](OPERATIONS.md#1-deplo
 - Only the usual deploy: no migration, no new setting.
 - **Try afterwards:** "Calendar" in the menu: the next payments should look like last year's, a year later. The estimate for the next 12 months on the overview can move a little (special dividends and holdings that stopped paying are now left out).
 
+## 2.15.0
+
+- Only the usual deploy: no migration, no new setting.
+- **Try afterwards:** "Calendar": the month view (this month shows what was already paid, in green), and, under the list, "Holdings with nothing expected". Holdings with an interim and a final dividend should now be in the calendar.
+
 ## How this file works
 
 - Each version section lists only what is extra to the usual deploy command: migrations to be aware of, new settings, and what to try afterwards.

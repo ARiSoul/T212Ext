@@ -92,9 +92,10 @@ The rules every change follows, for people and for coding assistants. Each rule 
 14. **Upcoming dividends are projected from each holding's own payments** (`Analytics/DividendCalendar.cs`), and every figure "for the next 12 months" is the sum of that calendar.
     - Each payment of the last 12 months is expected a year later, unless already paid again within the tolerance (half the usual gap, 10 to 45 days). Holdings that pay three or more times a year use the latest amount per share; the others keep each slot's own.
     - Rows of one date add up across types, and share the amount per share across accounts. Bonus, capital gains, demerger and liquidation payments are left out, and so is a payment over twice the usual from a regular payer.
-    - Under a year of history, the usual gap fills the holes. No payment for 13 months: nothing expected. Over a gap and the tolerance since the last payment: one late row, nothing after it.
-    - Due and late rows are shown, but not counted in the next 12 months.
-    - *Why:* Trading 212 has no upcoming dividends and the providers that do are paid; one slot per payment keeps interim and final dividends apart, and keeping due rows out stops a late payment from being counted twice. *(2.14.0)*
+    - Under a year of history, the usual gap fills the holes (gaps under 7 days, one payment booked on two days, do not count). No payment for 13 months: nothing expected.
+    - **Late is judged slot by slot**, never from the time since the last payment: a slot is late when its date a year later passed by more than the tolerance without a payment. It shows for 90 days, and the later slots are still expected.
+    - Due and late rows are shown, but not counted in the next 12 months. Every holding with nothing expected is listed with the reason (never paid, stopped, missed).
+    - *Why:* Trading 212 has no upcoming dividends and the providers that do are paid; one slot per payment keeps interim and final dividends apart, and keeping due rows out stops a late payment from being counted twice. Interim and final dividends have uneven gaps (121 and 244 days, say): judged from the median gap, they looked late months early, and dropped out (2.14.0, fixed in 2.15.0). *(2.14.0, 2.15.0)*
 
 ## 4. App (`src/T212Ext.Web`)
 

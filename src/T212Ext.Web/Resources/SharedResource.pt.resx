@@ -16,12 +16,22 @@
   <data name="Calendar_Empty" xml:space="preserve"><value>Nada previsto: nenhum ativo em carteira pagou dividendos nos últimos 13 meses.</value></data>
   <data name="Calendar_Expected" xml:space="preserve"><value>Previsto</value></data>
   <data name="Calendar_ExpectedOn" xml:space="preserve"><value>Previsto para</value></data>
+  <data name="Calendar_KindPaid" xml:space="preserve"><value>Pago</value></data>
   <data name="Calendar_Late" xml:space="preserve"><value>Em atraso</value></data>
   <data name="Calendar_LateHint" xml:space="preserve"><value>Esperados e não pagos</value></data>
+  <data name="Calendar_MonthEmpty" xml:space="preserve"><value>Nada pago nem previsto neste mês.</value></data>
   <data name="Calendar_Next30" xml:space="preserve"><value>Próximos 30 dias</value></data>
+  <data name="Calendar_NextMonth" xml:space="preserve"><value>Mês seguinte</value></data>
   <data name="Calendar_NextOne" xml:space="preserve"><value>Próximo pagamento</value></data>
   <data name="Calendar_NoneIn30" xml:space="preserve"><value>Nenhum nos próximos 30 dias</value></data>
-  <data name="Calendar_Note" xml:space="preserve"><value>Estimativas, não anúncios: a Trading 212 não publica os dividendos futuros. Cada pagamento dos últimos 12 meses é esperado de novo um ano depois (a não ser que já tenha sido pago outra vez), líquido, vezes as ações que tens hoje; para ativos que pagam três ou mais vezes por ano, com o último valor por ação, e para ativos com menos de um ano de histórico, ao seu ritmo habitual. Ficam de fora os dividendos especiais, os bónus e as mais-valias distribuídas, e um ativo que não paga há 13 meses deixa de ser esperado. Os pagamentos "a qualquer momento" e "em atraso" não contam para os próximos 12 meses. As datas são de pagamento, com alguns dias de margem.</value></data>
+  <data name="Calendar_NotExpected" xml:space="preserve"><value>Ativos sem previsão</value></data>
+  <data name="Calendar_NotExpectedHint" xml:space="preserve"><value>Em carteira hoje, mas sem nenhum pagamento no calendário. Se algum devia lá estar, a página dele mostra o que pagou.</value></data>
+  <data name="Calendar_Note" xml:space="preserve"><value>Estimativas, não anúncios: a Trading 212 não publica os dividendos futuros. Cada pagamento dos últimos 12 meses é esperado de novo um ano depois (a não ser que já tenha sido pago outra vez), líquido, vezes as ações que tens hoje; para ativos que pagam três ou mais vezes por ano, com o último valor por ação, e para ativos com menos de um ano de histórico, ao seu ritmo habitual. Um pagamento fica em atraso quando o do ano passado não se repetiu a tempo; os seguintes continuam previstos. Ficam de fora os dividendos especiais, os bónus e as mais-valias distribuídas. Os pagamentos "a qualquer momento" e "em atraso" não contam para os próximos 12 meses. As datas são de pagamento, com alguns dias de margem.</value></data>
+  <data name="Calendar_PreviousMonth" xml:space="preserve"><value>Mês anterior</value></data>
+  <data name="Calendar_Reason" xml:space="preserve"><value>Porquê</value></data>
+  <data name="Calendar_ReasonMissed" xml:space="preserve"><value>Os pagamentos do ano passado não se repetiram</value></data>
+  <data name="Calendar_ReasonNeverPaid" xml:space="preserve"><value>Ainda sem dividendos (ou fundo de acumulação)</value></data>
+  <data name="Calendar_ReasonStopped" xml:space="preserve"><value>Sem dividendos há mais de 13 meses</value></data>
   <data name="Calendar_Status" xml:space="preserve"><value>Estado</value></data>
   <data name="Calendar_StatusDue" xml:space="preserve"><value>A qualquer momento</value></data>
   <data name="Calendar_StatusEstimated" xml:space="preserve"><value>Estimado</value></data>

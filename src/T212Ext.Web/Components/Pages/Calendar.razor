@@ -1,6 +1,7 @@
 @page "/calendar"
 @inherits AccountPage
 @inject AnalyticsQueries Analytics
+@inject DividendQueries DividendQueries
 @inject NavigationManager Navigation
 @inject TimeProvider Time
 
@@ -29,9 +30,21 @@
                                          Hint="@L["Calendar_LateHint"]" /></div>
     </div>
 
+}
+
+@if (_dashboard is { } dashboard && (dashboard.Upcoming.Count > 0 || _paid.Count > 0))
+{
+    <div class="mb-3">
+        <PaymentCalendar Month="_month" MonthChanged="m => _month = m" Entries="_entries" Currency="@dashboard.Currency" Today="Today"
+                         CanPrevious="_month > FirstMonth.AddMonths(-12)" CanNext="_month < FirstMonth.AddMonths(12)" Open="OpenEntry" />
+    </div>
+}
+
+@if (_dashboard is { } d2 && d2.Upcoming.Count > 0)
+{
     <div class="mb-3">
         <ThemedChart Title="@L["Calendar_ByMonth"]">
-            <ApexChart TItem="MonthPoint" Options="MonthOptions(context, d.Currency)" Height="280" @key="d">
+            <ApexChart TItem="MonthPoint" Options="MonthOptions(context, d2.Currency)" Height="280" @key="d2">
                 <ApexPointSeries TItem="MonthPoint" Items="_months" Name="@L["Calendar_Expected"]" SeriesType="SeriesType.Bar"
                                  XValue="m => Fmt.MonthShort(m.Year, m.Month)" YValue="m => m.Amount" />
             </ApexChart>
@@ -43,9 +56,24 @@
           DefaultSortKey="date" DefaultSummaries="DefaultSummaries" RowClick="Open" EmptyText="@L["Calendar_Empty"]" />
 <p class="small text-body-secondary mt-2">@L["Calendar_Note"]</p>
 
+@if (_dashboard is { NotExpected.Count: > 0 } missing)
+{
+    <h2 class="section-title mt-4">@L["Calendar_NotExpected"]</h2>
+    <p class="small text-body-secondary">@L["Calendar_NotExpectedHint"]</p>
+    <DataGrid TItem="NotExpected" Items="missing.NotExpected" Columns="MissingColumns" StorageKey="calendar-not-expected" ExportFileName="dividend-calendar-not-expected"
+              DefaultSortKey="instrument" DefaultPageSize="10" RowClick="OpenMissing" />
+}
+
 @code {
     private DividendDashboard? _dashboard;
     private IReadOnlyList<MonthPoint> _months = [];
+    private IReadOnlyList<PaymentCalendarEntry> _paid = [];
+    private IReadOnlyList<PaymentCalendarEntry> _entries = [];
+    private DateOnly _month;
+
+    private DateOnly Today => DateOnly.FromDateTime(Time.GetUtcNow().UtcDateTime);
+
+    private DateOnly FirstMonth => new(Today.Year, Today.Month, 1);
 
     private static readonly IReadOnlyDictionary<string, SummaryKind[]> DefaultSummaries = new Dictionary<string, SummaryKind[]>
     {
@@ -66,11 +94,54 @@
         new() { Key = "basedOn", Title = L["Calendar_BasedOn"], Value = e => e.BasedOn, Text = e => Fmt.Date(e.BasedOn), HideBelow = "lg" },
     ];
 
+    private IReadOnlyList<GridColumn<NotExpected>> MissingColumns => [
+        new() { Key = "instrument", Title = L["Col_Instrument"], Value = n => n.Name ?? n.Ticker, MobileTitle = true,
+                Template = n => @<InstrumentLabel Ticker="@n.Ticker" Isin="@n.Isin" Name="@n.Name" /> },
+        new() { Key = "reason", Title = L["Calendar_Reason"], Value = n => Reason(n.Reason), Filterable = true },
+        new() { Key = "lastPaid", Title = L["Col_LastPaid"], Value = n => n.LastPaid, Text = n => Fmt.Date(n.LastPaid), HideBelow = "md" },
+        new() { Key = "quantity", Title = L["Col_Shares"], Value = n => n.Quantity, Text = n => Fmt.Number(n.Quantity), AlignEnd = true, HideBelow = "lg", HideOnMobile = true },
+    ];
+
     protected override async Task LoadAsync()
     {
+        _month = _month == default ? FirstMonth : _month;
         _dashboard = await Analytics.GetDashboardAsync(AccountId);
         _months = _dashboard is null ? [] : ByMonth(_dashboard.Upcoming);
+        _paid = _dashboard is null ? [] : await PaidAsync(_dashboard.Currency);
+        _entries = [.. _paid, .. (_dashboard?.Upcoming ?? []).Select(e => new PaymentCalendarEntry(e.ExpectedOn, e.Ticker, e.Isin, e.Name, e.Amount, e.Status switch
+        {
+            ExpectedStatus.Due => PaymentKind.Due,
+            ExpectedStatus.Late => PaymentKind.Late,
+            _ => PaymentKind.Estimated,
+        }))];
     }
+
+    /// <summary>What was paid in the 12 months the calendar can go back, one entry per instrument and day.</summary>
+    private async Task<IReadOnlyList<PaymentCalendarEntry>> PaidAsync(string currency)
+    {
+        var from = FirstMonth.AddMonths(-12);
+        var rows = new List<DividendRow>();
+        for (var year = from.Year; year <= Today.Year; year++)
+            rows.AddRange(await DividendQueries.GetDividendsAsync(AccountId, year));
+
+        return [.. rows
+            .Where(r => r.Currency == currency && DateOnly.FromDateTime(r.PaidOn.UtcDateTime) >= from)
+            .GroupBy(r => (Date: DateOnly.FromDateTime(r.PaidOn.UtcDateTime), Key: r.Isin ?? r.Ticker))
+            .Select(g => new PaymentCalendarEntry(g.Key.Date, g.First().Ticker, g.First().Isin, g.First().InstrumentName, g.Sum(r => r.Amount), PaymentKind.Paid))];
+    }
+
+    private string Reason(NotExpectedReason reason) => reason switch
+    {
+        NotExpectedReason.NeverPaid => L["Calendar_ReasonNeverPaid"],
+        NotExpectedReason.Stopped => L["Calendar_ReasonStopped"],
+        _ => L["Calendar_ReasonMissed"],
+    };
+
+    private void OpenEntry(PaymentCalendarEntry entry) =>
+        Navigation.NavigateTo($"income/{Uri.EscapeDataString(entry.Isin ?? entry.Ticker)}");
+
+    private void OpenMissing(NotExpected holding) =>
+        Navigation.NavigateTo($"income/{Uri.EscapeDataString(holding.Isin ?? holding.Ticker)}");
 
     /// <summary>The next 12 months, this one first: the estimated payments, as the forward estimate (due and late ones are apart).</summary>
     private IReadOnlyList<MonthPoint> ByMonth(IReadOnlyList<ExpectedPayment> upcoming)

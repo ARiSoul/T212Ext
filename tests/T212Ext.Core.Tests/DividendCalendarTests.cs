@@ -55,10 +55,35 @@ public class DividendCalendarTests
     {
         Assert.Equal(ExpectedStatus.Due, Assert.Single(Project([Paid("2025-10-05", 1m)])).Status);
 
-        // Quarterly, last paid in May: the August payment never came, and nothing is expected after it.
-        var late = Assert.Single(Project([Paid("2025-12-01", 0.3m), Paid("2026-03-01", 0.3m), Paid("2026-05-20", 0.3m)]));
-        Assert.Equal(ExpectedStatus.Late, late.Status);
-        Assert.Equal(D("2026-08-13"), late.ExpectedOn);   // 85 days, the usual gap, after the last one
+        // Paid in July last year, not this year: late, and the next slots are still expected.
+        var expected = Project([Paid("2025-07-20", 0.3m), Paid("2025-10-20", 0.3m), Paid("2026-01-20", 0.3m), Paid("2026-04-20", 0.3m)]);
+        var late = Assert.Single(expected, e => e.Status == ExpectedStatus.Late);
+        Assert.Equal(D("2026-07-20"), late.ExpectedOn);
+        Assert.Equal([D("2026-10-20"), D("2027-01-20"), D("2027-04-20")], expected.Where(e => e.Status == ExpectedStatus.Estimated).Select(e => e.ExpectedOn));
+    }
+
+    [Fact]
+    public void Uneven_gaps_between_interim_and_final_are_not_late()
+    {
+        // Final in April, interim in December: 121 and 244 days apart. Six months after April is not late.
+        var expected = Project([Paid("2024-12-10", 0.4m), Paid("2025-04-10", 1m), Paid("2025-12-10", 0.4m), Paid("2026-04-10", 1m)], held: 10);
+
+        Assert.Equal([(D("2026-12-10"), 4m), (D("2027-04-10"), 10m)], expected.Select(e => (e.ExpectedOn, e.Amount)));
+        Assert.All(expected, e => Assert.Equal(ExpectedStatus.Estimated, e.Status));
+    }
+
+    [Fact]
+    public void Holdings_left_out_say_why()
+    {
+        PositionFact[] held = [Held(10), Held(5, "IE00BK5BQT80"), new("ALVd_EQ", "Allianz", "DE0008404005", "EUR", 2, null, null, null)];
+        DividendFact[] paid = [Paid("2025-03-01", 1m), Paid("2025-06-01", 1m), Paid("2026-05-15", 15m, isin: "DE0008404005") with { Ticker = "ALVd_EQ" }];
+
+        var result = DividendCalendar.Compute(paid, held, Now);
+
+        Assert.Equal("ALVd_EQ", Assert.Single(result.Upcoming).Ticker);
+        Assert.Equal(
+            [("IE00BK5BQT80", NotExpectedReason.NeverPaid, (DateOnly?)null), (Isin, NotExpectedReason.Stopped, D("2025-06-01"))],
+            result.NotExpected.Select(n => (n.Isin!, n.Reason, n.LastPaid)).OrderBy(n => n.Item1));
     }
 
     [Fact]

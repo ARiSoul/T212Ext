@@ -2,6 +2,15 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.15.0 — Calendar by month (2026-10-15)
+
+**New**
+- **A month view** on the calendar page: each day with its payments (logo and amount), the paid ones and the expected ones in different colours, and the month's totals. Back and forward a year. On a phone it is an agenda of the days with payments.
+- **Holdings with nothing expected** are listed under the calendar, with the reason: no dividend yet (or an accumulating fund), none for over 13 months, or last year's payments not repeated.
+
+**Fixed**
+- Holdings that pay an interim and a final dividend (uneven gaps between payments, common in Europe) were taken as late a few months after their last payment, and every later payment dropped out of the calendar and of the estimate for the next 12 months. A payment is now late only when last year's one was not repeated in time, and the later ones are still expected.
+
 ## 2.14.0 — Dividend calendar (2026-10-15)
 
 **New**

@@ -16,12 +16,22 @@
   <data name="Calendar_Empty" xml:space="preserve"><value>Nothing expected: no holding paid dividends in the last 13 months.</value></data>
   <data name="Calendar_Expected" xml:space="preserve"><value>Expected</value></data>
   <data name="Calendar_ExpectedOn" xml:space="preserve"><value>Expected on</value></data>
+  <data name="Calendar_KindPaid" xml:space="preserve"><value>Paid</value></data>
   <data name="Calendar_Late" xml:space="preserve"><value>Late</value></data>
   <data name="Calendar_LateHint" xml:space="preserve"><value>Expected and not paid</value></data>
+  <data name="Calendar_MonthEmpty" xml:space="preserve"><value>Nothing paid or expected this month.</value></data>
   <data name="Calendar_Next30" xml:space="preserve"><value>Next 30 days</value></data>
+  <data name="Calendar_NextMonth" xml:space="preserve"><value>Next month</value></data>
   <data name="Calendar_NextOne" xml:space="preserve"><value>Next payment</value></data>
   <data name="Calendar_NoneIn30" xml:space="preserve"><value>None in the next 30 days</value></data>
-  <data name="Calendar_Note" xml:space="preserve"><value>Estimates, not announcements: Trading 212 does not publish upcoming dividends. Each payment of the last 12 months is expected again a year later (unless already paid again), net, times the shares you hold today; for holdings that pay three or more times a year, at the latest amount per share, and for holdings with under a year of history, at their usual pace. Special dividends, bonuses and capital gains distributions are left out, and a holding that has not paid for 13 months is not expected to. "Any day now" and "late" payments are not counted in the next 12 months. Dates are pay dates, give or take a few days.</value></data>
+  <data name="Calendar_NotExpected" xml:space="preserve"><value>Holdings with nothing expected</value></data>
+  <data name="Calendar_NotExpectedHint" xml:space="preserve"><value>Held today, but with no payment in the calendar. If one should be there, its page shows what it paid.</value></data>
+  <data name="Calendar_Note" xml:space="preserve"><value>Estimates, not announcements: Trading 212 does not publish upcoming dividends. Each payment of the last 12 months is expected again a year later (unless already paid again), net, times the shares you hold today; for holdings that pay three or more times a year, at the latest amount per share, and for holdings with under a year of history, at their usual pace. A payment is late when last year's one was not repeated in time; the later ones are still expected. Special dividends, bonuses and capital gains distributions are left out. "Any day now" and "late" payments are not counted in the next 12 months. Dates are pay dates, give or take a few days.</value></data>
+  <data name="Calendar_PreviousMonth" xml:space="preserve"><value>Previous month</value></data>
+  <data name="Calendar_Reason" xml:space="preserve"><value>Why</value></data>
+  <data name="Calendar_ReasonMissed" xml:space="preserve"><value>Last year's payments were not repeated</value></data>
+  <data name="Calendar_ReasonNeverPaid" xml:space="preserve"><value>No dividend yet (or an accumulating fund)</value></data>
+  <data name="Calendar_ReasonStopped" xml:space="preserve"><value>No dividend for over 13 months</value></data>
   <data name="Calendar_Status" xml:space="preserve"><value>Status</value></data>
   <data name="Calendar_StatusDue" xml:space="preserve"><value>Any day now</value></data>
   <data name="Calendar_StatusEstimated" xml:space="preserve"><value>Estimated</value></data>
