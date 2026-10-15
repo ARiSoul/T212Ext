@@ -2,6 +2,11 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.17.1 — Chart images allowed (2026-10-15)
+
+**Fixed**
+- The browser console showed "Loading the image 'blob:…' violates the following Content Security Policy directive" in production: the charts draw through images the browser makes itself (`blob:`), which 2.17.0's policy did not allow. They are allowed now; images from other sites still are not.
+
 ## 2.17.0 — Content-Security-Policy (2026-10-15)
 
 **Security**

@@ -13,6 +13,8 @@ namespace Arisoul.T212Ext.Web;
 /// script: inline scripts need the nonce, and other sites' scripts are refused.</para>
 /// <para><c>style-src 'unsafe-inline'</c>: Blazor writes <c>style</c> attributes and ApexCharts adds
 /// style elements. Styles cannot run code.</para>
+/// <para><c>img-src blob:</c>: ApexCharts draws a chart's SVG through an image made in the browser
+/// (2.17.1: production reported it blocked). Only a script already running can make a blob URL.</para>
 /// <para>An endpoint may set its own, stricter policy (the logos' sandbox): it replaces this one.</para>
 /// </remarks>
 public static class SecurityHeaders
@@ -26,7 +28,7 @@ public static class SecurityHeaders
         "default-src 'self'",
         $"script-src 'self' 'nonce-{nonce}' 'unsafe-eval'",
         "style-src 'self' 'unsafe-inline'",
-        "img-src 'self' data:",
+        "img-src 'self' data: blob:",
         "font-src 'self'",
         // Blazor's circuit is a WebSocket to this host; not every browser counts ws(s) as 'self'.
         $"connect-src 'self' wss://{host} ws://{host}",

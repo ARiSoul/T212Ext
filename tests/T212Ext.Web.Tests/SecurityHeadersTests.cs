@@ -37,6 +37,7 @@ public class SecurityHeadersTests
         Assert.Equal("'self'", policy["default-src"]);
         Assert.Equal("'none'", policy["frame-ancestors"]);
         Assert.Equal("'none'", policy["object-src"]);
+        Assert.Equal("'self' data: blob:", policy["img-src"]);   // ApexCharts' images made in the browser
         Assert.Equal("'self' wss://t212.example.org ws://t212.example.org", policy["connect-src"]);
         Assert.Equal("DENY", headers.XFrameOptions);
         Assert.Equal("nosniff", headers.XContentTypeOptions);
