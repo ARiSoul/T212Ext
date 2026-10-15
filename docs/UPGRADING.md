@@ -21,6 +21,11 @@ The usual deploy command and checks are in [OPERATIONS.md](OPERATIONS.md#1-deplo
 - **Migration:** `AddGoals` adds the `Goals` table; it applies on its own when the app starts.
 - **Try afterwards:** "Goals" in the menu: add one (for example 50 % of a monthly bill) and check the progress and the chart.
 
+## 2.14.0
+
+- Only the usual deploy: no migration, no new setting.
+- **Try afterwards:** "Calendar" in the menu: the next payments should look like last year's, a year later. The estimate for the next 12 months on the overview can move a little (special dividends and holdings that stopped paying are now left out).
+
 ## How this file works
 
 - Each version section lists only what is extra to the usual deploy command: migrations to be aware of, new settings, and what to try afterwards.

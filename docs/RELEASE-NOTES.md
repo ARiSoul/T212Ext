@@ -2,6 +2,17 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.14.0 — Dividend calendar (2026-10-15)
+
+**New**
+- **Calendar** (new page): the dividends your holdings are expected to pay in the next 12 months, by date and by month, with what is due in the next 30 days and the next payment.
+- Projected from what each holding paid: every payment of the last 12 months again a year later, times the shares you hold today. Interim and final dividends keep their own amounts; holdings that pay three or more times a year use the latest amount, so raises show at once.
+- Payments whose date has just passed show as "any day now", and those well past it as "late" (a cut or a suspension shows up here).
+- Special dividends, bonuses and capital gains distributions are left out. Holdings with under a year of history are filled in at their usual pace.
+
+**Changed**
+- **The estimate for the next 12 months** (overview, positions, an instrument's page, goals) is now the calendar's sum. It leaves out special dividends and holdings that stopped paying, and follows the latest raise of regular payers.
+
 ## 2.13.0 — Goals (2026-10-15)
 
 **New**

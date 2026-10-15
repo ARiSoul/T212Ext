@@ -78,7 +78,7 @@ The old endpoints `account/info`, `account/cash`, `portfolio` and `portfolio/{ti
 ## What the API does not give
 
 - **Withholding tax per dividend.** Only CSV reports have it, in the "Withholding tax" column.
-- **Upcoming dividends:** no ex-dates and no pay dates. Only paid dividends exist. A dividend calendar needs another data source.
+- **Upcoming dividends:** no ex-dates and no pay dates. Only paid dividends exist. T212Ext projects its calendar from the paid ones (CONVENTIONS.md, 3.14); announced dividends would need another source (BACKLOG.md, phase 5).
 - **Portfolio history:** only the current state. T212Ext keeps a daily snapshot.
 - **Sector, country or dividend yield** of instruments. The ISIN's first two letters give the country of issue.
 

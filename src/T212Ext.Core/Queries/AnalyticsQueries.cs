@@ -66,7 +66,7 @@ public sealed class AnalyticsQueries(IDbContextFactory<T212ExtDbContext> dbFacto
 
         var dividends = await db.Dividends.AsNoTracking()
             .Where(d => (accountId == null || d.AccountId == accountId) && d.Currency == currency)
-            .Select(d => new DividendFact(d.PaidOn, d.Amount, d.Quantity, d.Ticker, d.InstrumentName, d.Isin, d.InstrumentCurrency))
+            .Select(d => new DividendFact(d.PaidOn, d.Amount, d.Quantity, d.Ticker, d.InstrumentName, d.Isin, d.InstrumentCurrency, d.Type))
             .ToListAsync(cancellationToken);
 
         var income = await db.CashTransactions.AsNoTracking()

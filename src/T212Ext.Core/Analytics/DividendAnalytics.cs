@@ -3,7 +3,8 @@ using Arisoul.T212Ext.Core.Domain;
 namespace Arisoul.T212Ext.Core.Analytics;
 
 /// <summary>One dividend, as the analytics need it. Amounts are net, in the analysis currency.</summary>
-public sealed record DividendFact(DateTimeOffset PaidOn, decimal Amount, decimal Quantity, string Ticker, string? Name, string? Isin, string? InstrumentCurrency);
+/// <param name="Type">ORDINARY, BONUS, …; null when it does not matter.</param>
+public sealed record DividendFact(DateTimeOffset PaidOn, decimal Amount, decimal Quantity, string Ticker, string? Name, string? Isin, string? InstrumentCurrency, string? Type = null);
 
 /// <summary>One cash movement that counts as passive income (interest, lending interest, dividend adjustments).</summary>
 public sealed record IncomeFact(DateTimeOffset DateTime, decimal Amount, string Type);
@@ -49,15 +50,16 @@ public sealed record DividendDashboard(
     IReadOnlyList<Slice> Currencies,
     IReadOnlyList<PassiveIncomeMonth> PassiveIncome,
     IReadOnlyList<PositionIncome> Positions,
-    IReadOnlyList<SnapshotFact> Portfolio);
+    IReadOnlyList<SnapshotFact> Portfolio,
+    IReadOnlyList<ExpectedPayment> Upcoming);
 
 /// <summary>
 /// The dividend figures of the dashboard, computed in memory from plain facts so they can be tested
 /// without a database. Every amount is in one currency: callers never mix currencies.
 /// </summary>
 /// <remarks>
-/// <para>"Last 12 months" is the 365 days before <c>now</c>. The forward estimate is naive on purpose: each
-/// holding's net income per share over the last 12 months times the shares held today.</para>
+/// <para>"Last 12 months" is the 365 days before <c>now</c>. The forward estimate is the sum of the
+/// projected calendar (<see cref="DividendCalendar"/>): last year's payments, a year later, times the shares held today.</para>
 /// <para>The country of an instrument is the first two letters of its ISIN (the country of issue).</para>
 /// </remarks>
 public static class DividendAnalytics
@@ -81,7 +83,8 @@ public static class DividendAnalytics
         var ytd = dividends.Where(d => d.PaidOn >= startOfYear && d.PaidOn <= now).Sum(d => d.Amount);
         var samePeriodLastYear = dividends.Where(d => d.PaidOn >= startOfLastYear && d.PaidOn <= sameDayLastYear).Sum(d => d.Amount);
 
-        var positionIncome = PositionsIncome(dividends, positions, yearAgo, now);
+        var upcoming = DividendCalendar.Project(dividends, positions, now);
+        var positionIncome = PositionsIncome(dividends, positions, upcoming, yearAgo, now);
         var totalCost = positionIncome.Where(p => p.TotalCost is > 0).Sum(p => p.TotalCost!.Value);
         var heldLast12 = positionIncome.Sum(p => p.Last12Months);
 
@@ -104,7 +107,8 @@ public static class DividendAnalytics
             Slices(dividends.GroupBy(d => d.InstrumentCurrency ?? "?")),
             Passive(dividends, otherIncome, now),
             positionIncome,
-            [.. snapshots.OrderBy(s => s.Date)]);
+            [.. snapshots.OrderBy(s => s.Date)],
+            upcoming);
     }
 
     /// <summary>The country of issue from an ISIN ("US0378331005" → "US"); null when it is not an ISIN.</summary>
@@ -186,18 +190,22 @@ public static class DividendAnalytics
             .OrderByDescending(i => i.Total)];
     }
 
-    private static IReadOnlyList<PositionIncome> PositionsIncome(IReadOnlyList<DividendFact> dividends, IReadOnlyList<PositionFact> positions, DateTimeOffset yearAgo, DateTimeOffset now) =>
+    private static IReadOnlyList<PositionIncome> PositionsIncome(
+        IReadOnlyList<DividendFact> dividends, IReadOnlyList<PositionFact> positions, IReadOnlyList<ExpectedPayment> upcoming, DateTimeOffset yearAgo, DateTimeOffset now) =>
         [.. positions.Select(p =>
         {
             var recent = dividends.Where(d => SameInstrument(p, d) && d.PaidOn > yearAgo && d.PaidOn <= now).ToList();
             var last12 = recent.Sum(d => d.Amount);
-            var perShare = recent.Where(d => d.Quantity > 0).Sum(d => d.Amount / d.Quantity);
+            // The calendar is per holding (all accounts); this position's share of it.
+            var forward = upcoming
+                .Where(e => e.Status == ExpectedStatus.Estimated && e.Quantity > 0 && (p.Isin is not null ? string.Equals(e.Isin, p.Isin, StringComparison.OrdinalIgnoreCase) : string.Equals(e.Ticker, p.Ticker, StringComparison.OrdinalIgnoreCase)))
+                .Sum(e => e.Amount * (p.Quantity / e.Quantity));
             return new PositionIncome(
                 p.Ticker, p.Name, p.Isin, p.InstrumentCurrency, p.Quantity, p.CurrentValue, p.TotalCost, p.UnrealizedProfitLoss,
                 last12,
                 p.TotalCost is > 0 ? last12 / p.TotalCost : null,
                 p.CurrentValue is > 0 ? last12 / p.CurrentValue : null,
-                Math.Round(perShare * p.Quantity, 2));
+                Math.Round(forward, 2));
         })
         .OrderByDescending(p => p.CurrentValue ?? 0)];
 
@@ -237,7 +245,7 @@ public static class DividendAnalytics
 
     private static string InstrumentKey(DividendFact d) => d.Isin ?? d.Ticker;
 
-    private static bool SameInstrument(PositionFact position, DividendFact dividend) =>
+    internal static bool SameInstrument(PositionFact position, DividendFact dividend) =>
         !string.IsNullOrEmpty(position.Isin) && !string.IsNullOrEmpty(dividend.Isin)
             ? string.Equals(position.Isin, dividend.Isin, StringComparison.OrdinalIgnoreCase)
             : string.Equals(position.Ticker, dividend.Ticker, StringComparison.OrdinalIgnoreCase);

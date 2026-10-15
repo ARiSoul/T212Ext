@@ -1,0 +1,114 @@
+@page "/calendar"
+@inherits AccountPage
+@inject AnalyticsQueries Analytics
+@inject NavigationManager Navigation
+@inject TimeProvider Time
+
+<PageTitle>@L["Nav_Calendar"] · T212Ext</PageTitle>
+
+<div class="page-header">
+    <div class="me-auto">
+        <h1>@L["Nav_Calendar"]</h1>
+        <p>@L["Calendar_Subtitle"]</p>
+    </div>
+</div>
+
+@if (_dashboard is { } d && d.Upcoming.Count > 0)
+{
+    var today = DateOnly.FromDateTime(Time.GetUtcNow().UtcDateTime);
+    var next30 = d.Upcoming.Where(e => e.Status != ExpectedStatus.Late && e.ExpectedOn <= today.AddDays(30)).ToList();
+    var late = d.Upcoming.Count(e => e.Status == ExpectedStatus.Late);
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-lg-3"><Stat Icon="bi-calendar-event" Label="@L["Calendar_Next30"]" Value="@Fmt.Money(next30.Sum(e => e.Amount), d.Currency)"
+                                         Hint="@string.Format(L["Stat_Payments"], next30.Count)" /></div>
+        <div class="col-6 col-lg-3"><Stat Icon="bi-graph-up-arrow" Label="@L["Stat_Forward"]" Value="@Fmt.Money(d.ForwardEstimate, d.Currency)"
+                                         Hint="@string.Format(L["Stat_Payments"], d.Upcoming.Count(e => e.Status == ExpectedStatus.Estimated))" /></div>
+        <div class="col-6 col-lg-3"><Stat Icon="bi-calendar-check" Label="@L["Calendar_NextOne"]" Value="@(next30.Count > 0 ? Fmt.Date(next30[0].ExpectedOn) : "—")"
+                                         Hint="@(next30.Count > 0 ? next30[0].Name ?? next30[0].Ticker : L["Calendar_NoneIn30"])" /></div>
+        <div class="col-6 col-lg-3"><Stat Icon="bi-hourglass-split" Label="@L["Calendar_Late"]" Value="@late.ToString()" ValueClass="@(late > 0 ? "text-negative" : "")"
+                                         Hint="@L["Calendar_LateHint"]" /></div>
+    </div>
+
+    <div class="mb-3">
+        <ThemedChart Title="@L["Calendar_ByMonth"]">
+            <ApexChart TItem="MonthPoint" Options="MonthOptions(context, d.Currency)" Height="280" @key="d">
+                <ApexPointSeries TItem="MonthPoint" Items="_months" Name="@L["Calendar_Expected"]" SeriesType="SeriesType.Bar"
+                                 XValue="m => Fmt.MonthShort(m.Year, m.Month)" YValue="m => m.Amount" />
+            </ApexChart>
+        </ThemedChart>
+    </div>
+}
+
+<DataGrid TItem="ExpectedPayment" Items="_dashboard?.Upcoming ?? (Loading ? null : [])" Columns="Columns" StorageKey="calendar" ExportFileName="dividend-calendar"
+          DefaultSortKey="date" DefaultSummaries="DefaultSummaries" RowClick="Open" EmptyText="@L["Calendar_Empty"]" />
+<p class="small text-body-secondary mt-2">@L["Calendar_Note"]</p>
+
+@code {
+    private DividendDashboard? _dashboard;
+    private IReadOnlyList<MonthPoint> _months = [];
+
+    private static readonly IReadOnlyDictionary<string, SummaryKind[]> DefaultSummaries = new Dictionary<string, SummaryKind[]>
+    {
+        ["amount"] = [SummaryKind.Sum],
+    };
+
+    private IReadOnlyList<GridColumn<ExpectedPayment>> Columns => [
+        new() { Key = "date", Title = L["Calendar_ExpectedOn"], Value = e => e.ExpectedOn, Text = e => Fmt.Date(e.ExpectedOn),
+                Filterable = true, FilterKey = e => Fmt.Month(e.ExpectedOn.Year, e.ExpectedOn.Month) },
+        new() { Key = "instrument", Title = L["Col_Instrument"], Value = e => e.Name ?? e.Ticker, MobileTitle = true, Filterable = true,
+                Template = e => @<InstrumentLabel Ticker="@e.Ticker" Isin="@e.Isin" Name="@e.Name" /> },
+        new() { Key = "status", Title = L["Calendar_Status"], Value = e => Status(e.Status), Filterable = true, HideBelow = "md",
+                Template = e => @<span class="badge @StatusClass(e.Status)">@Status(e.Status)</span> },
+        new() { Key = "perShare", Title = L["Growth_PerShare"], Value = e => e.PerShare, Text = e => Fmt.Money(Math.Round(e.PerShare, 4), _dashboard?.Currency), AlignEnd = true, HideBelow = "xl", HideOnMobile = true },
+        new() { Key = "quantity", Title = L["Col_Shares"], Value = e => e.Quantity, Text = e => Fmt.Number(e.Quantity), AlignEnd = true, HideBelow = "lg", HideOnMobile = true },
+        new() { Key = "amount", Title = L["Calendar_Amount"], Value = e => e.Amount, Text = e => Fmt.Money(e.Amount, _dashboard?.Currency), AlignEnd = true,
+                Summaries = GridColumn<ExpectedPayment>.Numeric, SummaryText = n => Fmt.Money(n, _dashboard?.Currency) },
+        new() { Key = "basedOn", Title = L["Calendar_BasedOn"], Value = e => e.BasedOn, Text = e => Fmt.Date(e.BasedOn), HideBelow = "lg" },
+    ];
+
+    protected override async Task LoadAsync()
+    {
+        _dashboard = await Analytics.GetDashboardAsync(AccountId);
+        _months = _dashboard is null ? [] : ByMonth(_dashboard.Upcoming);
+    }
+
+    /// <summary>The next 12 months, this one first: the estimated payments, as the forward estimate (due and late ones are apart).</summary>
+    private IReadOnlyList<MonthPoint> ByMonth(IReadOnlyList<ExpectedPayment> upcoming)
+    {
+        var now = Time.GetUtcNow().UtcDateTime;
+        var first = new DateOnly(now.Year, now.Month, 1);
+        return [.. Enumerable.Range(0, 12).Select(i =>
+        {
+            var month = first.AddMonths(i);
+            var inMonth = upcoming.Where(e => e.Status == ExpectedStatus.Estimated && e.ExpectedOn >= month && e.ExpectedOn < month.AddMonths(1)).ToList();
+            return new MonthPoint(month.Year, month.Month, inMonth.Sum(e => e.Amount), inMonth.Count, null);
+        })];
+    }
+
+    private string Status(ExpectedStatus status) => status switch
+    {
+        ExpectedStatus.Due => L["Calendar_StatusDue"],
+        ExpectedStatus.Late => L["Calendar_StatusLate"],
+        _ => L["Calendar_StatusEstimated"],
+    };
+
+    private static string StatusClass(ExpectedStatus status) => status switch
+    {
+        ExpectedStatus.Due => "text-bg-primary",
+        ExpectedStatus.Late => "text-bg-warning",
+        _ => "badge-soft",
+    };
+
+    private void Open(ExpectedPayment payment) =>
+        Navigation.NavigateTo($"income/{Uri.EscapeDataString(payment.Isin ?? payment.Ticker)}");
+
+    private static ApexChartOptions<MonthPoint> MonthOptions(bool dark, string currency)
+    {
+        var options = ChartStyle.Base<MonthPoint>(dark);
+        options.PlotOptions = ChartStyle.Bars(width: "55%");
+        options.Legend = new Legend { Show = false };
+        options.Yaxis = [new YAxis { Labels = new YAxisLabels { Formatter = ChartStyle.AxisNumber } }];
+        options.Tooltip.Y = new TooltipY { Formatter = ChartStyle.Money(currency) };
+        return options;
+    }
+}
