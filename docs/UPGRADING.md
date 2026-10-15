@@ -4,7 +4,12 @@ Deploy steps for the versions that are not yet in production.
 
 The usual deploy command and checks are in [OPERATIONS.md](OPERATIONS.md#1-deploying-an-update).
 
-**Production runs 2.15.0** (since 2026-10-15). No version is waiting to be deployed.
+**Production runs 2.15.0** (since 2026-10-15).
+
+## 2.16.0
+
+- **Migration** `AddSignInAttempts`: one new table, applied when the app starts.
+- **Try afterwards:** sign out and in again, then open "Sign-ins" (menu, Data): your sign-in is there, with your address and device. A wrong password tried once shows as "Wrong password or code".
 
 ## How this file works
 

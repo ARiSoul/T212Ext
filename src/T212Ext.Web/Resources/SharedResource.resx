@@ -355,6 +355,7 @@
   <data name="Nav_Orders" xml:space="preserve"><value>Orders</value></data>
   <data name="Nav_Overview" xml:space="preserve"><value>Overview</value></data>
   <data name="Nav_Positions" xml:space="preserve"><value>Positions</value></data>
+  <data name="Nav_SignIns" xml:space="preserve"><value>Sign-ins</value></data>
   <data name="Nav_SignOut" xml:space="preserve"><value>Sign out</value></data>
   <data name="Nav_SyncLog" xml:space="preserve"><value>Sync log</value></data>
   <data name="Nav_Tax" xml:space="preserve"><value>IRS report</value></data>
@@ -428,6 +429,25 @@
   <data name="Reports_Status_Imported" xml:space="preserve"><value>Imported</value></data>
   <data name="Reports_Status_Requested" xml:space="preserve"><value>Waiting for Trading 212</value></data>
   <data name="Reports_Title" xml:space="preserve"><value>Automatic reports</value></data>
+  <data name="SignIns_Address" xml:space="preserve"><value>Address</value></data>
+  <data name="SignIns_Addresses" xml:space="preserve"><value>From {0} address(es)</value></data>
+  <data name="SignIns_AuthOff" xml:space="preserve"><value>Sign-in is off (no users configured, Development only): nothing is recorded.</value></data>
+  <data name="SignIns_Device" xml:space="preserve"><value>Device</value></data>
+  <data name="SignIns_Empty" xml:space="preserve"><value>No sign-in attempts recorded yet.</value></data>
+  <data name="SignIns_Failed" xml:space="preserve"><value>Wrong password or code</value></data>
+  <data name="SignIns_Failed24h" xml:space="preserve"><value>Failed, last 24 hours</value></data>
+  <data name="SignIns_Failed30d" xml:space="preserve"><value>Failed, last 30 days</value></data>
+  <data name="SignIns_FailedHint" xml:space="preserve"><value>Wrong password or code, or unknown user</value></data>
+  <data name="SignIns_Note" xml:space="preserve"><value>Attempts beyond the limit per address and minute are refused before they are checked, and are not recorded. For an unknown user, what was typed is not kept: it may be a password typed in the wrong field. A sign-in you do not recognise: change the password (docs/OPERATIONS.md), which ends every session.</value></data>
+  <data name="SignIns_Outcome" xml:space="preserve"><value>Result</value></data>
+  <data name="SignIns_Previous" xml:space="preserve"><value>Your previous sign-in</value></data>
+  <data name="SignIns_PreviousNone" xml:space="preserve"><value>None before this one</value></data>
+  <data name="SignIns_Subtitle" xml:space="preserve"><value>Every attempt to sign in over the last {0} days: when, from where, and whether it worked</value></data>
+  <data name="SignIns_Succeeded" xml:space="preserve"><value>Signed in</value></data>
+  <data name="SignIns_Succeeded30d" xml:space="preserve"><value>Signed in, last 30 days</value></data>
+  <data name="SignIns_UnknownUser" xml:space="preserve"><value>Unknown user</value></data>
+  <data name="SignIns_UnknownUsers" xml:space="preserve"><value>{0} with an unknown user</value></data>
+  <data name="SignIns_When" xml:space="preserve"><value>When</value></data>
   <data name="Source_Api" xml:space="preserve"><value>API</value></data>
   <data name="Source_Both" xml:space="preserve"><value>API + CSV</value></data>
   <data name="Source_Csv" xml:space="preserve"><value>CSV</value></data>

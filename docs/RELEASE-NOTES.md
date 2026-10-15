@@ -2,6 +2,13 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.16.0 — Sign-in history (2026-10-15)
+
+**New**
+- **Sign-ins** (new page, under Data): every attempt to sign in over the last 90 days, with when, the user, the result (signed in, wrong password or code, unknown user), the address and the device.
+- On top: the failures in the last 24 hours and 30 days, the sign-ins and from how many addresses, and your previous sign-in, to spot one that was not you.
+- An unknown username is recorded as such, not as typed (it may be a password typed in the wrong field). Attempts are kept 90 days.
+
 ## 2.15.0 — Calendar by month (2026-10-15)
 
 **New**

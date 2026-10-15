@@ -13,7 +13,7 @@ Trading 212's own app shows dividends one by one. T212Ext reads them through the
 
 ---
 
-## Features (2.15)
+## Features (2.16)
 
 **IRS report (Portugal)**
 - **Anexo J, quadro 8A:** foreign dividends by source country (code E11), gross and tax paid abroad, in euros at the ECB rate of each payment date. Exact withholding from the API's gross and the CSV's net per share.
@@ -54,7 +54,7 @@ The grids remember your choices.
 - **Português, English, Español.**
 
 **Hosting**
-- **Sign-in** with a password and an authenticator code (TOTP), for running on a server.
+- **Sign-in** with a password and an authenticator code (TOTP), for running on a server, and a page with every attempt of the last 90 days.
 - **Installable** on the phone and the computer ("Add to Home Screen", "Install app"): its own icon and window, no browser bars.
 - **Notifications** when a dividend arrives, and a monthly summary compared with the year before, in each device's language (Web Push; on the iPhone in the installed app).
 - **Docker** image and compose file for the server it shares with traceon: independent apps that share only the reverse proxy (HTTPS) and SQL Server, through neutral networks. Own database login, own encrypted backups. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
@@ -195,7 +195,7 @@ VERSION                       Version of the whole solution
 src/
   T212Ext.Client/             Trading 212 API client: models, auth, rate limits, paging
   T212Ext.Core/               Entities, EF Core (Data/), sync (Sync/), CSV import (Import/), automatic reports (Reports/), notifications (Notifications/), logos (Logos/), analytics (Analytics/),
-                              ECB rates (Rates/), IRS report (Tax/), queries (Queries/)
+                              ECB rates (Rates/), IRS report (Tax/), sign-in history (Security/), queries (Queries/)
   T212Ext.Web/                Blazor app; hosts the sync worker
     Auth/                     Sign-in: users from configuration, authenticator codes, setup commands
     Components/Grid/          The DataGrid and its engine

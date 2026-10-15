@@ -2,6 +2,8 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.RateLimiting;
+using Arisoul.T212Ext.Core.Domain;
+using Arisoul.T212Ext.Core.Security;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -82,12 +84,16 @@ public static class AuthSetup
             return app;
         }
 
-        app.MapPost("/auth/login", async ([FromForm] LoginForm form, HttpContext context, SignInService signIn, ILogger<SignInService> logger) =>
+        app.MapPost("/auth/login", async ([FromForm] LoginForm form, HttpContext context, SignInService signIn, SignInHistory history, ILogger<SignInService> logger) =>
             {
                 var returnUrl = SignInService.SafeReturnUrl(form.ReturnUrl);
-                if (signIn.Check(form.Username, form.Password, form.Code) is not { } user)
+                var check = signIn.Verify(form.Username, form.Password, form.Code);
+                var address = context.Connection.RemoteIpAddress?.ToString();
+                var userAgent = context.Request.Headers.UserAgent.ToString();
+                if (check.User is not { } user)
                 {
-                    logger.LogWarning("Failed sign-in for {Username} from {Address}", form.Username, context.Connection.RemoteIpAddress);
+                    logger.LogWarning("Failed sign-in for {Username} from {Address}", form.Username, address);
+                    await history.RecordAsync(check.Known?.Username, check.Known is null ? SignInOutcome.UnknownUser : SignInOutcome.Failed, address, userAgent);
                     return Results.LocalRedirect($"{LoginPath}?error=invalid&returnUrl={Uri.EscapeDataString(returnUrl)}");
                 }
 
@@ -95,7 +101,8 @@ public static class AuthSetup
                     [new Claim(ClaimTypes.Name, user.Username), new Claim(FingerprintClaim, Fingerprint(user))],
                     CookieAuthenticationDefaults.AuthenticationScheme);
                 await context.SignInAsync(new ClaimsPrincipal(identity), new AuthenticationProperties { IsPersistent = true });
-                logger.LogInformation("{Username} signed in from {Address}", user.Username, context.Connection.RemoteIpAddress);
+                logger.LogInformation("{Username} signed in from {Address}", user.Username, address);
+                await history.RecordAsync(user.Username, SignInOutcome.Succeeded, address, userAgent);
                 return Results.LocalRedirect(returnUrl);
             })
             .AllowAnonymous()

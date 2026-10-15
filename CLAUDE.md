@@ -14,6 +14,7 @@ Read [docs/CONVENTIONS.md](docs/CONVENTIONS.md) before changing code, and follow
   - `Reports/`: CSV reports asked for through the API during the sync (`ReportImporter`);
   - `Notifications/`: Web Push devices and what is announced after the sync (`PushDevices`, `Notifier`);
   - `Logos/`: instrument logos fetched once by the server and kept (`InstrumentLogos`);
+  - `Security/`: the sign-in history (`SignInHistory`);
   - `Analytics/`: dividend figures, computed in memory from plain facts;
   - `Rates/`: ECB exchange rates (source, updater, `RateTable`);
   - `Tax/`: the IRS report (`IrsReport`; rules in docs/TAX.md);

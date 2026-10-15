@@ -100,6 +100,27 @@ public class SignInServiceTests
     }
 
     [Fact]
+    public void The_history_learns_whether_the_username_exists_the_person_does_not()
+    {
+        var service = Service(new AuthUser { Username = "Ricardo", PasswordHash = Hash });
+
+        Assert.Equal((null, "Ricardo"), (service.Verify("ricardo", "wrong", null).User?.Username, service.Verify("ricardo", "wrong", null).Known?.Username));
+        Assert.Equal(new SignInCheck(null, null), service.Verify("someone", Password, null));
+        Assert.Equal("Ricardo", service.Verify("ricardo", Password, null).User?.Username);
+    }
+
+    [Theory]
+    [InlineData("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0", "Windows · Edge")]
+    [InlineData("Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36", "Android · Chrome")]
+    [InlineData("Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1", "iPhone · Safari")]
+    [InlineData("Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:131.0) Gecko/20100101 Firefox/131.0", "macOS · Firefox")]
+    [InlineData("curl/8.5.0", "curl")]
+    [InlineData("python-requests/2.32", "python-requests/2.32")]
+    [InlineData("", null)]
+    public void User_agents_read_as_system_and_browser(string userAgent, string? expected) =>
+        Assert.Equal(expected, UserAgents.Describe(userAgent));
+
+    [Fact]
     public void With_a_secret_the_code_is_required_and_works_only_once()
     {
         var service = Service(new AuthUser { Username = "ricardo", PasswordHash = Hash, TotpSecret = Secret });

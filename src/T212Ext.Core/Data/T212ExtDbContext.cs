@@ -21,6 +21,7 @@ public class T212ExtDbContext(DbContextOptions<T212ExtDbContext> options) : DbCo
     public DbSet<NotificationState> NotificationStates => Set<NotificationState>();
     public DbSet<InstrumentLogo> InstrumentLogos => Set<InstrumentLogo>();
     public DbSet<Goal> Goals => Set<Goal>();
+    public DbSet<SignInAttempt> SignInAttempts => Set<SignInAttempt>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {

@@ -455,3 +455,31 @@ public class Goal
 
     public DateTimeOffset CreatedAt { get; set; }
 }
+
+public enum SignInOutcome
+{
+    Succeeded = 1,
+
+    /// <summary>A known user, with a wrong password or authenticator code.</summary>
+    Failed = 2,
+
+    /// <summary>A username that is not configured. What was typed is not kept: it may be a password typed in the wrong field.</summary>
+    UnknownUser = 3,
+}
+
+/// <summary>One attempt at <c>/auth/login</c> that got past the rate limit. Kept 90 days.</summary>
+public class SignInAttempt
+{
+    public long Id { get; set; }
+    public DateTimeOffset At { get; set; }
+
+    /// <summary>The configured username; null for <see cref="SignInOutcome.UnknownUser"/>.</summary>
+    public string? Username { get; set; }
+
+    public SignInOutcome Outcome { get; set; }
+
+    /// <summary>The client's address (behind the proxy, from the forwarded headers).</summary>
+    public string? Address { get; set; }
+
+    public string? UserAgent { get; set; }
+}
