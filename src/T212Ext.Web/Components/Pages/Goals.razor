@@ -1,0 +1,289 @@
+@page "/goals"
+@inherits AccountPage
+@inject GoalQueries GoalQueries
+@inject AnalyticsQueries Analytics
+
+<PageTitle>@L["Nav_Goals"] · T212Ext</PageTitle>
+
+<div class="page-header">
+    <div class="me-auto">
+        <h1>@L["Nav_Goals"]</h1>
+        <p>@L["Goals_Subtitle"]</p>
+    </div>
+    @if (_form is null)
+    {
+        <button type="button" class="btn btn-primary" @onclick="New"><i class="bi bi-plus-lg"></i> @L["Goals_New"]</button>
+    }
+</div>
+
+@if (_form is { } form)
+{
+    <div class="card mb-3">
+        <div class="card-body">
+            <h2 class="h6">@(form.Id == 0 ? L["Goals_New"] : L["Goals_Edit"])</h2>
+            <div class="row g-3">
+                <div class="col-12 col-md-6">
+                    <label class="form-label" for="goal-name">@L["Goals_Name"]</label>
+                    <input id="goal-name" class="form-control" maxlength="300" placeholder="@L["Goals_NamePlaceholder"]" @bind="form.Name" />
+                </div>
+                <div class="col-6 col-md-3">
+                    <label class="form-label" for="goal-currency">@L["Col_Currency"]</label>
+                    <select id="goal-currency" class="form-select" @bind="form.Currency">
+                        @foreach (var currency in _currencies)
+                        {
+                            <option value="@currency">@currency</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-12">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="goal-kind" id="goal-kind-amount" checked="@(!form.FromExpenses)" @onchange="() => form.FromExpenses = false" />
+                        <label class="form-check-label" for="goal-kind-amount">@L["Goals_KindAmount"]</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="goal-kind" id="goal-kind-expenses" checked="@form.FromExpenses" @onchange="() => form.FromExpenses = true" />
+                        <label class="form-check-label" for="goal-kind-expenses">@L["Goals_KindExpenses"]</label>
+                    </div>
+                </div>
+                @if (form.FromExpenses)
+                {
+                    <div class="col-6 col-md-3">
+                        <label class="form-label" for="goal-expenses">@L["Goals_Expenses"]</label>
+                        <input id="goal-expenses" type="number" min="0" step="0.01" inputmode="decimal" class="form-control" @bind="form.Expenses" />
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label" for="goal-share">@L["Goals_Share"]</label>
+                        <input id="goal-share" type="number" min="1" max="1000" step="1" inputmode="numeric" class="form-control" @bind="form.SharePercent" />
+                    </div>
+                    <div class="col-12 col-md-6 d-flex align-items-end">
+                        <span class="text-body-secondary small mb-2">
+                            @string.Format(L["Goals_TargetIs"], form.Expenses is > 0 && form.SharePercent is > 0 ? Fmt.Money(Math.Round(form.Expenses.Value * form.SharePercent.Value / 100, 2), form.Currency) : "—")
+                        </span>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-6 col-md-3">
+                        <label class="form-label" for="goal-target">@L["Goals_Target"]</label>
+                        <input id="goal-target" type="number" min="0" step="0.01" inputmode="decimal" class="form-control" @bind="form.Target" />
+                    </div>
+                }
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch" id="goal-interest" @bind="form.IncludeInterest" />
+                        <label class="form-check-label" for="goal-interest">@L["Goals_IncludeInterest"]</label>
+                    </div>
+                </div>
+            </div>
+            @if (_error is not null)
+            {
+                <div class="alert alert-warning mt-3 mb-0">@_error</div>
+            }
+            <div class="d-flex gap-2 mt-3">
+                <button type="button" class="btn btn-primary" @onclick="SaveAsync"><i class="bi bi-check-lg"></i> @L["Goals_Save"]</button>
+                <button type="button" class="btn btn-outline-secondary" @onclick="Cancel">@L["Common_Close"]</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (Loading && _statuses is null)
+{
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+}
+else if (_statuses is { Count: 0 } && _form is null)
+{
+    <div class="card mb-3"><div class="card-body text-body-secondary">@L["Goals_Empty"]</div></div>
+}
+else if (_statuses is not null)
+{
+    <div class="row g-3 mb-3">
+        @foreach (var status in _statuses)
+        {
+            var goal = status.Goal;
+            <div class="col-12 col-xl-6">
+                <div class="card h-100 @(status.Goal.Id == _selected?.Goal.Id ? "border-primary" : "")">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start gap-2 mb-2">
+                            <div class="me-auto">
+                                <h2 class="h5 mb-0">@goal.Name</h2>
+                                <div class="small text-body-secondary">
+                                    @(goal.MonthlyExpenses is { } expenses && goal.CoverShare is { } share
+                                        ? string.Format(L["Goals_OfExpenses"], Fmt.Percent(share, 0), Fmt.Money(expenses, goal.Currency))
+                                        : L["Goals_FixedAmount"])
+                                    · @(goal.IncludeInterest ? L["Goals_WithInterest"] : L["Goals_DividendsOnly"])
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" title="@L["Goals_ShowHistory"]" aria-label="@L["Goals_ShowHistory"]" @onclick="() => _selected = status"><i class="bi bi-graph-up"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" title="@L["Goals_Edit"]" aria-label="@L["Goals_Edit"]" @onclick="() => Edit(goal)"><i class="bi bi-pencil"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" title="@L["Common_Delete"]" aria-label="@L["Common_Delete"]" @onclick="() => DeleteAsync(goal.Id)"><i class="bi bi-trash"></i></button>
+                        </div>
+
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>@Fmt.Money(status.Current, goal.Currency) / @Fmt.Money(status.Target, goal.Currency) @L["Goals_PerMonth"]</span>
+                            <strong>@Fmt.Percent(status.Progress, 0)</strong>
+                        </div>
+                        <div class="progress mb-3" role="progressbar" aria-label="@goal.Name" aria-valuenow="@((int)Math.Round(Math.Min(status.Progress, 1) * 100))" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar @(status.Reached ? "bg-success" : "")" style="width: @((Math.Min(status.Progress, 1) * 100).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))%"></div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-6"><Stat Label="@L["Goals_Current"]" Value="@Fmt.Money(status.Current, goal.Currency)" Hint="@L["Goals_CurrentHint"]" /></div>
+                            <div class="col-6"><Stat Label="@L["Goals_Forward"]" Value="@Fmt.Money(status.Forward, goal.Currency)" Hint="@L["Goals_ForwardHint"]" /></div>
+                            <div class="col-6"><Stat Label="@L["Goals_Growth"]" Value="@(status.Growth is { } g ? Signed(g) : "—")" ValueClass="@Fmt.SignClass(status.Growth)" Hint="@L["Goals_GrowthHint"]" /></div>
+                            <div class="col-6"><Stat Label="@L["Goals_ReachedAround"]" Value="@ReachedText(status)" Hint="@ReachedHint(status)" /></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (_selected is { } selected)
+    {
+        <h2 class="section-title">@string.Format(L["Goals_History"], selected.Goal.Name)</h2>
+        <div class="mb-3">
+            <ThemedChart IsEmpty="selected.Points.Count == 0" EmptyText="@L["Chart_NoData"]">
+                <ApexChart TItem="GoalPoint" Options="HistoryOptions(context, selected.Goal.Currency)" Height="300" @key="selected">
+                    <ApexPointSeries TItem="GoalPoint" Items="selected.Points" Name="@L["Goals_Current"]" SeriesType="SeriesType.Line"
+                                     XValue="p => Fmt.MonthShort(p.Year, p.Month)" YValue="p => p.MonthlyAverage" />
+                    <ApexPointSeries TItem="GoalPoint" Items="selected.Points" Name="@L["Goals_Target"]" SeriesType="SeriesType.Line"
+                                     XValue="p => Fmt.MonthShort(p.Year, p.Month)" YValue="p => selected.Target" />
+                </ApexChart>
+            </ThemedChart>
+        </div>
+        <DataGrid TItem="GoalPoint" Items="selected.Points" Columns="PointColumns" StorageKey="goal-history" ExportFileName="@($"goal-{selected.Goal.Id}")"
+                  DefaultSortKey="month" DefaultSortDescending="true" DefaultPageSize="10" />
+    }
+
+    <p class="small text-body-secondary mt-2">@L["Goals_Note"]</p>
+}
+
+@code {
+    private sealed class GoalForm
+    {
+        public int Id { get; init; }
+        public DateTimeOffset CreatedAt { get; init; }
+        public string Name { get; set; } = "";
+        public string Currency { get; set; } = "EUR";
+        public bool FromExpenses { get; set; }
+        public decimal? Target { get; set; }
+        public decimal? Expenses { get; set; }
+        public decimal? SharePercent { get; set; }
+        public bool IncludeInterest { get; set; } = true;
+    }
+
+    private IReadOnlyList<GoalStatus>? _statuses;
+    private GoalStatus? _selected;
+    private IReadOnlyList<string> _currencies = ["EUR"];
+    private GoalForm? _form;
+    private string? _error;
+
+    protected override async Task LoadAsync()
+    {
+        var currencies = await Analytics.GetCurrenciesAsync(AccountId);
+        _currencies = currencies.Count > 0 ? currencies : ["EUR"];
+        _statuses = await GoalQueries.GetStatusesAsync(AccountId);
+        _selected = _statuses.FirstOrDefault(s => s.Goal.Id == _selected?.Goal.Id) ?? _statuses.FirstOrDefault();
+    }
+
+    private IReadOnlyList<GridColumn<GoalPoint>> PointColumns => [
+        new() { Key = "month", Title = L["Goals_Month"], Value = p => p.Year * 100 + p.Month, Text = p => Fmt.Month(p.Year, p.Month), MobileTitle = true },
+        new() { Key = "average", Title = L["Goals_Current"], Value = p => p.MonthlyAverage, Text = p => Fmt.Money(p.MonthlyAverage, _selected?.Goal.Currency), AlignEnd = true },
+        new() { Key = "progress", Title = L["Goals_Progress"], Value = p => _selected is { Target: > 0 } s ? p.MonthlyAverage / s.Target : 0,
+                Text = p => _selected is { Target: > 0 } s ? Fmt.Percent(p.MonthlyAverage / s.Target, 0) : "—", AlignEnd = true },
+    ];
+
+    private void New()
+    {
+        _error = null;
+        _form = new GoalForm { Currency = _currencies[0] };
+    }
+
+    private void Edit(Goal goal)
+    {
+        _error = null;
+        _form = new GoalForm
+        {
+            Id = goal.Id,
+            CreatedAt = goal.CreatedAt,
+            Name = goal.Name,
+            Currency = goal.Currency,
+            FromExpenses = goal.MonthlyExpenses is not null,
+            Target = Plain(goal.MonthlyTarget),
+            Expenses = Plain(goal.MonthlyExpenses),
+            SharePercent = Plain(goal.CoverShare * 100),
+            IncludeInterest = goal.IncludeInterest,
+        };
+        if (!_currencies.Contains(goal.Currency))
+            _currencies = [.. _currencies, goal.Currency];
+    }
+
+    /// <summary>Without the column's trailing zeros, so the inputs show 60 rather than 60.0000000000.</summary>
+    private static decimal? Plain(decimal? value) => value / 1.0000000000000000000000000000m;
+
+    private void Cancel() => (_form, _error) = (null, null);
+
+    private async Task SaveAsync()
+    {
+        var form = _form!;
+        var goal = new Goal
+        {
+            Id = form.Id,
+            CreatedAt = form.CreatedAt,
+            Name = form.Name,
+            Currency = form.Currency,
+            MonthlyTarget = form.FromExpenses ? 0 : form.Target ?? 0,
+            MonthlyExpenses = form.FromExpenses ? form.Expenses ?? 0 : null,
+            CoverShare = form.FromExpenses ? (form.SharePercent ?? 0) / 100 : null,
+            IncludeInterest = form.IncludeInterest,
+        };
+        try
+        {
+            await GoalQueries.SaveAsync(goal);
+        }
+        catch (ArgumentException)
+        {
+            _error = L["Goals_Invalid"];
+            return;
+        }
+        _form = null;
+        _error = null;
+        await ReloadAsync();
+        _selected = _statuses?.FirstOrDefault(s => s.Goal.Id == goal.Id) ?? _selected;
+    }
+
+    private async Task DeleteAsync(int id)
+    {
+        await GoalQueries.DeleteAsync(id);
+        if (_form?.Id == id)
+            _form = null;
+        await ReloadAsync();
+    }
+
+    private string ReachedText(GoalStatus status) =>
+        status.Reached ? L["Goals_Reached"]
+        : status.ReachedAround is { } date ? Fmt.Month(date.Year, date.Month)
+        : "—";
+
+    private string ReachedHint(GoalStatus status) =>
+        status.Reached ? L["Goals_ReachedHint"]
+        : status.ReachedAround is not null ? L["Goals_AtThisPace"]
+        : status.Growth is null ? L["Goals_NeedsAYear"]
+        : status.Growth <= 0 ? L["Goals_NotGrowing"]
+        : string.Format(L["Goals_TooFar"], GoalProgress.MaxYears);
+
+    private static string Signed(decimal fraction) => (fraction > 0 ? "+" : "") + Fmt.Percent(fraction, 1);
+
+    private static ApexChartOptions<GoalPoint> HistoryOptions(bool dark, string currency)
+    {
+        var options = ChartStyle.Base<GoalPoint>(dark);
+        options.Stroke = new Stroke { Width = 2, Curve = Curve.Smooth };
+        options.Yaxis = [new YAxis { Min = 0, Labels = new YAxisLabels { Formatter = ChartStyle.AxisNumber } }];
+        options.Tooltip.Shared = true;
+        options.Tooltip.Intersect = false;
+        options.Tooltip.Y = new TooltipY { Formatter = ChartStyle.Money(currency) };
+        options.Xaxis = new XAxis { Labels = new XAxisLabels { Rotate = -45, HideOverlappingLabels = true } };
+        return options;
+    }
+}

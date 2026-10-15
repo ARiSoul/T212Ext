@@ -20,6 +20,7 @@ public class T212ExtDbContext(DbContextOptions<T212ExtDbContext> options) : DbCo
     public DbSet<PushDevice> PushDevices => Set<PushDevice>();
     public DbSet<NotificationState> NotificationStates => Set<NotificationState>();
     public DbSet<InstrumentLogo> InstrumentLogos => Set<InstrumentLogo>();
+    public DbSet<Goal> Goals => Set<Goal>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {

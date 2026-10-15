@@ -4,6 +4,7 @@ The roadmap by phase, then ideas and known limitations not yet planned. When an 
 
 Done so far:
 - **2.0.0, phase 1 (foundations):** API client, database, scheduled sync, CSV import, first pages, tests.
+- **2.13.0:** passive income goals: an amount a month or a share of the expenses, progress on the last 12 months, the pace of the last year and when it would get there.
 - **2.12.0:** dividend growth per instrument: per share, by year, compared only between years with the same number of payments; streak, compound growth, cuts.
 - **2.11.0:** dividend types translated (the API's 29 types and their manufactured payments); a link to the instrument's page at Trading 212 (US and London).
 - **2.10.0:** instrument icons: logos (Trading 212's, then by ISIN) fetched once by the server, or a coloured avatar with the code.
@@ -26,7 +27,7 @@ Done so far:
 
 - [IRS report follow-ups](#irs-report-follow-ups)
 - [Deployment follow-ups](#deployment-follow-ups)
-- [Phase 5 — Extras (2.13 and later)](#phase-5--extras-213-and-later)
+- [Phase 5 — Extras (2.14 and later)](#phase-5--extras-214-and-later)
 - [App and grid follow-ups](#app-and-grid-follow-ups)
 - [Known limitations and technical debt](#known-limitations-and-technical-debt)
 - [Product ideas](#product-ideas)
@@ -54,10 +55,9 @@ Phase 4 shipped as **2.4.0**: see [DEPLOYMENT.md](DEPLOYMENT.md). Left for later
 | 4.11 | **Image from CI** | Build the image in GitHub Actions and pull it on the server (GHCR), instead of building on the server. Worth it only if the server's builds get slow. |
 | 4.12 | **Infrastructure project** | Move Caddy, SQL Server and the shared networks out of traceon's compose into a project of their own, with both apps as equal guests. Worth it with a third app, or before touching traceon's SQL Server for another reason. Moving SQL Server means a short downtime and a backup and restore of every database. |
 
-## Phase 5 — Extras (2.13 and later)
+## Phase 5 — Extras (2.14 and later)
 
 - **Upcoming dividends calendar** from an external provider (EODHD, Financial Modeling Prep, …). It also makes a real forward estimate possible. Check each provider's licence for personal use first.
-- **Goals:** for example, "dividends cover X% of my monthly expenses", with progress over time.
 - **Sector of each holding** (external data), for a sector breakdown.
 
 ## App and grid follow-ups

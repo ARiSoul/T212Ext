@@ -87,6 +87,8 @@ The rules every change follows, for people and for coding assistants. Each rule 
     - *Why:* the CSV is the only source of the tax withheld on each dividend, and the API's history has gaps. *(2.5.0)*
 12. **Dividend growth is measured per share, in the instrument's currency** (`Analytics/DividendGrowth.cs`): two years compare only when they had the same number of payments, the current year never, and returns of capital, demergers and liquidations are not dividends.
     - *Why:* the shares held and the exchange rate would otherwise move it, and a payment slipping into January would look like a cut. *(2.12.0)*
+13. **A goal is measured on the last 12 months' income a month** (`Analytics/GoalProgress.cs`): the last 12 months divided by 12, in the goal's currency. Withholding refunds always count, interest and share lending only when the goal says so. The date it would be reached assumes the last year's growth goes on, and is not given beyond 50 years.
+    - *Why:* a single month swings with the payment calendar (quarterly payers bunch up), and a pace is all the history can honestly give. *(2.13.0)*
 
 ## 4. App (`src/T212Ext.Web`)
 
