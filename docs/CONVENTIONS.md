@@ -94,12 +94,13 @@ The rules every change follows, for people and for coding assistants. Each rule 
    - Every key exists in the three files with the same `{0}` placeholders; `LocalizationTests` checks it, and that every `L["Key"]` used exists.
    - Codes from Trading 212 that have no translation go through `Labels.Humanize`, so new codes still read well.
    - The language is a cookie set by `/language`; the page reloads to apply it. `/language` only redirects to local URLs.
-2. **Every list is a `DataGrid`** (`Components/Grid`), with search, filters, sorting, totals, paging and CSV export.
+2. **Every list is a `DataGrid`** (`Components/Grid`), with search, filters, sorting, totals, paging, CSV export, a column chooser and saved views.
    - Columns give a raw `Value` (for sorting and totals) and the `Text` shown.
-   - Filters go on columns with few distinct values (year, type, country, account).
+   - Filters go on columns with few distinct values (year, type, country, account). The main date column of a page also gets `RangeFilter` ("from", "to", by UTC day, as the grids show dates).
    - Totals cover every filtered row, not only the page.
-   - The filter, sort and totals logic lives in `GridEngine`, tested in `GridEngineTests`; the component only renders it.
-   - Each grid has its own `StorageKey`; its state is saved in the browser.
+   - Hidden columns are neither shown, searched nor exported; at least one stays visible. A column with an empty title (a button) is not in the chooser.
+   - The filter, sort and totals logic lives in `GridEngine`, tested in `GridEngineTests`; the component only renders it, and `DataGridTests` (bUnit) checks what a click does.
+   - Each grid has its own `StorageKey`; its state and its saved views are kept in the browser. A saved state is cleaned of columns that no longer exist.
 3. **Colours come from the tokens in `wwwroot/app.css`** (`--app-*`), defined for light and dark. No hard-coded colours in components.
    - The accent is the app's green, not Bootstrap's blue.
    - Positive and negative amounts use `text-positive` and `text-negative`.

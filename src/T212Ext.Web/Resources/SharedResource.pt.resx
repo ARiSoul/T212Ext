@@ -178,18 +178,24 @@
   <data name="Gains_Unsupported" xml:space="preserve"><value>Eventos societários ainda não tratados (desdobramentos, spin-offs…), confirme estes ativos à mão:</value></data>
   <data name="Gains_YearOrMore" xml:space="preserve"><value>365 dias ou mais</value></data>
   <data name="Grid_ClearFilter" xml:space="preserve"><value>Limpar</value></data>
+  <data name="Grid_Columns" xml:space="preserve"><value>Colunas</value></data>
+  <data name="Grid_DateFrom" xml:space="preserve"><value>De</value></data>
+  <data name="Grid_DateTo" xml:space="preserve"><value>Até</value></data>
+  <data name="Grid_DeleteView" xml:space="preserve"><value>Apagar vista</value></data>
   <data name="Grid_Empty" xml:space="preserve"><value>Ainda não há nada aqui.</value></data>
   <data name="Grid_Export" xml:space="preserve"><value>Exportar</value></data>
   <data name="Grid_FirstPage" xml:space="preserve"><value>Primeira página</value></data>
   <data name="Grid_LastPage" xml:space="preserve"><value>Última página</value></data>
   <data name="Grid_NextPage" xml:space="preserve"><value>Página seguinte</value></data>
   <data name="Grid_NoMatches" xml:space="preserve"><value>Nenhuma linha corresponde à pesquisa ou aos filtros.</value></data>
+  <data name="Grid_NoViews" xml:space="preserve"><value>Ainda sem vistas guardadas. Escolha os filtros, a ordem e as colunas, dê-lhes um nome e guarde.</value></data>
   <data name="Grid_OfTotal" xml:space="preserve"><value>(filtradas de {0})</value></data>
   <data name="Grid_PageSize" xml:space="preserve"><value>Linhas por página</value></data>
   <data name="Grid_Pages" xml:space="preserve"><value>Páginas</value></data>
   <data name="Grid_PerPage" xml:space="preserve"><value>{0} por página</value></data>
   <data name="Grid_PreviousPage" xml:space="preserve"><value>Página anterior</value></data>
   <data name="Grid_Reset" xml:space="preserve"><value>Repor</value></data>
+  <data name="Grid_SaveView" xml:space="preserve"><value>Guardar</value></data>
   <data name="Grid_Search" xml:space="preserve"><value>Pesquisar</value></data>
   <data name="Grid_Showing" xml:space="preserve"><value>{0}–{1} de {2}</value></data>
   <data name="Grid_SortBy" xml:space="preserve"><value>Ordenar por</value></data>
@@ -200,6 +206,8 @@
   <data name="Grid_Summary_Max" xml:space="preserve"><value>Máx.</value></data>
   <data name="Grid_Summary_Min" xml:space="preserve"><value>Mín.</value></data>
   <data name="Grid_Summary_Sum" xml:space="preserve"><value>Soma</value></data>
+  <data name="Grid_ViewName" xml:space="preserve"><value>Nome da vista</value></data>
+  <data name="Grid_Views" xml:space="preserve"><value>Vistas</value></data>
   <data name="Import_Cash" xml:space="preserve"><value>Movimentos de dinheiro: {0} novos, {1} já conhecidos</value></data>
   <data name="Import_Dividends" xml:space="preserve"><value>Dividendos: {0} novos, {1} já conhecidos</value></data>
   <data name="Import_Failed" xml:space="preserve"><value>A importação falhou. Veja o registo do servidor.</value></data>

@@ -9,9 +9,12 @@ namespace Arisoul.T212Ext.Web.Components.Grid;
 /// </summary>
 public static class GridEngine
 {
+    public const int MaxSavedViews = 20;
+
     public static GridView<TItem> Apply<TItem>(IReadOnlyList<TItem> items, IReadOnlyList<GridColumn<TItem>> columns, GridState state)
     {
         IEnumerable<TItem> rows = items;
+        var visible = Visible(columns, state);
 
         foreach (var (key, values) in state.Filters)
         {
@@ -23,11 +26,22 @@ public static class GridEngine
             rows = rows.Where(item => allowed.Contains(column.FilterText(item)));
         }
 
+        foreach (var (key, range) in state.Ranges)
+        {
+            var column = columns.FirstOrDefault(c => c.Key == key && c.RangeFilter);
+            if (column is null || range.IsEmpty)
+                continue;
+
+            rows = rows.Where(item => DateOf(column.Value(item)) is { } day
+                && (range.From is null || day >= range.From) && (range.To is null || day <= range.To));
+        }
+
+        // Only what is shown is searched.
         if (!string.IsNullOrWhiteSpace(state.Search))
         {
             var terms = state.Search.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             rows = rows.Where(item => terms.All(term =>
-                columns.Any(c => c.CellText(item).Contains(term, StringComparison.CurrentCultureIgnoreCase))));
+                visible.Any(c => c.CellText(item).Contains(term, StringComparison.CurrentCultureIgnoreCase))));
         }
 
         var sortColumn = columns.FirstOrDefault(c => c.Key == state.SortKey && c.Sortable);
@@ -51,6 +65,35 @@ public static class GridEngine
             page,
             pageCount,
             Summaries(filtered, columns, state));
+    }
+
+    /// <summary>The columns not hidden; all of them if every one is hidden.</summary>
+    public static IReadOnlyList<GridColumn<TItem>> Visible<TItem>(IReadOnlyList<GridColumn<TItem>> columns, GridState state)
+    {
+        var visible = columns.Where(c => !state.Hidden.Contains(c.Key)).ToList();
+        return visible.Count > 0 ? visible : columns;
+    }
+
+    /// <summary>The day of a date value, as the grids show it (UTC dates); null for anything else.</summary>
+    public static DateOnly? DateOf(object? value) => value switch
+    {
+        DateTimeOffset dto => DateOnly.FromDateTime(dto.UtcDateTime),
+        DateTime dt => DateOnly.FromDateTime(dt),
+        DateOnly d => d,
+        _ => null,
+    };
+
+    /// <summary>
+    /// The views with <paramref name="state"/> saved as <paramref name="name"/> (a view of the same name
+    /// is replaced), newest first, at most <see cref="MaxSavedViews"/>. The page is not kept.
+    /// </summary>
+    public static List<GridSavedView> SaveView(IReadOnlyList<GridSavedView> views, string name, GridState state)
+    {
+        var copy = state.Copy();
+        copy.Page = 1;
+        var trimmed = name.Trim();
+        return [new GridSavedView { Name = trimmed, State = copy },
+            .. views.Where(v => !v.Name.Equals(trimmed, StringComparison.CurrentCultureIgnoreCase)).Take(MaxSavedViews - 1)];
     }
 
     /// <summary>The distinct filter values of a column, over all rows.</summary>

@@ -48,7 +48,7 @@
 
     private IReadOnlyList<GridColumn<CashRow>> Columns => WithAccount([
         new() { Key = "date", Title = L["Col_Date"], Value = r => r.DateTime, Text = r => Fmt.DateTime(r.DateTime), MobileTitle = true,
-                Filterable = true, FilterKey = r => r.DateTime.UtcDateTime.Year.ToString(), FilterValuesDescending = true },
+                Filterable = true, FilterKey = r => r.DateTime.UtcDateTime.Year.ToString(), FilterValuesDescending = true, RangeFilter = true },
         new() { Key = "type", Title = L["Col_Type"], Value = r => Labels.CashType(L, r.Type), Filterable = true },
         new() { Key = "amount", Title = L["Col_Amount"], Value = r => r.Amount, Text = r => Fmt.Money(r.Amount, r.Currency), AlignEnd = true,
                 Template = r => @<span class="@Fmt.SignClass(r.Amount)">@Fmt.Money(r.Amount, r.Currency)</span>,

@@ -178,18 +178,24 @@
   <data name="Gains_Unsupported" xml:space="preserve"><value>Corporate actions not handled yet (splits, spin-offs…), check these instruments by hand:</value></data>
   <data name="Gains_YearOrMore" xml:space="preserve"><value>365 days or more</value></data>
   <data name="Grid_ClearFilter" xml:space="preserve"><value>Clear</value></data>
+  <data name="Grid_Columns" xml:space="preserve"><value>Columns</value></data>
+  <data name="Grid_DateFrom" xml:space="preserve"><value>From</value></data>
+  <data name="Grid_DateTo" xml:space="preserve"><value>To</value></data>
+  <data name="Grid_DeleteView" xml:space="preserve"><value>Delete view</value></data>
   <data name="Grid_Empty" xml:space="preserve"><value>Nothing here yet.</value></data>
   <data name="Grid_Export" xml:space="preserve"><value>Export</value></data>
   <data name="Grid_FirstPage" xml:space="preserve"><value>First page</value></data>
   <data name="Grid_LastPage" xml:space="preserve"><value>Last page</value></data>
   <data name="Grid_NextPage" xml:space="preserve"><value>Next page</value></data>
   <data name="Grid_NoMatches" xml:space="preserve"><value>No rows match the search or filters.</value></data>
+  <data name="Grid_NoViews" xml:space="preserve"><value>No saved views yet. Set the filters, sort and columns you want, give them a name and save.</value></data>
   <data name="Grid_OfTotal" xml:space="preserve"><value>(filtered from {0})</value></data>
   <data name="Grid_PageSize" xml:space="preserve"><value>Rows per page</value></data>
   <data name="Grid_Pages" xml:space="preserve"><value>Pages</value></data>
   <data name="Grid_PerPage" xml:space="preserve"><value>{0} per page</value></data>
   <data name="Grid_PreviousPage" xml:space="preserve"><value>Previous page</value></data>
   <data name="Grid_Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="Grid_SaveView" xml:space="preserve"><value>Save</value></data>
   <data name="Grid_Search" xml:space="preserve"><value>Search</value></data>
   <data name="Grid_Showing" xml:space="preserve"><value>{0}–{1} of {2}</value></data>
   <data name="Grid_SortBy" xml:space="preserve"><value>Sort by</value></data>
@@ -200,6 +206,8 @@
   <data name="Grid_Summary_Max" xml:space="preserve"><value>Max</value></data>
   <data name="Grid_Summary_Min" xml:space="preserve"><value>Min</value></data>
   <data name="Grid_Summary_Sum" xml:space="preserve"><value>Sum</value></data>
+  <data name="Grid_ViewName" xml:space="preserve"><value>View name</value></data>
+  <data name="Grid_Views" xml:space="preserve"><value>Views</value></data>
   <data name="Import_Cash" xml:space="preserve"><value>Cash movements: {0} new, {1} already known</value></data>
   <data name="Import_Dividends" xml:space="preserve"><value>Dividends: {0} new, {1} already known</value></data>
   <data name="Import_Failed" xml:space="preserve"><value>The import failed. See the server log for details.</value></data>

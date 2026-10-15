@@ -13,7 +13,7 @@ Trading 212's own app shows dividends one by one. T212Ext reads them through the
 
 ---
 
-## Features (2.7)
+## Features (2.9)
 
 **IRS report (Portugal)**
 - **Anexo J, quadro 8A:** foreign dividends by source country (code E11), gross and tax paid abroad, in euros at the ECB rate of each payment date. Exact withholding from the API's gross and the CSV's net per share.
@@ -182,7 +182,7 @@ dotnet test T212Ext.slnx
 - `tests/T212Ext.Core.Tests`: sync, CSV parsing and import, merging between sources, analytics and queries, against a real SQL Server.
   - Each run creates a throwaway database and drops it at the end.
   - The server is LocalDB by default. Set `T212EXT_TEST_SQL` to use another one (a connection string without `Database`).
-- `tests/T212Ext.Web.Tests`: the grid engine (filters, sorting, totals, paging, export), sign-in (passwords, authenticator codes, return URLs, settings), languages, and that the three translations have the same keys.
+- `tests/T212Ext.Web.Tests`: the grid engine (filters, date ranges, sorting, totals, paging, export, columns, saved views) and the grid component (bUnit), sign-in (passwords, authenticator codes, return URLs, settings), languages, and that the three translations have the same keys.
 
 ## Project layout
 

@@ -2,6 +2,13 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.9.0 — Grids: columns, views and dates (2026-10-15)
+
+**New**, in every list:
+- **Columns:** show and hide columns ("Columns" button); hidden columns are not searched or exported.
+- **Saved views:** give a name to the current filters, dates, sort, totals and columns ("Views" button), and come back to them with one click. Up to 20 per list, kept in this browser.
+- **Date range:** dividends, cash movements and orders can be filtered from one day to another, next to the filter by year. The totals follow.
+
 ## 2.8.0 — IRS: treaty limits and aggregation (2026-10-15)
 
 See [TAX.md](TAX.md). To check, not tax advice.

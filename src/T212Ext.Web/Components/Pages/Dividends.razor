@@ -101,7 +101,7 @@
 
     private IReadOnlyList<GridColumn<DividendRow>> Columns => WithAccount([
         new() { Key = "paid", Title = L["Col_Paid"], Value = r => r.PaidOn, Text = r => Fmt.Date(r.PaidOn),
-                Filterable = true, FilterKey = r => r.PaidOn.UtcDateTime.Year.ToString(), FilterValuesDescending = true,
+                Filterable = true, FilterKey = r => r.PaidOn.UtcDateTime.Year.ToString(), FilterValuesDescending = true, RangeFilter = true,
                 Summaries = [SummaryKind.Count] },
         new() { Key = "instrument", Title = L["Col_Instrument"], Value = r => r.InstrumentName ?? r.Ticker, MobileTitle = true },
         new() { Key = "ticker", Title = L["Col_Ticker"], Value = r => r.Ticker, HideBelow = "xxl" },
