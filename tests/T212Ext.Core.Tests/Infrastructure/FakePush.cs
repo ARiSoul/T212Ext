@@ -33,6 +33,10 @@ public sealed class FakePushTexts : IPushTexts
         new($"{culture.Name} summary {month.Month:yyyy-MM}",
             string.Join(", ", month.Totals.Select(t => $"{N(t.Amount)} {t.Currency} (before {(t.YearBefore is { } b ? N(b) : "none")})")) + $" in {month.Count}");
 
+    public PushText WeekAhead(CultureInfo culture, WeekNotice week) =>
+        new($"{culture.Name} week {week.From:yyyy-MM-dd}",
+            string.Join(", ", week.Payments.Select(p => $"{p.Name} {N(p.Amount)} {p.Currency} {p.On:MM-dd}")));
+
     public PushText Test(CultureInfo culture) => new($"{culture.Name} test", "");
 
     // Amounts come back from SQL Server with ten decimals.

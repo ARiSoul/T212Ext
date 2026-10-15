@@ -4,7 +4,8 @@
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
 
-// A notification from the server (Core/Notifications: title, body, url, tag).
+// A notification from the server (Core/Notifications: title, body, url, tag, silent). A silent one
+// (the device's quiet hours) shows without sound or vibration.
 self.addEventListener('push', event => {
     let data = {};
     try {
@@ -17,8 +18,9 @@ self.addEventListener('push', event => {
         icon: '/icons/icon-192.png',
         badge: '/icons/badge-96.png',
         tag: data.tag || undefined,
-        // One with the same tag is replaced, and the phone still rings.
-        renotify: !!data.tag,
+        silent: !!data.silent,
+        // One with the same tag is replaced, and the phone still rings (unless it is quiet).
+        renotify: !!data.tag && !data.silent,
         data: { url: data.url || '/' }
     }));
 });

@@ -32,8 +32,22 @@ public sealed class PushOptions
     }
 }
 
-/// <summary>A notification: its text, the page a tap opens, and a tag that replaces an earlier one with the same tag.</summary>
-public sealed record PushMessage(string Title, string Body, string Url, string Tag);
+/// <summary>
+/// A notification: its text, the page a tap opens, and a tag that replaces an earlier one with the
+/// same tag. A silent one (the device's quiet hours) shows without sound or vibration.
+/// </summary>
+public sealed record PushMessage(string Title, string Body, string Url, string Tag, bool Silent = false);
+
+/// <summary>What a notification is about: each device chooses which it gets.</summary>
+public enum PushTopic
+{
+    Dividends,
+    Summary,
+    Week,
+}
+
+/// <summary>A device's choices: which notifications, and its quiet hours in its time zone.</summary>
+public sealed record PushPreferences(bool Dividends, bool Summary, bool Week, TimeOnly? QuietFrom, TimeOnly? QuietTo, string? TimeZone);
 
 /// <summary>A notification's texts, in one language.</summary>
 public sealed record PushText(string Title, string Body);
@@ -44,11 +58,18 @@ public sealed record DividendNotice(string Name, decimal Amount, string Currency
 /// <summary>A month's dividends, per currency, and the same month a year before.</summary>
 public sealed record MonthNotice(DateOnly Month, IReadOnlyList<(string Currency, decimal Amount, decimal? YearBefore)> Totals, int Count);
 
+/// <summary>A payment expected this week (from the projected calendar).</summary>
+public sealed record ExpectedNotice(string Name, decimal Amount, string Currency, DateOnly On);
+
+/// <summary>The payments expected in the week from <see cref="From"/> (a Monday), largest first, and their totals per currency.</summary>
+public sealed record WeekNotice(DateOnly From, IReadOnlyList<ExpectedNotice> Payments, IReadOnlyList<(string Currency, decimal Amount)> Totals);
+
 /// <summary>Writes the notifications' texts in a language. The web project implements it with its translations.</summary>
 public interface IPushTexts
 {
     PushText NewDividends(CultureInfo culture, IReadOnlyList<DividendNotice> dividends);
     PushText MonthlySummary(CultureInfo culture, MonthNotice month);
+    PushText WeekAhead(CultureInfo culture, WeekNotice week);
     PushText Test(CultureInfo culture);
 }
 

@@ -143,6 +143,8 @@ The rules every change follows, for people and for coding assistants. Each rule 
     - What was announced is in `NotificationState`. The first run only takes note of where things stand; only dividends paid in the last 7 days are announced.
     - A subscription must point to a known push service over HTTPS (`PushDevices.IsPushServiceUrl`): the server posts to that address.
     - Permission is asked within the click itself (a native handler, `t212ext.push.bindEnable`), not after a round trip to the server: Safari refuses it otherwise.
+    - Every notification has a topic (`PushTopic`: dividends, summary, week), and each device gets only the topics it chose; a new topic is on by default, also for the devices already there (the migration's default).
+    - **Quiet hours never hold a notification back:** within them (in the device's time zone, from the browser) it is sent with `silent`, and the service worker shows it without sound or vibration. No queue, so nothing is lost or late. *(2.18.0)*
 14. **Instruments show their icon** (`Components/Shared/InstrumentLabel`) wherever they are listed: the logo, or an avatar with the ticker's code.
     - The browser asks only this app (`/logos/{ticker}?isin=…`). The server fetches each logo once from fixed hosts (Trading 212's images by ticker, then Parqet's by ISIN), keeps it in `InstrumentLogos`, and asks again only after weeks. `Logos:Enabled=false` keeps it to avatars.
     - Logos are served with a sandboxing Content-Security-Policy: a third party's SVG opened on its own can run nothing.

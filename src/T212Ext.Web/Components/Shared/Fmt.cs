@@ -35,6 +35,13 @@ public static class Fmt
     public static string MonthShort(int year, int month) =>
         new DateOnly(year, month, 1).ToString("MMM yy", CultureInfo.CurrentCulture);
 
+    /// <summary>A weekday in three letters: "seg", "Mon", "lun" (some cultures' abbreviations are the full name).</summary>
+    public static string DayShort(DayOfWeek day)
+    {
+        var name = CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedDayName(day).TrimEnd('.');
+        return name.Length > 3 ? name[..3] : name;
+    }
+
     public static string MonthName(int month) =>
         CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(month);
 

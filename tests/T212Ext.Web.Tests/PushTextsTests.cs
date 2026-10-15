@@ -50,6 +50,20 @@ public class PushTextsTests
     }
 
     [Fact]
+    public void The_week_ahead_totals_and_names_the_largest_payments_with_their_day()
+    {
+        var monday = new DateOnly(2026, 10, 19);
+        var week = new WeekNotice(monday,
+            [new("Allianz", 62.94m, "EUR", monday.AddDays(4)), new("Realty Income", 5.29m, "EUR", monday), new("Unilever", 3.04m, "EUR", monday.AddDays(2)), new("Apple", 1m, "EUR", monday.AddDays(3))],
+            [("EUR", 72.27m)]);
+
+        var text = Texts.WeekAhead(Portuguese, week);
+
+        Assert.Equal("Esta semana: 72,27 EUR previstos", text.Title);
+        Assert.Equal("Allianz 62,94 EUR (sex), Realty Income 5,29 EUR (seg), Unilever 3,04 EUR (qua) e mais 1", text.Body);
+    }
+
+    [Fact]
     public void Texts_do_not_change_the_callers_culture()
     {
         var before = CultureInfo.CurrentUICulture;

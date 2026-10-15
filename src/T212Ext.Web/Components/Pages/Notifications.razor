@@ -69,13 +69,53 @@
     </div>
 </div>
 
+@if (IsOnHere && _preferences is { } p)
+{
+    <div class="card mb-3">
+        <div class="card-body">
+            <h2 class="h6">@L["Push_Choices"]</h2>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="push-dividends" @bind="p.Dividends" />
+                <label class="form-check-label" for="push-dividends">@L["Push_ChoiceDividends"]</label>
+            </div>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="push-summary" @bind="p.Summary" />
+                <label class="form-check-label" for="push-summary">@L["Push_ChoiceSummary"]</label>
+            </div>
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" role="switch" id="push-week" @bind="p.Week" />
+                <label class="form-check-label" for="push-week">@L["Push_ChoiceWeek"]</label>
+            </div>
+
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="push-quiet" @bind="p.Quiet" />
+                <label class="form-check-label" for="push-quiet">@L["Push_Quiet"]</label>
+            </div>
+            @if (p.Quiet)
+            {
+                <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+                    <label class="small" for="push-quiet-from">@L["Push_QuietFrom"]</label>
+                    <input id="push-quiet-from" type="time" class="form-control form-control-sm w-auto" @bind="p.From" />
+                    <label class="small" for="push-quiet-to">@L["Push_QuietTo"]</label>
+                    <input id="push-quiet-to" type="time" class="form-control form-control-sm w-auto" @bind="p.To" />
+                </div>
+                <p class="small text-body-secondary mt-1 mb-0">@string.Format(L["Push_QuietHint"], _status?.TimeZone ?? "UTC")</p>
+            }
+
+            <button type="button" class="btn btn-primary mt-3" @onclick="SavePreferencesAsync" disabled="@_busy"><i class="bi bi-check-lg"></i> @L["Goals_Save"]</button>
+        </div>
+    </div>
+}
+
 <div class="card mb-3">
     <div class="card-body">
         <h2 class="h6">@L["Push_WhatYouGet"]</h2>
         <ul class="mb-0">
             <li>@L["Push_WhatDividends"]</li>
             <li>@L["Push_WhatSummary"]</li>
+            <li>@L["Push_WhatWeek"]</li>
         </ul>
+        <p class="small text-body-secondary mt-2 mb-0">@L["Push_WhatNote"]</p>
     </div>
 </div>
 
@@ -87,7 +127,20 @@
     [CascadingParameter]
     private Task<AuthenticationState>? AuthenticationState { get; set; }
 
-    private sealed record PushStatus(bool Supported, string Permission, bool Ios, bool Standalone, string Label);
+    private sealed record PushStatus(bool Supported, string Permission, bool Ios, bool Standalone, string Label, string? TimeZone);
+
+    /// <summary>This device's choices, as the form edits them.</summary>
+    private sealed class Choices
+    {
+        public bool Dividends { get; set; } = true;
+        public bool Summary { get; set; } = true;
+        public bool Week { get; set; } = true;
+        public bool Quiet { get; set; }
+        public TimeOnly From { get; set; } = new(23, 0);
+        public TimeOnly To { get; set; } = new(8, 0);
+    }
+
+    private Choices? _preferences;
 
     private PushStatus? _status;
     private string? _thisHash;
@@ -107,6 +160,7 @@
         new() { Key = "user", Title = L["Login_Username"], Value = d => d.Username, Filterable = true, HideBelow = "md" },
         new() { Key = "created", Title = L["Push_Since"], Value = d => d.CreatedAt, Text = d => Fmt.DateTime(d.CreatedAt) },
         new() { Key = "used", Title = L["Push_LastSent"], Value = d => d.LastUsedAt, Text = d => Fmt.DateTime(d.LastUsedAt), HideBelow = "md" },
+        new() { Key = "gets", Title = L["Push_Gets"], Value = d => Gets(d.Preferences), HideBelow = "lg" },
         new() { Key = "remove", Title = "", Value = d => "", Template = d => @<button type="button" class="btn btn-sm btn-outline-danger" title="@L["Common_Delete"]" aria-label="@L["Common_Delete"]" @onclick="() => RemoveAsync(d.EndpointHash)"><i class="bi bi-trash"></i></button> },
     ];
 
@@ -121,6 +175,7 @@
             {
                 var current = await JS.InvokeAsync<PushSubscriptionInfo?>("t212ext.push.current");
                 _thisHash = current is null ? null : PushDevices.Hash(current.Endpoint);
+                await LoadPreferencesAsync();
             }
             StateHasChanged();
             return;
@@ -139,9 +194,10 @@
     public async Task OnSubscribed(PushSubscriptionInfo subscription, string label)
     {
         var user = (await AuthenticationState!).User.Identity?.Name ?? "local";
-        if (await Devices.RegisterAsync(user, subscription, label, CultureInfo.CurrentUICulture))
+        if (await Devices.RegisterAsync(user, subscription, label, CultureInfo.CurrentUICulture, _status?.TimeZone))
         {
             _thisHash = PushDevices.Hash(subscription.Endpoint);
+            await LoadPreferencesAsync();
             Show(L["Push_TurnedOn"], error: false);
         }
         else
@@ -190,6 +246,44 @@
         }
         await Devices.RemoveAsync(endpointHash);
         _devices = await Devices.ListAsync();
+    }
+
+    private async Task LoadPreferencesAsync()
+    {
+        _preferences = _thisHash is null || await Devices.GetPreferencesAsync(_thisHash) is not { } saved
+            ? null
+            : new Choices
+            {
+                Dividends = saved.Dividends, Summary = saved.Summary, Week = saved.Week,
+                Quiet = saved.QuietFrom is not null,
+                From = saved.QuietFrom ?? new TimeOnly(23, 0),
+                To = saved.QuietTo ?? new TimeOnly(8, 0),
+            };
+    }
+
+    private async Task SavePreferencesAsync()
+    {
+        var p = _preferences!;
+        _busy = true;
+        var saved = await Devices.SetPreferencesAsync(_thisHash!, new PushPreferences(
+            p.Dividends, p.Summary, p.Week, p.Quiet ? p.From : null, p.Quiet ? p.To : null, _status?.TimeZone));
+        Show(saved ? L["Common_Saved"] : L["Common_Failed"], error: !saved);
+        _devices = await Devices.ListAsync();
+        await LoadPreferencesAsync();
+        _busy = false;
+    }
+
+    /// <summary>"Dividends · Summary · Week · quiet 23:00–08:00" for the list.</summary>
+    private string Gets(PushPreferences p)
+    {
+        var topics = new List<string>();
+        if (p.Dividends) topics.Add(L["Push_GetsDividends"]);
+        if (p.Summary) topics.Add(L["Push_GetsSummary"]);
+        if (p.Week) topics.Add(L["Push_GetsWeek"]);
+        var text = topics.Count == 0 ? L["Push_GetsNothing"].Value : string.Join(" · ", topics);
+        return p.QuietFrom is { } from && p.QuietTo is { } to
+            ? $"{text} · {string.Format(L["Push_GetsQuiet"], from.ToString("HH:mm"), to.ToString("HH:mm"))}"
+            : text;
     }
 
     private void Show(string message, bool error) => (_message, _messageIsError) = (message, error);

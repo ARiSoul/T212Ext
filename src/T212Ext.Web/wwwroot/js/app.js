@@ -88,6 +88,7 @@ window.t212ext = (() => {
                     ios: /iPhone|iPad|iPod/.test(navigator.userAgent),
                     standalone: standalone(),
                     label: label(),
+                    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
                 };
             },
             // Null too when the service worker cannot register (some embedded browsers).

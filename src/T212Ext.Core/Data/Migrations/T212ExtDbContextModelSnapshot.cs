@@ -559,6 +559,9 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                     b.Property<DateOnly?>("LastSummaryMonth")
                         .HasColumnType("date");
 
+                    b.Property<DateOnly?>("LastWeekNotice")
+                        .HasColumnType("date");
+
                     b.HasKey("Id");
 
                     b.ToTable("NotificationStates");
@@ -664,10 +667,29 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                     b.Property<DateTimeOffset?>("LastUsedAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<bool>("NotifyDividends")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("NotifySummary")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("NotifyWeek")
+                        .HasColumnType("bit");
+
                     b.Property<string>("P256dh")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<TimeOnly?>("QuietFrom")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly?>("QuietTo")
+                        .HasColumnType("time");
+
+                    b.Property<string>("TimeZone")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Username")
                         .IsRequired()

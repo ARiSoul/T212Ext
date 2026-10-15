@@ -2,6 +2,14 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.18.0 — Notification choices (2026-10-15)
+
+**New**
+- **The week ahead:** on Monday morning, a notification with the payments the calendar expects that week, their total and the largest ones with their day ("This week: 72.27 EUR expected"). A tap opens the calendar. Nothing expected, nothing sent.
+- **Choices per device:** on the Notifications page, "On this device" turns each kind on or off: new dividends, monthly summary, the week ahead. Devices already on get all three.
+- **Quiet hours** per device, in its time zone: notifications in that time still arrive, but without sound or vibration.
+- The device list shows what each one gets.
+
 ## 2.17.1 — Chart images allowed (2026-10-15)
 
 **Fixed**

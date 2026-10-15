@@ -1,18 +1,24 @@
+using Arisoul.T212Ext.Core.Analytics;
 using Arisoul.T212Ext.Core.Data;
 using Arisoul.T212Ext.Core.Domain;
+using Arisoul.T212Ext.Core.Queries;
 using Arisoul.T212Ext.Core.Sync;
 using Microsoft.EntityFrameworkCore;
 
 namespace Arisoul.T212Ext.Core.Notifications;
 
 /// <summary>
-/// After each sync: announces the dividends that arrived since the last run, and once a month sums
-/// up the month before. What was announced is kept in <see cref="NotificationState"/>, so nothing is
-/// announced twice. The first run only takes note of where things stand: turning notifications on
-/// never floods the phone with the whole history.
+/// After each sync: announces the dividends that arrived since the last run, once a month sums up the
+/// month before, and on Monday morning lists the payments expected that week. What was announced is
+/// kept in <see cref="NotificationState"/>, so nothing is announced twice. The first run only takes
+/// note of where things stand: turning notifications on never floods the phone with the whole history.
+/// Each device gets only the topics it chose (<see cref="PushTopic"/>).
 /// </summary>
-public sealed class Notifier(IDbContextFactory<T212ExtDbContext> dbFactory, PushDevices devices, IPushTexts texts, TimeProvider time)
+public sealed class Notifier(IDbContextFactory<T212ExtDbContext> dbFactory, PushDevices devices, IPushTexts texts, AnalyticsQueries analytics, TimeProvider time)
 {
+    /// <summary>The week's notice goes out from this time on Monday (UTC): morning in Europe, not the middle of the night.</summary>
+    public static readonly TimeSpan WeekNoticeAt = TimeSpan.FromHours(6);
+
     /// <summary>Only dividends paid this recently are announced (a report can bring old ones).</summary>
     public static readonly TimeSpan Recent = TimeSpan.FromDays(7);
 
@@ -48,7 +54,7 @@ public sealed class Notifier(IDbContextFactory<T212ExtDbContext> dbFactory, Push
             if (fresh.Count > 0)
             {
                 var notices = fresh.Select(d => new DividendNotice(d.InstrumentName ?? d.Ticker.Split('_')[0], d.Amount, d.Currency, d.PaidOn)).ToList();
-                sent += await devices.SendToAllAsync(culture =>
+                sent += await devices.SendToAllAsync(PushTopic.Dividends, culture =>
                 {
                     var text = texts.NewDividends(culture, notices);
                     return new PushMessage(text.Title, text.Body, "/dividends", $"dividends-{maxId}");
@@ -68,7 +74,7 @@ public sealed class Notifier(IDbContextFactory<T212ExtDbContext> dbFactory, Push
             var month = await MonthAsync(db, previousMonth, cancellationToken);
             if (month.Count > 0 && hasDevices)
             {
-                sent += await devices.SendToAllAsync(culture =>
+                sent += await devices.SendToAllAsync(PushTopic.Summary, culture =>
                 {
                     var text = texts.MonthlySummary(culture, month);
                     return new PushMessage(text.Title, text.Body, "/dividends", $"summary-{previousMonth:yyyy-MM}");
@@ -77,8 +83,47 @@ public sealed class Notifier(IDbContextFactory<T212ExtDbContext> dbFactory, Push
             state.LastSummaryMonth = previousMonth;
         }
 
+        // This week's expected payments, once, from Monday morning.
+        var monday = DateOnly.FromDateTime(now.UtcDateTime).AddDays(-(((int)now.UtcDateTime.DayOfWeek + 6) % 7));
+        var weekDue = now >= new DateTimeOffset(monday.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero) + WeekNoticeAt;
+        if (state.LastWeekNotice is null)
+        {
+            state.LastWeekNotice = weekDue ? monday : monday.AddDays(-7);
+        }
+        else if (weekDue && state.LastWeekNotice < monday)
+        {
+            var week = await WeekAsync(monday, cancellationToken);
+            if (week.Payments.Count > 0 && hasDevices)
+            {
+                sent += await devices.SendToAllAsync(PushTopic.Week, culture =>
+                {
+                    var text = texts.WeekAhead(culture, week);
+                    return new PushMessage(text.Title, text.Body, "/calendar", $"week-{monday:yyyy-MM-dd}");
+                }, cancellationToken);
+            }
+            state.LastWeekNotice = monday;
+        }
+
         await db.SaveChangesAsync(cancellationToken);
         return new JobResult(sent, 0);
+    }
+
+    /// <summary>The payments the calendar expects from Monday to Sunday (estimated, or due any day now), in every currency, all accounts.</summary>
+    internal async Task<WeekNotice> WeekAsync(DateOnly monday, CancellationToken cancellationToken)
+    {
+        var payments = new List<ExpectedNotice>();
+        foreach (var currency in await analytics.GetCurrenciesAsync(null, cancellationToken))
+        {
+            var dashboard = await analytics.GetDashboardAsync(null, currency, cancellationToken);
+            payments.AddRange((dashboard?.Upcoming ?? [])
+                .Where(e => e.Status != ExpectedStatus.Late && e.ExpectedOn >= monday && e.ExpectedOn < monday.AddDays(7))
+                .Select(e => new ExpectedNotice(e.Name ?? e.Ticker.Split('_')[0], e.Amount, currency, e.ExpectedOn)));
+        }
+
+        return new WeekNotice(
+            monday,
+            [.. payments.OrderByDescending(p => p.Amount)],
+            [.. payments.GroupBy(p => p.Currency).Select(g => (g.Key, g.Sum(p => p.Amount))).OrderByDescending(t => t.Item2)]);
     }
 
     /// <summary>A month's dividends per currency (UTC months, as the dividend pages count them), with the same month a year before.</summary>

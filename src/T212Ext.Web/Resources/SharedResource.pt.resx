@@ -374,22 +374,36 @@
   <data name="Positions_Subtitle" xml:space="preserve"><value>Posições abertas da última fotografia</value></data>
   <data name="Positions_YieldOnCost" xml:space="preserve"><value>Yield sobre custo {0}</value></data>
   <data name="Push_AndMore" xml:space="preserve"><value>e mais {0}</value></data>
+  <data name="Push_ChoiceDividends" xml:space="preserve"><value>Novos dividendos</value></data>
+  <data name="Push_ChoiceSummary" xml:space="preserve"><value>Resumo mensal</value></data>
+  <data name="Push_ChoiceWeek" xml:space="preserve"><value>Pagamentos previstos da semana (segunda de manhã)</value></data>
+  <data name="Push_Choices" xml:space="preserve"><value>Neste dispositivo</value></data>
   <data name="Push_Denied" xml:space="preserve"><value>As notificações estão bloqueadas para este site. Permita-as nas definições do site no browser e recarregue a página.</value></data>
   <data name="Push_Device" xml:space="preserve"><value>Dispositivo</value></data>
   <data name="Push_Devices" xml:space="preserve"><value>Dispositivos com notificações ligadas</value></data>
   <data name="Push_Dividend_Title" xml:space="preserve"><value>Dividendo recebido</value></data>
   <data name="Push_Dividends_Title" xml:space="preserve"><value>{0} dividendos recebidos</value></data>
   <data name="Push_Failed" xml:space="preserve"><value>Não foi possível ligar as notificações: {0}</value></data>
+  <data name="Push_Gets" xml:space="preserve"><value>Recebe</value></data>
+  <data name="Push_GetsDividends" xml:space="preserve"><value>Dividendos</value></data>
+  <data name="Push_GetsNothing" xml:space="preserve"><value>Nada</value></data>
+  <data name="Push_GetsQuiet" xml:space="preserve"><value>silêncio {0}–{1}</value></data>
+  <data name="Push_GetsSummary" xml:space="preserve"><value>Resumo</value></data>
+  <data name="Push_GetsWeek" xml:space="preserve"><value>Semana</value></data>
   <data name="Push_InstallFirst" xml:space="preserve"><value>No iPhone, as notificações só funcionam na app instalada: toque em Partilhar, depois em Adicionar ao ecrã principal, e abra o T212Ext pelo ícone.</value></data>
   <data name="Push_LastSent" xml:space="preserve"><value>Última notificação</value></data>
   <data name="Push_NoDevices" xml:space="preserve"><value>Ainda nenhum dispositivo.</value></data>
   <data name="Push_NotConfigured" xml:space="preserve"><value>As notificações não estão configuradas no servidor (Push__PublicKey, Push__PrivateKey e Push__Subject no .env; veja o guia de instalação).</value></data>
   <data name="Push_Off" xml:space="preserve"><value>Desligadas</value></data>
   <data name="Push_On" xml:space="preserve"><value>Ligadas</value></data>
+  <data name="Push_Quiet" xml:space="preserve"><value>Horas de silêncio: sem som nem vibração</value></data>
+  <data name="Push_QuietFrom" xml:space="preserve"><value>Das</value></data>
+  <data name="Push_QuietHint" xml:space="preserve"><value>No fuso horário deste dispositivo ({0}). As notificações chegam na mesma, em silêncio.</value></data>
+  <data name="Push_QuietTo" xml:space="preserve"><value>às</value></data>
   <data name="Push_Refused" xml:space="preserve"><value>O servidor não aceitou este dispositivo (serviço de notificações desconhecido, ou dispositivos a mais).</value></data>
   <data name="Push_SendTest" xml:space="preserve"><value>Enviar um teste</value></data>
   <data name="Push_Since" xml:space="preserve"><value>Ligado desde</value></data>
-  <data name="Push_Subtitle" xml:space="preserve"><value>Uma notificação no telemóvel ou no computador quando chega um dividendo, e um resumo todos os meses.</value></data>
+  <data name="Push_Subtitle" xml:space="preserve"><value>Uma notificação no telemóvel ou no computador quando chega um dividendo, um resumo todos os meses e os pagamentos previstos de cada semana.</value></data>
   <data name="Push_Summary_Body" xml:space="preserve"><value>{0} em {1} pagamentos.</value></data>
   <data name="Push_Summary_Change" xml:space="preserve"><value>{0} face ao ano anterior</value></data>
   <data name="Push_Summary_Title" xml:space="preserve"><value>Dividendos de {0}</value></data>
@@ -404,8 +418,11 @@
   <data name="Push_TurnedOff" xml:space="preserve"><value>As notificações estão desligadas neste dispositivo.</value></data>
   <data name="Push_TurnedOn" xml:space="preserve"><value>As notificações estão ligadas neste dispositivo.</value></data>
   <data name="Push_Unsupported" xml:space="preserve"><value>Este browser não consegue mostrar notificações.</value></data>
+  <data name="Push_Week_Title" xml:space="preserve"><value>Esta semana: {0} previstos</value></data>
   <data name="Push_WhatDividends" xml:space="preserve"><value>Cada dividendo que chega, depois da sincronização que o encontra (uma só notificação para vários de uma vez).</value></data>
+  <data name="Push_WhatNote" xml:space="preserve"><value>Cada dispositivo escolhe o que recebe, e as suas horas de silêncio, depois de ativar as notificações nele.</value></data>
   <data name="Push_WhatSummary" xml:space="preserve"><value>No início de cada mês, os dividendos do mês anterior, comparados com o mesmo mês do ano anterior.</value></data>
+  <data name="Push_WhatWeek" xml:space="preserve"><value>À segunda de manhã, os pagamentos que o calendário prevê para essa semana (sem nada previsto, nada é enviado).</value></data>
   <data name="Push_WhatYouGet" xml:space="preserve"><value>O que recebe</value></data>
   <data name="Pwa_Description" xml:space="preserve"><value>Os seus dividendos, histórico e relatório de IRS da Trading 212.</value></data>
   <data name="Quadro11_Account" xml:space="preserve"><value>número de conta {0}, país da instituição {1} (confirme no contrato)</value></data>

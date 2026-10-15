@@ -175,6 +175,7 @@ internal sealed class PushDeviceConfiguration : IEntityTypeConfiguration<PushDev
         builder.Property(d => d.Auth).HasMaxLength(100);
         builder.Property(d => d.Label).HasMaxLength(100);
         builder.Property(d => d.Culture).HasMaxLength(Lengths.Key);
+        builder.Property(d => d.TimeZone).HasMaxLength(64);
         builder.HasIndex(d => d.EndpointHash).IsUnique();
     }
 }

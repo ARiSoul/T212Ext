@@ -21,7 +21,7 @@
         <div class="pc-grid d-none d-lg-grid" role="grid" aria-label="@Month.ToString("MMMM yyyy", CultureInfo.CurrentCulture)">
             @foreach (var day in WeekDays)
             {
-                <div class="pc-weekday" role="columnheader">@DayName(day)</div>
+                <div class="pc-weekday" role="columnheader">@Fmt.DayShort(day)</div>
             }
             @for (var i = 0; i < Leading; i++)
             {
@@ -51,7 +51,7 @@
             @foreach (var group in InMonth.GroupBy(e => e.Date))
             {
                 <div class="pc-agenda-day @(group.Key == Today ? "pc-today" : "")">
-                    <div class="pc-agenda-date">@DayName(group.Key.DayOfWeek) @group.Key.Day</div>
+                    <div class="pc-agenda-date">@Fmt.DayShort(group.Key.DayOfWeek) @group.Key.Day</div>
                     <div class="flex-grow-1" style="min-width: 0">
                         @foreach (var entry in group)
                         {
@@ -95,13 +95,6 @@
     private static IEnumerable<DayOfWeek> WeekDays => Enumerable.Range(0, 7).Select(i => (DayOfWeek)((i + 1) % 7));
 
     private int Leading => ((int)Month.DayOfWeek + 6) % 7;
-
-    /// <summary>Three letters: "seg", "Mon", "lun" (some cultures' abbreviations are the full name).</summary>
-    private static string DayName(DayOfWeek day)
-    {
-        var name = CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedDayName(day).TrimEnd('.');
-        return name.Length > 3 ? name[..3] : name;
-    }
 
     private string KindText(PaymentKind kind) => kind switch
     {
