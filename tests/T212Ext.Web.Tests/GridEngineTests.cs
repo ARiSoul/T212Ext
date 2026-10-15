@@ -115,4 +115,69 @@ public class GridEngineTests
 
         Assert.Equal("Name;Note" + Environment.NewLine + "Apple;\"a;b \"\"c\"\"\"" + Environment.NewLine, csv);
     }
+
+    private static readonly IReadOnlyList<GridColumn<Row>> RangeColumns =
+    [
+        new() { Key = "name", Title = "Name", Value = r => r.Name },
+        new() { Key = "kind", Title = "Kind", Value = r => r.Kind },
+        new() { Key = "date", Title = "Date", Value = r => r.Date, RangeFilter = true },
+    ];
+
+    [Fact]
+    public void A_date_range_keeps_both_ends_and_either_can_be_open()
+    {
+        GridState Range(DateOnly? from, DateOnly? to) => new() { Ranges = new() { ["date"] = new DateRange { From = from, To = to } } };
+        IEnumerable<string> Names(GridState state) => GridEngine.Apply(Rows, RangeColumns, state).Filtered.Select(r => r.Name).Order();
+
+        Assert.Equal(["Apple", "Vanguard All-World"], Names(Range(new(2025, 3, 1), new(2026, 1, 1))));
+        Assert.Equal(["Microsoft", "Vanguard All-World"], Names(Range(new(2025, 3, 2), null)));
+        Assert.Equal(["Realty Income"], Names(Range(null, new(2025, 2, 28))));
+    }
+
+    [Fact]
+    public void Hidden_columns_are_not_searched_and_at_least_one_stays_visible()
+    {
+        var hidden = new GridState { Hidden = ["kind"], Search = "etf" };
+
+        Assert.Empty(GridEngine.Apply(Rows, RangeColumns, hidden).Filtered);
+        Assert.Equal(["name", "date"], GridEngine.Visible(RangeColumns, hidden).Select(c => c.Key));
+        Assert.Equal(3, GridEngine.Visible(RangeColumns, new GridState { Hidden = ["name", "kind", "date"] }).Count);
+    }
+
+    [Fact]
+    public void Saved_views_replace_one_of_the_same_name_newest_first_and_are_copies()
+    {
+        var state = new GridState { Search = "apple", Page = 3, Hidden = ["kind"] };
+
+        var views = GridEngine.SaveView([], "Mine", state);
+        views = GridEngine.SaveView(views, "Other", new GridState());
+        views = GridEngine.SaveView(views, " mine ", new GridState { Search = "msft" });
+        state.Hidden.Add("date");
+
+        Assert.Equal(["mine", "Other"], views.Select(v => v.Name));
+        Assert.Equal("msft", views[0].State.Search);
+        Assert.Equal(1, GridEngine.SaveView([], "x", state)[0].State.Page);   // a view does not keep the page
+
+        var first = GridEngine.SaveView([], "Mine", new GridState { Hidden = ["kind"] });
+        var copy = first[0].State.Copy();
+        copy.Hidden.Add("date");
+        Assert.Equal(["kind"], first[0].State.Hidden);
+    }
+
+    [Fact]
+    public void At_most_twenty_views_are_kept()
+    {
+        List<GridSavedView> views = [];
+        for (var i = 0; i < 25; i++)
+            views = GridEngine.SaveView(views, $"v{i}", new GridState());
+
+        Assert.Equal(GridEngine.MaxSavedViews, views.Count);
+        Assert.Equal("v24", views[0].Name);
+    }
+
+    [Theory]
+    [InlineData("2026-01-31T23:30:00-02:00", "2026-02-01")]
+    [InlineData("2026-01-31T23:30:00+00:00", "2026-01-31")]
+    public void Dates_are_filtered_by_their_utc_day_as_the_grids_show_them(string value, string day) =>
+        Assert.Equal(DateOnly.Parse(day), GridEngine.DateOf(DateTimeOffset.Parse(value)));
 }

@@ -94,7 +94,7 @@
 
     private IReadOnlyList<GridColumn<DividendRow>> Columns => [
         new() { Key = "paid", Title = L["Col_Paid"], Value = r => r.PaidOn, Text = r => Fmt.Date(r.PaidOn), MobileTitle = true,
-                Filterable = true, FilterKey = r => r.PaidOn.UtcDateTime.Year.ToString(), FilterValuesDescending = true },
+                Filterable = true, FilterKey = r => r.PaidOn.UtcDateTime.Year.ToString(), FilterValuesDescending = true, RangeFilter = true },
         new() { Key = "type", Title = L["Col_Type"], Value = r => Labels.Humanize(r.Type), Filterable = true, HideBelow = "lg" },
         new() { Key = "shares", Title = L["Col_Shares"], Value = r => r.Quantity, Text = r => Fmt.Number(r.Quantity), AlignEnd = true },
         new() { Key = "gross", Title = L["Col_GrossPerShare"], Value = r => r.GrossAmountPerShare,

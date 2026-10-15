@@ -44,9 +44,83 @@
             </div>
         }
 
+        @foreach (var column in Columns.Where(c => c.RangeFilter))
+        {
+            var range = _state.Ranges.GetValueOrDefault(column.Key);
+            var menuKey = "range:" + column.Key;
+            <div class="grid-menu-anchor">
+                <button type="button" class="btn btn-sm @(range is { IsEmpty: false } ? "btn-primary" : "btn-outline-secondary")" @onclick="() => ToggleMenu(menuKey)">
+                    <i class="bi bi-calendar-range" aria-hidden="true"></i>
+                    @column.Title@(range is { IsEmpty: false } ? $": {RangeText(range)}" : "")
+                </button>
+                @if (_openMenu == menuKey)
+                {
+                    <div class="grid-menu">
+                        <label class="small d-block mb-2">@L["Grid_DateFrom"]
+                            <input type="date" class="form-control form-control-sm" aria-label="@($"{column.Title}: {L["Grid_DateFrom"]}")" value="@DateValue(range?.From)" @onchange="e => SetRangeAsync(column.Key, e, from: true)" />
+                        </label>
+                        <label class="small d-block mb-2">@L["Grid_DateTo"]
+                            <input type="date" class="form-control form-control-sm" aria-label="@($"{column.Title}: {L["Grid_DateTo"]}")" value="@DateValue(range?.To)" @onchange="e => SetRangeAsync(column.Key, e, from: false)" />
+                        </label>
+                        @if (range is { IsEmpty: false })
+                        {
+                            <button type="button" class="btn btn-link btn-sm px-0" @onclick="() => ClearRangeAsync(column.Key)">@L["Grid_ClearFilter"]</button>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
         @Toolbar
 
         <div class="ms-auto d-flex gap-2">
+            <div class="grid-menu-anchor">
+                <button type="button" class="btn btn-sm btn-outline-secondary" title="@L["Grid_Views"]" @onclick="@(() => ToggleMenu("views"))">
+                    <i class="bi bi-bookmark" aria-hidden="true"></i> <span class="d-none d-sm-inline">@L["Grid_Views"]</span>
+                </button>
+                @if (_openMenu == "views")
+                {
+                    <div class="grid-menu grid-menu-wide grid-menu-end">
+                        @if (_views.Count == 0)
+                        {
+                            <div class="small text-body-secondary mb-2">@L["Grid_NoViews"]</div>
+                        }
+                        @foreach (var view in _views)
+                        {
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <button type="button" class="btn btn-sm btn-link px-0 text-start flex-grow-1" @onclick="() => ApplyViewAsync(view)">@view.Name</button>
+                                <button type="button" class="btn btn-sm btn-link text-negative p-0" aria-label="@L["Grid_DeleteView"]" title="@L["Grid_DeleteView"]" @onclick="() => DeleteViewAsync(view)">
+                                    <i class="bi bi-trash" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        }
+                        <div class="d-flex gap-1 mt-2">
+                            <input type="text" class="form-control form-control-sm" maxlength="40" placeholder="@L["Grid_ViewName"]" aria-label="@L["Grid_ViewName"]"
+                                   value="@_newViewName" @oninput="e => _newViewName = e.Value?.ToString()" />
+                            <button type="button" class="btn btn-sm btn-primary text-nowrap" disabled="@string.IsNullOrWhiteSpace(_newViewName)" @onclick="SaveViewAsync">@L["Grid_SaveView"]</button>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="grid-menu-anchor">
+                <button type="button" class="btn btn-sm @(_state.Hidden.Count > 0 ? "btn-primary" : "btn-outline-secondary")" title="@L["Grid_Columns"]" @onclick="@(() => ToggleMenu("columns"))">
+                    <i class="bi bi-layout-three-columns" aria-hidden="true"></i> <span class="d-none d-sm-inline">@L["Grid_Columns"]</span>
+                </button>
+                @if (_openMenu == "columns")
+                {
+                    <div class="grid-menu grid-menu-end">
+                        @foreach (var column in Columns.Where(c => c.Title.Length > 0))
+                        {
+                            var shown = !_state.Hidden.Contains(column.Key);
+                            <label class="grid-menu-option">
+                                <input type="checkbox" class="form-check-input" checked="@shown" disabled="@(shown && VisibleColumns.Count == 1)"
+                                       @onchange="() => ToggleColumnAsync(column.Key)" />
+                                <span>@column.Title</span>
+                            </label>
+                        }
+                    </div>
+                }
+            </div>
             @if (Columns.Any(c => c.Summaries.Count > 0))
             {
                 <div class="grid-menu-anchor">
@@ -105,7 +179,7 @@
             <table class="table table-hover align-middle mb-0 grid-table">
                 <thead>
                     <tr>
-                        @foreach (var column in Columns)
+                        @foreach (var column in VisibleColumns)
                         {
                             <th class="@HeaderClass(column)">
                                 <div class="grid-th">
@@ -129,7 +203,7 @@
                     @foreach (var item in _view.Page)
                     {
                         <tr class="@(RowClick.HasDelegate ? "grid-row-link" : "")" @onclick="() => OnRowClick(item)">
-                            @foreach (var column in Columns)
+                            @foreach (var column in VisibleColumns)
                             {
                                 <td class="@CellClass(column)">@Cell(column, item)</td>
                             }
@@ -140,7 +214,7 @@
                 {
                     <tfoot>
                         <tr class="grid-summary-row">
-                            @foreach (var column in Columns)
+                            @foreach (var column in VisibleColumns)
                             {
                                 <td class="@CellClass(column)">
                                     @if (_view.Summaries.TryGetValue(column.Key, out var values))
@@ -162,7 +236,7 @@
         <div class="d-md-none">
             <div class="d-flex gap-2 mb-2">
                 <select class="form-select form-select-sm" aria-label="@L["Grid_SortBy"]" value="@(_state.SortKey ?? "")" @onchange="OnMobileSort">
-                    @foreach (var column in Columns.Where(c => c.Sortable))
+                    @foreach (var column in VisibleColumns.Where(c => c.Sortable))
                     {
                         <option value="@column.Key">@L["Grid_SortBy"]: @column.Title</option>
                     }
@@ -173,14 +247,14 @@
             </div>
             @foreach (var item in _view.Page)
             {
-                var title = Columns.FirstOrDefault(c => c.MobileTitle);
+                var title = VisibleColumns.FirstOrDefault(c => c.MobileTitle);
                 <div class="card grid-card mb-2 @(RowClick.HasDelegate ? "grid-row-link" : "")" @onclick="() => OnRowClick(item)">
                     <div class="card-body py-2 px-3">
                         @if (title is not null)
                         {
                             <div class="fw-semibold mb-1">@Cell(title, item)</div>
                         }
-                        @foreach (var column in Columns.Where(c => !c.MobileTitle && !c.HideOnMobile))
+                        @foreach (var column in VisibleColumns.Where(c => !c.MobileTitle && !c.HideOnMobile))
                         {
                             <div class="d-flex justify-content-between gap-3 small py-1 grid-card-field">
                                 <span class="text-body-secondary">@column.Title</span>
@@ -194,7 +268,7 @@
             {
                 <div class="card grid-card mb-2">
                     <div class="card-body py-2 px-3 small">
-                        @foreach (var column in Columns.Where(c => _view.Summaries.ContainsKey(c.Key)))
+                        @foreach (var column in VisibleColumns.Where(c => _view.Summaries.ContainsKey(c.Key)))
                         {
                             <div class="d-flex justify-content-between gap-3 py-1">
                                 <span class="text-body-secondary">@column.Title</span>
@@ -282,14 +356,20 @@
     private GridView<TItem>? _view;
     private string? _openMenu;
     private bool _restored;
+    private List<GridSavedView> _views = [];
+    private string? _newViewName;
 
     private string StorageName => $"t212ext.grid.{StorageKey}";
+    private string ViewsStorageName => $"t212ext.gridviews.{StorageKey}";
+    private IReadOnlyList<GridColumn<TItem>> VisibleColumns => GridEngine.Visible(Columns, _state);
     private int First => _view is null || _view.Filtered.Count == 0 ? 0 : (_view.PageNumber - 1) * _state.PageSize + 1;
     private int Last => _view is null ? 0 : Math.Min(_view.PageNumber * _state.PageSize, _view.Filtered.Count);
 
     private bool IsChanged =>
         !string.IsNullOrEmpty(_state.Search)
         || _state.Filters.Count > 0
+        || _state.Ranges.Count > 0
+        || _state.Hidden.Count > 0
         || _state.SortKey != DefaultSortKey
         || _state.SortDescending != DefaultSortDescending
         || _state.PageSize != DefaultPageSize
@@ -306,17 +386,24 @@
 
         var saved = await Storage.GetAsync<GridState>(StorageName);
         if (saved is not null)
-        {
-            saved.Filters = saved.Filters.Where(f => Columns.Any(c => c.Key == f.Key && c.Filterable)).ToDictionary();
-            saved.Summaries = saved.Summaries.Where(s => Columns.Any(c => c.Key == s.Key)).ToDictionary();
-            if (!PageSizes.Contains(saved.PageSize))
-                saved.PageSize = DefaultPageSize;
-            _state = saved;
-        }
+            _state = Sanitised(saved);
+        _views = await Storage.GetAsync<List<GridSavedView>>(ViewsStorageName) ?? [];
 
         _restored = true;
         Recompute();
         StateHasChanged();
+    }
+
+    // A saved state may name columns this version no longer has.
+    private GridState Sanitised(GridState state)
+    {
+        state.Filters = (state.Filters ?? []).Where(f => Columns.Any(c => c.Key == f.Key && c.Filterable)).ToDictionary();
+        state.Ranges = (state.Ranges ?? []).Where(r => r.Value is { IsEmpty: false } && Columns.Any(c => c.Key == r.Key && c.RangeFilter)).ToDictionary();
+        state.Summaries = (state.Summaries ?? []).Where(s => Columns.Any(c => c.Key == s.Key)).ToDictionary();
+        state.Hidden = [.. (state.Hidden ?? []).Where(h => Columns.Any(c => c.Key == h))];
+        if (!PageSizes.Contains(state.PageSize))
+            state.PageSize = DefaultPageSize;
+        return state;
     }
 
     private GridState DefaultState() => new()
@@ -363,6 +450,60 @@
         _state.Filters.Remove(key);
         _openMenu = null;
         return ChangedAsync();
+    }
+
+    private Task SetRangeAsync(string key, ChangeEventArgs e, bool from)
+    {
+        var range = _state.Ranges.GetValueOrDefault(key) ?? new DateRange();
+        DateOnly? day = DateOnly.TryParseExact(e.Value?.ToString(), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsed)
+            ? parsed
+            : null;
+        if (from)
+            range.From = day;
+        else
+            range.To = day;
+
+        if (range.IsEmpty)
+            _state.Ranges.Remove(key);
+        else
+            _state.Ranges[key] = range;
+        return ChangedAsync();
+    }
+
+    private Task ClearRangeAsync(string key)
+    {
+        _state.Ranges.Remove(key);
+        _openMenu = null;
+        return ChangedAsync();
+    }
+
+    private Task ToggleColumnAsync(string key)
+    {
+        if (!_state.Hidden.Remove(key) && VisibleColumns.Count > 1)
+            _state.Hidden.Add(key);
+        return ChangedAsync(backToFirstPage: false);
+    }
+
+    private async Task SaveViewAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_newViewName))
+            return;
+        _views = GridEngine.SaveView(_views, _newViewName, _state);
+        _newViewName = null;
+        await Storage.SetAsync(ViewsStorageName, _views);
+    }
+
+    private async Task ApplyViewAsync(GridSavedView view)
+    {
+        _state = Sanitised(view.State.Copy());
+        _openMenu = null;
+        await ChangedAsync();
+    }
+
+    private async Task DeleteViewAsync(GridSavedView view)
+    {
+        _views.Remove(view);
+        await Storage.SetAsync(ViewsStorageName, _views);
     }
 
     private Task SortAsync(string key)
@@ -429,7 +570,7 @@
         if (_view is null || ExportFileName is null)
             return;
 
-        var csv = GridEngine.ToCsv(_view.Filtered, Columns);
+        var csv = GridEngine.ToCsv(_view.Filtered, VisibleColumns);
         await JS.InvokeVoidAsync("t212ext.downloadText", $"{ExportFileName}-{DateTime.Now:yyyy-MM-dd}.csv", csv, "text/csv;charset=utf-8");
     }
 
@@ -472,6 +613,11 @@
     };
 
     private string SummaryLabel(SummaryKind kind) => L[$"Grid_Summary_{kind}"];
+
+    private static string DateValue(DateOnly? day) => day?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) ?? "";
+
+    private static string RangeText(DateRange range) =>
+        $"{(range.From is { } from ? Fmt.Date(from) : "…")} – {(range.To is { } to ? Fmt.Date(to) : "…")}";
 
     private static bool SameSummaries(Dictionary<string, List<SummaryKind>> a, Dictionary<string, List<SummaryKind>> b) =>
         a.Count == b.Count && a.All(kv => b.TryGetValue(kv.Key, out var other) && kv.Value.Order().SequenceEqual(other.Order()));

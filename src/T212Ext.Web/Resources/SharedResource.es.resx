@@ -178,18 +178,24 @@
   <data name="Gains_Unsupported" xml:space="preserve"><value>Operaciones societarias aún no tratadas (desdoblamientos, spin-offs…), revisa estos activos a mano:</value></data>
   <data name="Gains_YearOrMore" xml:space="preserve"><value>365 días o más</value></data>
   <data name="Grid_ClearFilter" xml:space="preserve"><value>Borrar</value></data>
+  <data name="Grid_Columns" xml:space="preserve"><value>Columnas</value></data>
+  <data name="Grid_DateFrom" xml:space="preserve"><value>Desde</value></data>
+  <data name="Grid_DateTo" xml:space="preserve"><value>Hasta</value></data>
+  <data name="Grid_DeleteView" xml:space="preserve"><value>Eliminar vista</value></data>
   <data name="Grid_Empty" xml:space="preserve"><value>Todavía no hay nada aquí.</value></data>
   <data name="Grid_Export" xml:space="preserve"><value>Exportar</value></data>
   <data name="Grid_FirstPage" xml:space="preserve"><value>Primera página</value></data>
   <data name="Grid_LastPage" xml:space="preserve"><value>Última página</value></data>
   <data name="Grid_NextPage" xml:space="preserve"><value>Página siguiente</value></data>
   <data name="Grid_NoMatches" xml:space="preserve"><value>Ninguna fila coincide con la búsqueda o los filtros.</value></data>
+  <data name="Grid_NoViews" xml:space="preserve"><value>Aún no hay vistas guardadas. Elige los filtros, el orden y las columnas, dales un nombre y guarda.</value></data>
   <data name="Grid_OfTotal" xml:space="preserve"><value>(filtradas de {0})</value></data>
   <data name="Grid_PageSize" xml:space="preserve"><value>Filas por página</value></data>
   <data name="Grid_Pages" xml:space="preserve"><value>Páginas</value></data>
   <data name="Grid_PerPage" xml:space="preserve"><value>{0} por página</value></data>
   <data name="Grid_PreviousPage" xml:space="preserve"><value>Página anterior</value></data>
   <data name="Grid_Reset" xml:space="preserve"><value>Restablecer</value></data>
+  <data name="Grid_SaveView" xml:space="preserve"><value>Guardar</value></data>
   <data name="Grid_Search" xml:space="preserve"><value>Buscar</value></data>
   <data name="Grid_Showing" xml:space="preserve"><value>{0}–{1} de {2}</value></data>
   <data name="Grid_SortBy" xml:space="preserve"><value>Ordenar por</value></data>
@@ -200,6 +206,8 @@
   <data name="Grid_Summary_Max" xml:space="preserve"><value>Máx.</value></data>
   <data name="Grid_Summary_Min" xml:space="preserve"><value>Mín.</value></data>
   <data name="Grid_Summary_Sum" xml:space="preserve"><value>Suma</value></data>
+  <data name="Grid_ViewName" xml:space="preserve"><value>Nombre de la vista</value></data>
+  <data name="Grid_Views" xml:space="preserve"><value>Vistas</value></data>
   <data name="Import_Cash" xml:space="preserve"><value>Movimientos de efectivo: {0} nuevos, {1} ya conocidos</value></data>
   <data name="Import_Dividends" xml:space="preserve"><value>Dividendos: {0} nuevos, {1} ya conocidos</value></data>
   <data name="Import_Failed" xml:space="preserve"><value>La importación falló. Consulta el registro del servidor.</value></data>

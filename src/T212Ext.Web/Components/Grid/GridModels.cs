@@ -39,6 +39,9 @@ public sealed class GridColumn<TItem>
     /// <summary>Order of the filter's values: newest years first, for example.</summary>
     public bool FilterValuesDescending { get; init; }
 
+    /// <summary>A date column that can be filtered by a range of days ("from", "to"), by <see cref="Value"/>.</summary>
+    public bool RangeFilter { get; init; }
+
     /// <summary>Summaries offered for this column. Empty: none.</summary>
     public IReadOnlyList<SummaryKind> Summaries { get; init; } = [];
 
@@ -63,16 +66,50 @@ public sealed class GridColumn<TItem>
     public static IReadOnlyList<SummaryKind> Numeric { get; } = [SummaryKind.Sum, SummaryKind.Avg, SummaryKind.Min, SummaryKind.Max, SummaryKind.Count];
 }
 
+/// <summary>A range of days, both ends included; either end may be open.</summary>
+public sealed class DateRange
+{
+    public DateOnly? From { get; set; }
+    public DateOnly? To { get; set; }
+
+    public bool IsEmpty => From is null && To is null;
+}
+
 /// <summary>What the person chose in a grid. Saved per grid in the browser.</summary>
 public sealed class GridState
 {
     public string? Search { get; set; }
     public Dictionary<string, List<string>> Filters { get; set; } = [];
+    public Dictionary<string, DateRange> Ranges { get; set; } = [];
     public string? SortKey { get; set; }
     public bool SortDescending { get; set; }
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 25;
     public Dictionary<string, List<SummaryKind>> Summaries { get; set; } = [];
+
+    /// <summary>The keys of the columns the person hid.</summary>
+    public List<string> Hidden { get; set; } = [];
+
+    /// <summary>A deep copy, so a saved view does not change with the grid.</summary>
+    public GridState Copy() => new()
+    {
+        Search = Search,
+        Filters = Filters.ToDictionary(f => f.Key, f => f.Value.ToList()),
+        Ranges = Ranges.ToDictionary(r => r.Key, r => new DateRange { From = r.Value.From, To = r.Value.To }),
+        SortKey = SortKey,
+        SortDescending = SortDescending,
+        Page = Page,
+        PageSize = PageSize,
+        Summaries = Summaries.ToDictionary(s => s.Key, s => s.Value.ToList()),
+        Hidden = [.. Hidden],
+    };
+}
+
+/// <summary>A named grid state the person saved, to come back to with one click.</summary>
+public sealed class GridSavedView
+{
+    public string Name { get; set; } = "";
+    public GridState State { get; set; } = new();
 }
 
 public sealed record SummaryValue(SummaryKind Kind, string Text);
