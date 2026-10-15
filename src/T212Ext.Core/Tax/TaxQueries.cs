@@ -103,7 +103,7 @@ public sealed class TaxQueries(IDbContextFactory<T212ExtDbContext> dbFactory)
         return [.. dates.Select(d => d.UtcDateTime.Year).Distinct().OrderDescending()];
     }
 
-    public async Task<IrsReportResult> GetReportAsync(int? accountId, int year, string? interestCountry, bool deductRefunds, CancellationToken cancellationToken = default)
+    public async Task<IrsReportResult> GetReportAsync(int? accountId, int year, string? interestCountry, bool deductRefunds, bool capAtTreaty = true, CancellationToken cancellationToken = default)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var from = new DateTimeOffset(year, 1, 1, 0, 0, 0, TimeSpan.Zero);
@@ -140,6 +140,7 @@ public sealed class TaxQueries(IDbContextFactory<T212ExtDbContext> dbFactory)
             overrides,
             new RateTable(rates.Select(r => (r.Currency, r.Date, r.PerEuro))),
             interestCountry,
-            deductRefunds);
+            deductRefunds,
+            capAtTreaty);
     }
 }

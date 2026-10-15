@@ -4,6 +4,12 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Agg_Mandatory" xml:space="preserve"><value>Base imponible con este saldo: {0}, igual o por encima del último tramo ({1}). El saldo de las tenencias inferiores a 365 días debe englobarse.</value></data>
+  <data name="Agg_NotMandatory" xml:space="preserve"><value>Base imponible con este saldo: {0}, por debajo del último tramo ({1}). El englobamento es opcional; sin él se aplica el tipo del 28%.</value></data>
+  <data name="Agg_OtherIncome" xml:space="preserve"><value>Resto de la base imponible del año (rendimento coletável), en euros</value></data>
+  <data name="Agg_OtherIncomeHint" xml:space="preserve"><value>Opcional, guardado solo en este navegador. De la liquidación del año, o una estimación: salarios, pensiones y otros rendimientos englobados, tras sus deducciones. En tributación conjunta, confírmalo en el simulador de la AT.</value></data>
+  <data name="Agg_Title" xml:space="preserve"><value>Englobamento obligatorio</value></data>
+  <data name="Agg_UnknownYear" xml:space="preserve"><value>La app aún no conoce el último tramo de {0}: compáralo con la tabla del IRS de ese año.</value></data>
   <data name="CashType_DEPOSIT" xml:space="preserve"><value>Depósitos</value></data>
   <data name="CashType_DIVIDEND_ADJUSTMENT" xml:space="preserve"><value>Devoluciones de retenciones</value></data>
   <data name="CashType_FEE" xml:space="preserve"><value>Comisiones</value></data>
@@ -150,6 +156,7 @@
   <data name="Gains_Flag_MissingRate" xml:space="preserve"><value>sin tipo de cambio</value></data>
   <data name="Gains_Flag_NoCountry" xml:space="preserve"><value>sin país de origen</value></data>
   <data name="Gains_Gain" xml:space="preserve"><value>Plus/minusvalía</value></data>
+  <data name="Gains_InflationNote" xml:space="preserve"><value>Acciones con más de 24 meses: el valor de adquisición se corrige con el coeficiente de desvalorización de la moneda (art. 50.º del Código do IRS, para partes sociais). Los valores aquí no se corrigen: la AT aplica el coeficiente en la liquidación. Para los ETF no está claro que se aplique.</value></data>
   <data name="Gains_LessThanYear" xml:space="preserve"><value>Menos de 365 días</value></data>
   <data name="Gains_LinesNote" xml:space="preserve"><value>Una línea por venta y por compra a la que se asoció (FIFO). El impuesto pagado en el extranjero es 0: no hay retención en estas ventas.</value></data>
   <data name="Gains_Listed" xml:space="preserve"><value>Valores admitidos a negociación</value></data>
@@ -159,7 +166,7 @@
   <data name="Gains_Realisation" xml:space="preserve"><value>Valor de transmisión</value></data>
   <data name="Gains_SalesCount" xml:space="preserve"><value>{0} ventas</value></data>
   <data name="Gains_ShortTerm" xml:space="preserve"><value>Saldo mantenido &lt; 365 días</value></data>
-  <data name="Gains_ShortTermHint" xml:space="preserve"><value>Puede tener que acumularse: ver la nota en TAX.md</value></data>
+  <data name="Gains_ShortTermHint" xml:space="preserve"><value>Si debe englobarse: ver abajo</value></data>
   <data name="Gains_ShortTermNote" xml:space="preserve"><value>Un saldo positivo de activos mantenidos menos de 365 días debe acumularse (englobamento) cuando la base imponible, incluyéndolo, alcanza el último tramo (83.696 EUR para rentas de 2025, 86.634 EUR para 2026) — art. 72.º n.º 14 del Código do IRS. Las pérdidas solo pueden compensarse (5 años) si se acumulan.</value></data>
   <data name="Gains_Shortfall" xml:space="preserve"><value>{0}: desde {1}, se vendieron {2} acciones más de las compradas — probablemente un desdoblamiento a registrar abajo</value></data>
   <data name="Gains_SoldOn" xml:space="preserve"><value>Fecha de transmisión</value></data>
@@ -333,6 +340,7 @@
   <data name="Sync_Last" xml:space="preserve"><value>Última sincronización {0}</value></data>
   <data name="Sync_Now" xml:space="preserve"><value>Sincronizar</value></data>
   <data name="Sync_Running" xml:space="preserve"><value>Sincronizando</value></data>
+  <data name="Tax_CapAtTreaty" xml:space="preserve"><value>Limitar el impuesto pagado en el extranjero al tipo del convenio</value></data>
   <data name="Tax_Check" xml:space="preserve"><value>Revisión</value></data>
   <data name="Tax_Code" xml:space="preserve"><value>Código</value></data>
   <data name="Tax_DeductRefunds" xml:space="preserve"><value>Descontar devoluciones de retenciones del año</value></data>
@@ -342,7 +350,7 @@
   <data name="Tax_DomesticTitle" xml:space="preserve"><value>Dividendos de empresas portuguesas</value></data>
   <data name="Tax_EffectiveRate" xml:space="preserve"><value>Tasa retenida</value></data>
   <data name="Tax_Flag_GrossDerived" xml:space="preserve"><value>bruto calculado a partir del neto</value></data>
-  <data name="Tax_Flag_HighWithholding" xml:space="preserve"><value>retención superior al 15 %</value></data>
+  <data name="Tax_Flag_HighWithholding" xml:space="preserve"><value>retención por encima del convenio</value></data>
   <data name="Tax_Flag_Mismatch" xml:space="preserve"><value>bruto − impuesto ≠ neto</value></data>
   <data name="Tax_Flag_MissingRate" xml:space="preserve"><value>sin tipo de cambio</value></data>
   <data name="Tax_Flag_NoCountry" xml:space="preserve"><value>sin país de origen (defínelo en el activo)</value></data>
@@ -352,12 +360,14 @@
   <data name="Tax_GrossIncome" xml:space="preserve"><value>Rendimiento bruto</value></data>
   <data name="Tax_GrossOriginal" xml:space="preserve"><value>Bruto (original)</value></data>
   <data name="Tax_InterestCountry" xml:space="preserve"><value>País de tu entidad de Trading 212</value></data>
+  <data name="Tax_LendingCode" xml:space="preserve"><value>E21 o E22</value></data>
   <data name="Tax_Line" xml:space="preserve"><value>Línea</value></data>
   <data name="Tax_MissingRates" xml:space="preserve"><value>Faltan tipos de cambio para:</value></data>
   <data name="Tax_NetEur" xml:space="preserve"><value>Neto EUR</value></data>
   <data name="Tax_NoLines" xml:space="preserve"><value>No hay dividendos extranjeros en este año.</value></data>
+  <data name="Tax_NoTreaty" xml:space="preserve"><value>sin convenio (28%)</value></data>
   <data name="Tax_OtherIncome" xml:space="preserve"><value>Intereses y préstamo de acciones</value></data>
-  <data name="Tax_OtherIncomeHint" xml:space="preserve"><value>Aparte; código a confirmar</value></data>
+  <data name="Tax_OtherIncomeHint" xml:space="preserve"><value>Intereses E21; préstamo de acciones E21 o E22</value></data>
   <data name="Tax_OtherIncomeNote" xml:space="preserve"><value>No se encontró orientación oficial sobre el código y el país de los intereses y del préstamo de acciones pagados por Trading 212. Lo más probable es E21 (intereses sin retención en Portugal) y el país de la entidad de Trading 212 de tu cuenta; confírmalo antes de declarar.</value></data>
   <data name="Tax_OtherIncomeTitle" xml:space="preserve"><value>Intereses y préstamo de acciones</value></data>
   <data name="Tax_Print" xml:space="preserve"><value>Imprimir</value></data>
@@ -380,8 +390,10 @@
   <data name="Tax_ToCheck" xml:space="preserve"><value>Dividendos a revisar</value></data>
   <data name="Tax_ToCheckHint" xml:space="preserve"><value>Mira la columna Revisión abajo</value></data>
   <data name="Tax_ToConfirm" xml:space="preserve"><value>a confirmar</value></data>
-  <data name="Tax_TreatyCapNote" xml:space="preserve"><value>Algunos países retuvieron más del 15 %. El crédito por el impuesto pagado en el extranjero está limitado a la tasa del convenio de doble imposición (art. 81.º del Código do IRS): comprueba cuánto declarar.</value></data>
+  <data name="Tax_Treaty" xml:space="preserve"><value>Convenio</value></data>
+  <data name="Tax_TreatyCapNote" xml:space="preserve"><value>Algunos dividendos tuvieron una retención mayor de la que permite el convenio de su país. En Portugal solo se acredita el importe del convenio (art. 81.º n.º 2 del Código do IRS); el exceso solo puede reclamarse a ese país (FAQ 3448 de la AT). Ningún texto oficial dice si el campo lleva el importe retenido o el limitado: el interruptor de arriba elige, limitado por defecto.</value></data>
   <data name="Tax_UpdateRates" xml:space="preserve"><value>Actualizar tipos de cambio</value></data>
+  <data name="Tax_Withheld" xml:space="preserve"><value>Retenido (menos devoluciones)</value></data>
   <data name="Tax_WithheldEur" xml:space="preserve"><value>Retenido EUR</value></data>
   <data name="Theme_Auto" xml:space="preserve"><value>Igual que el sistema</value></data>
   <data name="Theme_Dark" xml:space="preserve"><value>Oscuro</value></data>

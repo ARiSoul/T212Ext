@@ -25,8 +25,9 @@ public class IrsReportTests
         IReadOnlyList<IrsDividendInput> dividends,
         IReadOnlyList<IrsCashInput>? cash = null,
         IReadOnlyDictionary<string, string>? overrides = null,
-        bool deductRefunds = true) =>
-        IrsReport.Build(2025, dividends, cash ?? [], overrides ?? new Dictionary<string, string>(), Rates, "CY", deductRefunds);
+        bool deductRefunds = true,
+        bool capAtTreaty = true) =>
+        IrsReport.Build(2025, dividends, cash ?? [], overrides ?? new Dictionary<string, string>(), Rates, "CY", deductRefunds, capAtTreaty);
 
     [Fact]
     public void Gross_and_tax_paid_abroad_are_in_euros_at_the_payment_date_rate()
@@ -163,6 +164,8 @@ public class IrsReportTests
         ]);
 
         var lending = report.OtherIncome.Single(o => o.Type == CashTransactionTypes.LendingInterest);
+        Assert.False(lending.CodeConfirmed);   // E21 or E22: no official source picks one
+        Assert.True(report.OtherIncome.Single(o => o.Type == CashTransactionTypes.InterestOnFreeCash).CodeConfirmed);
         Assert.Equal(("E21", "CY", 196, 0.05m, 2), (lending.SuggestedCode, lending.Country!, lending.CountryNumeric!.Value, lending.AmountEur, lending.Count));
         Assert.Equal(1.00m, report.OtherIncome.Single(o => o.Type == CashTransactionTypes.InterestOnFreeCash).AmountEur);
     }
@@ -227,4 +230,74 @@ public class IrsReportTests
     [InlineData(null, null)]
     public void The_year_of_a_refund_comes_from_its_note(string? note, int? year) =>
         Assert.Equal(year, IrsReport.YearOf(note));
+
+    [Fact]
+    public void Withholding_above_the_treaty_is_declared_at_the_treaty_rate_unless_switched_off()
+    {
+        // 30 % withheld on a US dividend (no W-8BEN): 3.00 EUR on 10.00 EUR gross; the treaty allows 15 %.
+        var dividend = Dividend(14, 10, 1.0889m, "USD", 7.00m, 3.2667m);
+
+        var capped = Assert.Single(Build([dividend]).Lines);
+        var full = Assert.Single(Build([dividend], capAtTreaty: false).Lines);
+
+        Assert.Equal((1.50m, 3.00m), (capped.TaxPaidAbroad, capped.Withheld));
+        Assert.Equal((3.00m, 3.00m), (full.TaxPaidAbroad, full.Withheld));
+        Assert.Equal(0.15m, capped.Treaty!.Rate);
+    }
+
+    [Fact]
+    public void Each_country_is_checked_against_its_own_treaty()
+    {
+        // 12 % withheld: within the US 15 %, above the Dutch 10 %.
+        var us = Dividend(14, 10, 1.0889m, "USD", 8.80m, 1.306680m, id: 1);
+        var nl = Dividend(14, 10, 1.0889m, "USD", 8.80m, 1.306680m, isin: "NL0010273215", id: 2);
+
+        var report = Build([us, nl]);
+
+        Assert.False(report.Dividends[0].Flags.HasFlag(IrsFlags.HighWithholding));
+        Assert.True(report.Dividends[1].Flags.HasFlag(IrsFlags.HighWithholding));
+        Assert.Equal(1.00m, report.Lines.Single(l => l.Country == "NL").TaxPaidAbroad);
+    }
+
+    [Fact]
+    public void Without_a_treaty_the_credit_stops_at_the_portuguese_rate()
+    {
+        // Sweden (no treaty since 2022) withholds 30 %: up to 28 % is credited.
+        var sweden = Dividend(14, 10, 1.0889m, "USD", 7.00m, 3.2667m, isin: "SE0000108656");
+
+        var report = Build([sweden]);
+
+        Assert.True(Assert.Single(report.Dividends).Flags.HasFlag(IrsFlags.HighWithholding));
+        Assert.Equal(2.80m, Assert.Single(report.Lines).TaxPaidAbroad);
+        Assert.Null(report.Lines[0].Treaty!.Rate);
+    }
+
+    [Fact]
+    public void A_country_not_in_the_table_keeps_its_tax_and_warns_above_the_usual_rate()
+    {
+        var brazil = Dividend(14, 10, 1.0889m, "USD", 7.00m, 3.2667m, isin: "BRPETRACNPR6");
+
+        var report = Build([brazil]);
+
+        Assert.Equal(3.00m, Assert.Single(report.Lines).TaxPaidAbroad);
+        Assert.Null(report.Lines[0].Treaty);
+        Assert.True(report.Dividends[0].Flags.HasFlag(IrsFlags.HighWithholding));
+    }
+
+    [Theory]
+    [InlineData("GB", 2025, 0.15)]
+    [InlineData("GB", 2026, 0.10)]
+    [InlineData("NL", 2025, 0.10)]
+    [InlineData("CH", 2025, 0.15)]
+    [InlineData("JP", 2025, 0.10)]
+    public void Treaty_rates_follow_the_year(string country, int year, double rate) =>
+        Assert.Equal((decimal)rate, TreatyRates.For(country, year)!.Rate);
+
+    [Theory]
+    [InlineData("SE", 2021, false)]   // terminated from 2022; the old rate is not in the table
+    [InlineData("SE", 2022, true)]
+    [InlineData("FI", 2025, true)]
+    [InlineData("AU", 2025, true)]
+    public void Countries_without_a_treaty_are_known(string country, int year, bool noTreaty) =>
+        Assert.Equal(noTreaty, TreatyRates.For(country, year) is { Rate: null });
 }

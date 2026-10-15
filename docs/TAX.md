@@ -2,7 +2,7 @@
 
 How the **IRS report** pages (`/tax` for dividends, `/tax/gains` for capital gains) get their figures, the rules it follows, and what is still to confirm. The report prepares figures to check. **It is not tax advice.** Before relying on it, check each year's form and the instructions of the Portal das Finanças.
 
-Researched on 2026-10-13. Sources are at the end. When a rule changes, update this file and `Core/Tax/IrsReport.cs` together.
+Researched on 2026-10-13 and 2026-10-15. Sources are at the end. When a rule changes, update this file and `Core/Tax/IrsReport.cs` together.
 
 ## What it produces
 
@@ -19,7 +19,7 @@ For a tax year:
 
   The columns for the paying agent's country (Savings Directive) and for tax withheld in Portugal do not apply to Trading 212 dividends and are left out.
 - **Portuguese dividends:** listed apart, not in Anexo J (see below).
-- **Interest and share lending:** listed apart, with a *suggested* code and country (see "To confirm").
+- **Interest and share lending:** listed apart, with their code and country (see "Interest and share lending").
 - **Withholding refunds** ("Dividend adjustment") for the year.
 - **Every dividend**, with the exchange rate used, gross, withheld and net in euros, and a check column. The grid exports to CSV, and the page prints.
 
@@ -46,7 +46,7 @@ Dividends are left out of the lines when:
   - Income from abroad uses the "câmbio de compra" of the date it was paid or made available (n.º 1 b).
   - Without a quote on that date, the last quote before it (n.º 3).
   - The article names no source for the rate. The ECB reference rate is the usual choice.
-- **Credit for foreign tax (art. 81.º, n.º 2).** It cannot exceed the tax due under the double taxation treaty, typically 15% on US dividends. The page warns when a country withheld more than 15.5%.
+- **Credit for foreign tax (art. 81.º).** It cannot exceed the tax due under the double taxation treaty (n.º 2), nor the Portuguese tax on that income, 28% (n.º 1). Tax withheld above the treaty rate is reclaimed from the source country, not credited in Portugal (AT FAQ 3448). See "Treaty limits".
 - **One line per code and country.** This is the usual practice, and it fits the form.
 
 ## Portuguese dividends
@@ -56,12 +56,31 @@ Dividends are left out of the lines when:
 - **Declaring:** optional, in Anexo E, if the income is aggregated.
 - **Recovering the 7 points above 28%:** a question for a tax adviser.
 
+## Treaty limits
+
+What each treaty lets the source country withhold on portfolio dividends paid to a Portuguese resident, from the AT's table of treaties (2026), in `Core/Tax/TreatyRates.cs`:
+
+| Rate | Countries |
+|---|---|
+| 15% | United States, Ireland, Germany, France (art. 11.º), Switzerland, Spain, Italy, Canada, Luxembourg, Belgium, Norway, Austria; United Kingdom until 2025 (1968 treaty) |
+| 10% | Netherlands, Denmark, Japan; United Kingdom from 2026 (2025 treaty, Aviso 1/2026/1; 15% for UK REIT property income) |
+| No treaty | Sweden (since 2022, Aviso 2/2022), Finland (since 2019, Aviso 146/2018), Australia (signed 2023, not in force): the credit stops at the Portuguese 28% |
+
+- **Per dividend:** the credit allowed is gross × the treaty rate (or 28% without a treaty). A dividend above it is flagged ("withholding above the treaty"). A country not in the table keeps its tax as withheld and is flagged above 15%.
+- **Per line:** "Withheld" is the tax withheld, less refunds; "Tax paid abroad" is what to declare. By default it is capped at the treaty limit; a switch declares the full amount instead.
+- **Why capped by default:** the excess is never credited in Portugal (art. 81.º n.º 2, FAQ 3448), so declaring it changes nothing but can make the return look wrong. *To confirm:* no official text says which amount the form's field takes (the instructions ask for the tax paid "devidamente comprovado"; FAQ 3893 for the tax "efetivamente suportado"; ruling 26057 had exactly 15% withheld). Neither is it known whether the AT's assessment applies the cap itself.
+
+## Interest and share lending
+
+- **Code:**
+  - interest on cash is **E21** ("Juros sem retenção em Portugal"), confirmed by the Anexo J instructions (Tabela V, form in force from January 2026);
+  - share lending is **E21 or E22** ("Outros rendimentos de capitais sem retenção"): art. 5.º n.º 2 a) covers "juros e outras formas de remuneração" of a loan of fungible things, and no ruling picks a code. Both are taxed alike (28%, art. 72.º n.º 1), so the choice does not change the tax. The page shows "E21 or E22".
+- **Country:** where the debtor resides (art. 18.º; AT FAQ 3807), so the country of the Trading 212 entity that holds the account:
+  - until the account moves, Trading 212 Markets Ltd (Cyprus, 196), the entity of Portuguese clients through 2025;
+  - new Portuguese accounts go to Trading 212 EU GmbH (Germany, 276) since September 2026; whether and when existing accounts move is not announced. The entity shows at the bottom of the menu in the Trading 212 app. If an account moves during a year, that year's interest is split by date between the two countries (by hand for now).
+
 ## To confirm
 
-- **Interest on cash and share lending.**
-  - Code: E21 (interest without Portuguese withholding) is the likely one; share lending could also be E22. No official guidance was found.
-  - Country: the country of the Trading 212 entity that holds the account. Most EU clients have been with Trading 212 Markets Ltd (Cyprus, 196). New Portuguese clients are onboarded with Trading 212 EU GmbH (Germany, 276) since about September 2026. Check the client agreement; the page lets you choose.
-- **Withholding above the treaty rate:** whether to declare the full amount or the treaty-capped amount. The page shows what was withheld and warns.
 - **Refunds:** deducting a year's US withholding refunds from that year's tax paid is the default, and can be switched off. Refunds that arrive after the return is filed may need a correction instead.
 - **ADRs:** the source country is presumably the underlying company's, not the US. Set it per instrument.
 - **Irish-domiciled ETFs:** Irish-source (372), usually with nothing withheld.
@@ -96,13 +115,13 @@ The **Capital gains** tab (`/tax/gains`) prepares the sales of shares and ETFs. 
 
 **Taxation, for reference:**
 - **Rate:** 28% on the year's balance (art. 72.º n.º 1 c)), or aggregation (englobamento) by choice (quadro 9.2C).
-- **Mandatory aggregation (art. 72.º n.º 14):** a positive balance from assets held less than 365 days must be aggregated when taxable income, including it, reaches the top bracket. The top bracket starts at €83,696 for 2025 income and €86,634 for 2026.
+- **Mandatory aggregation (art. 72.º n.º 14):** a positive balance from assets held less than 365 days must be aggregated when taxable income, including it, reaches the top bracket. The top bracket starts at €83,696 for 2025 income and €86,634 for 2026 (`Core/Tax/Aggregation.cs`). The page asks, optionally, for the year's other taxable income (kept only in the browser) and says whether aggregation is mandatory. *To confirm:* with joint taxation, which taxable income the threshold applies to.
 - **Losses** can be carried forward 5 years only with aggregation (art. 55.º).
 - **Partial exclusion (art. 43.º n.º 5, since 29 June 2024):** for listed securities and open-ended funds, 10% of the gain is excluded for holdings of 2 to 5 years, 20% for 5 to 8, and 30% from 8. The page shows the percentage per line. The form asks whether the securities are listed, and the AT should apply it.
 
 **To confirm:**
 - **The ETF code.** G20 fits the wording best. The OCC guide also uses G90, and some use G01. All are taxed alike: pick one and keep it.
-- **The inflation coefficient (art. 50.º)** for holdings of more than 24 months: Anexo J's instructions are silent. The coefficients are about 1.00.
+- **The inflation coefficient (art. 50.º)** for holdings of more than 24 months: since 2015 the article covers "partes sociais" (shares), and the Constitutional Court (ruling 311/2025) struck down the older wording that left them out. The Anexo G instructions say the AT applies it in the assessment. For shares in Anexo J it should apply too, but the Anexo J instructions are silent; for ETFs (fund units) the wording does not cover them. The page notes it for shares held more than 24 months and does not correct the values. The coefficients are close to 1.00.
 - **Spin-offs, mergers and scrip dividends:** not handled. The page lists those fills, if any, to check by hand.
 
 ## Anexo J, quadro 11: accounts abroad
@@ -122,4 +141,11 @@ The **Capital gains** tab (`/tax/gains`) prepares the sales of shares and ETFs. 
 - Código do IRS, art. 43.º (FIFO, splits, partial exclusion): https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs43.aspx (same pattern for irs50, irs51, irs55, irs72)
 - Lei 31/2024 (partial exclusion): https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/legislacao/diplomas_legislativos/Documents/Lei_31_2024.pdf
 - AT FAQ on foreign income and accounts: https://info.portaldasfinancas.gov.pt/pt/apoio_contribuinte/questoes_frequentes/Pages/faqs-00653.aspx
+- AT FAQs on the foreign tax credit (3444, 3448): https://info.portaldasfinancas.gov.pt/pt/apoio_contribuinte/questoes_frequentes/Pages/faqs-00562.aspx
+- Anexo J with instructions and Tabela V (form in force from January 2026): https://info.portaldasfinancas.gov.pt/pt/apoio_contribuinte/modelos_formularios/irs/Documents/Mod_3_anexo_J.pdf
+- AT, "Tabela prática das CDT" (2026): https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/convencoes_evitar_dupla_tributacao/convencoes_tabelas_doclib/Documents/Tabela_CDT_2026.pdf
+- UK–Portugal treaty (2025): https://www.gov.uk/government/publications/portugal-tax-treaties
+- Trading 212 supported countries and entities: https://helpcentre.trading212.com/hc/en-us/articles/12933782261917-What-are-the-supported-countries
+- Constitutional Court ruling 311/2025 (art. 50.º): https://www.tribunalconstitucional.pt/tc/acordaos/20250311.html
+- Anexo G instructions (inflation coefficient applied in the assessment): https://info.portaldasfinancas.gov.pt/pt/apoio_contribuinte/modelos_formularios/irs/Documents/Mod_3_anexo_G.pdf
 - ECB data API: https://data.ecb.europa.eu/help/api/data. Series `EXR/D.{CUR}.EUR.SP00.A`, `format=csvdata`, units of currency per euro, no rates on TARGET holidays.
