@@ -4,28 +4,7 @@ Deploy steps for the versions that are not yet in production.
 
 The usual deploy command and checks are in [OPERATIONS.md](OPERATIONS.md#1-deploying-an-update).
 
-**Production runs 2.7.0** (since 2026-10-15).
-
-## 2.7.1
-
-- Only the usual deploy.
-- **Try afterwards:** `docker compose run --rm t212ext-web no-such-command` must answer "Unknown command" and stop.
-
-## 2.8.0
-
-- Only the usual deploy: no migration, no new setting.
-- **Try afterwards:** the IRS report for 2025: the quadro 8A lines show "Withheld", "Treaty" and "Tax paid abroad"; with a dividend above its treaty, the switch changes the last one. On the capital gains tab, with holdings under a year, the aggregation check.
-
-## 2.9.0
-
-- Only the usual deploy: no migration, no new setting.
-- **Try afterwards:** on the dividends page, hide a column, filter a range of dates, save it as a view, reset, and open the view again.
-
-## 2.10.0
-
-- **Migration** `AddInstrumentLogos`: one new table, applied when the app starts.
-- **Optional setting:** `Logos__Enabled=false` in `.env` to show only avatars (no fetching).
-- **Try afterwards:** the dividends and positions pages show the logos; the first visit fetches them, so they may appear a moment later.
+**Production runs 2.10.0** (since 2026-10-15). No version is waiting to be deployed.
 
 ## How this file works
 
