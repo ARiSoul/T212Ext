@@ -38,7 +38,8 @@
     };
 
     private IReadOnlyList<GridColumn<InstrumentIncome>> Columns => [
-        new() { Key = "instrument", Title = L["Col_Instrument"], Value = i => i.Name ?? i.Ticker, MobileTitle = true },
+        new() { Key = "instrument", Title = L["Col_Instrument"], Value = i => i.Name ?? i.Ticker, MobileTitle = true,
+                Template = i => @<InstrumentLabel Ticker="@i.Ticker" Isin="@i.Isin" Name="@i.Name" /> },
         new() { Key = "ticker", Title = L["Col_Ticker"], Value = i => i.Ticker, HideBelow = "lg" },
         new() { Key = "country", Title = L["Col_Country"], Value = i => Labels.Country(L, i.Country), Filterable = true, HideBelow = "xl" },
         new() { Key = "currency", Title = L["Col_Currency"], Value = i => i.InstrumentCurrency ?? "—", Filterable = true, HideBelow = "xl", HideOnMobile = true },

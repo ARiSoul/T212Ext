@@ -19,6 +19,7 @@
     --app-positive: #127a3b;
     --app-negative: #c23434;
     --app-sidebar-bg: #ffffff;
+    --app-logo-bg: #ffffff;
     --app-shadow: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.06);
     --bs-body-bg: var(--app-bg);
     --bs-body-color: #16191d;
@@ -42,6 +43,7 @@
     --app-positive: #4cc77a;
     --app-negative: #f07474;
     --app-sidebar-bg: #16171a;
+    --app-logo-bg: #ffffff;
     --app-shadow: none;
     --bs-body-bg: var(--app-bg);
     --bs-body-color: #e8eaee;
@@ -86,6 +88,28 @@ h1:focus {
     --bs-btn-active-bg: var(--app-surface-2);
     --bs-btn-active-border-color: var(--app-border);
     --bs-btn-active-color: var(--bs-body-color);
+}
+
+/* Instrument icons (Components/Shared/InstrumentLabel). Logos sit on white in both themes, as in
+   the brokers' apps: many are dark glyphs on a transparent background. */
+.instrument-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.instrument-logo {
+    flex: none;
+    border-radius: 25%;
+    background: var(--app-logo-bg);
+    box-shadow: 0 0 0 1px var(--app-border);
+    object-fit: contain;
+}
+
+.instrument-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Brand: the menu and the sign-in page. */

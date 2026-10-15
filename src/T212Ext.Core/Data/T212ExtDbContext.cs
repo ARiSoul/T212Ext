@@ -19,6 +19,7 @@ public class T212ExtDbContext(DbContextOptions<T212ExtDbContext> options) : DbCo
     public DbSet<AccountReport> AccountReports => Set<AccountReport>();
     public DbSet<PushDevice> PushDevices => Set<PushDevice>();
     public DbSet<NotificationState> NotificationStates => Set<NotificationState>();
+    public DbSet<InstrumentLogo> InstrumentLogos => Set<InstrumentLogo>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {

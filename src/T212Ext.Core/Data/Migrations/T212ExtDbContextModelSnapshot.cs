@@ -464,6 +464,31 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                     b.ToTable("Instruments");
                 });
 
+            modelBuilder.Entity("Arisoul.T212Ext.Core.Domain.InstrumentLogo", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ContentType")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<byte[]>("Data")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<DateTimeOffset>("FetchedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Source")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("InstrumentLogos");
+                });
+
             modelBuilder.Entity("Arisoul.T212Ext.Core.Domain.InstrumentSetting", b =>
                 {
                     b.Property<string>("Isin")

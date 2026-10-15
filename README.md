@@ -13,7 +13,7 @@ Trading 212's own app shows dividends one by one. T212Ext reads them through the
 
 ---
 
-## Features (2.9)
+## Features (2.10)
 
 **IRS report (Portugal)**
 - **Anexo J, quadro 8A:** foreign dividends by source country (code E11), gross and tax paid abroad, in euros at the ECB rate of each payment date. Exact withholding from the API's gross and the CSV's net per share.
@@ -131,6 +131,7 @@ dotnet user-secrets set "T212:Accounts:1:ApiSecret" "<secret>"
 | `DataProtection:KeysPath` | empty | Folder for the cookie encryption keys. Set by the Docker image. |
 | `Push:PublicKey`, `Push:PrivateKey` | empty | VAPID keys for notifications, made with `new-vapid-keys`. Empty: notifications off. |
 | `Push:Subject` | empty | A contact for the push services, `mailto:<address>`. |
+| `Logos:Enabled` | `true` | Fetch instrument logos (by the server, once each). Off: coloured avatars only. |
 
 On a server, the settings come from environment variables instead (`T212__Accounts__0__ApiKey=…`): see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
@@ -191,7 +192,7 @@ T212Ext.slnx
 VERSION                       Version of the whole solution
 src/
   T212Ext.Client/             Trading 212 API client: models, auth, rate limits, paging
-  T212Ext.Core/               Entities, EF Core (Data/), sync (Sync/), CSV import (Import/), automatic reports (Reports/), notifications (Notifications/), analytics (Analytics/),
+  T212Ext.Core/               Entities, EF Core (Data/), sync (Sync/), CSV import (Import/), automatic reports (Reports/), notifications (Notifications/), logos (Logos/), analytics (Analytics/),
                               ECB rates (Rates/), IRS report (Tax/), queries (Queries/)
   T212Ext.Web/                Blazor app; hosts the sync worker
     Auth/                     Sign-in: users from configuration, authenticator codes, setup commands

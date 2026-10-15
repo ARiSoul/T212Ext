@@ -411,3 +411,21 @@ public class NotificationState
     /// <summary>The first day of the last month summed up.</summary>
     public DateOnly? LastSummaryMonth { get; set; }
 }
+
+/// <summary>
+/// An instrument's logo, fetched once from a public source and kept here, so browsers never ask a
+/// third party. <see cref="Data"/> is null when no source had one (asked again after a while).
+/// </summary>
+public class InstrumentLogo
+{
+    /// <summary>The ISIN, or the ticker when there is none.</summary>
+    public required string Key { get; set; }
+
+    public byte[]? Data { get; set; }
+    public string? ContentType { get; set; }
+
+    /// <summary>Where it came from: "t212" or "parqet"; null when none had it.</summary>
+    public string? Source { get; set; }
+
+    public DateTimeOffset FetchedAt { get; set; }
+}

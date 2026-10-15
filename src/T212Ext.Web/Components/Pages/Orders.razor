@@ -28,7 +28,8 @@
     private IReadOnlyList<GridColumn<OrderRow>> Columns => WithAccount([
         new() { Key = "date", Title = L["Col_Date"], Value = o => o.FilledAt ?? o.CreatedAt, Text = o => Fmt.DateTime(o.FilledAt ?? o.CreatedAt),
                 Filterable = true, FilterKey = o => (o.FilledAt ?? o.CreatedAt)?.UtcDateTime.Year.ToString() ?? "—", FilterValuesDescending = true, RangeFilter = true },
-        new() { Key = "instrument", Title = L["Col_Instrument"], Value = o => o.InstrumentName ?? o.Ticker, MobileTitle = true },
+        new() { Key = "instrument", Title = L["Col_Instrument"], Value = o => o.InstrumentName ?? o.Ticker, MobileTitle = true,
+                Template = o => @<InstrumentLabel Ticker="@o.Ticker" Isin="@o.Isin" Name="@o.InstrumentName" /> },
         new() { Key = "ticker", Title = L["Col_Ticker"], Value = o => o.Ticker, HideBelow = "xl", Filterable = false },
         new() { Key = "side", Title = L["Col_Side"], Value = o => Labels.Side(L, o.Side), Filterable = true,
                 Template = o => @<span class="badge @(o.Side == "SELL" ? "text-bg-warning" : "badge-soft")">@Labels.Side(L, o.Side)</span> },

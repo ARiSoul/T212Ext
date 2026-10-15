@@ -201,7 +201,8 @@ else
 
     private IReadOnlyList<GridColumn<GainLine>> Columns => [
         new() { Key = "line", Title = L["Tax_Line"], Value = l => LineNumber(l), AlignEnd = false, HideBelow = "lg" },
-        new() { Key = "instrument", Title = L["Col_Instrument"], Value = l => l.Name ?? l.Ticker, MobileTitle = true, Filterable = false },
+        new() { Key = "instrument", Title = L["Col_Instrument"], Value = l => l.Name ?? l.Ticker, MobileTitle = true, Filterable = false,
+                Template = l => @<InstrumentLabel Ticker="@l.Ticker" Isin="@l.Isin" Name="@l.Name" /> },
         new() { Key = "country", Title = L["Tax_SourceCountryColumn"], Value = l => $"{CountryCodes.Format(CountryCodes.Numeric(l.Country))} · {Labels.Country(L, l.Country)}", Filterable = true, HideBelow = "xl" },
         new() { Key = "code", Title = L["Tax_Code"], Value = l => l.Code, Filterable = true, HideBelow = "lg" },
         new() { Key = "sold", Title = L["Gains_SoldOn"], Value = l => l.SoldAt, Text = l => Fmt.Date(l.SoldAt) },
