@@ -45,6 +45,7 @@ public static class CoreServiceCollectionExtensions
         services.AddScoped<CsvImportService>();
         services.AddScoped<ReportImporter>();
         services.AddScoped<ReportQueries>();
+        services.AddScoped<GoalQueries>();
         services.AddScoped<PushDevices>();
         services.AddSingleton<InstrumentLogos>();
         services.AddHttpClient(InstrumentLogos.HttpClientName, client =>

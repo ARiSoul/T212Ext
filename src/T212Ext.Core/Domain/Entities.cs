@@ -429,3 +429,29 @@ public class InstrumentLogo
 
     public DateTimeOffset FetchedAt { get; set; }
 }
+
+/// <summary>
+/// A passive income goal: an amount a month, set directly or as a share of the monthly expenses
+/// ("dividends cover 50 % of 1 200 € a month").
+/// </summary>
+public class Goal
+{
+    public int Id { get; set; }
+    public required string Name { get; set; }
+
+    /// <summary>The income a month to reach, in <see cref="Currency"/>.</summary>
+    public decimal MonthlyTarget { get; set; }
+
+    /// <summary>Set when the goal is a share of the expenses: then the target is expenses × share.</summary>
+    public decimal? MonthlyExpenses { get; set; }
+
+    /// <summary>0.5 for half of <see cref="MonthlyExpenses"/>.</summary>
+    public decimal? CoverShare { get; set; }
+
+    public required string Currency { get; set; }
+
+    /// <summary>Interest on cash and share lending count too, not only dividends.</summary>
+    public bool IncludeInterest { get; set; } = true;
+
+    public DateTimeOffset CreatedAt { get; set; }
+}

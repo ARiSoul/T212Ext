@@ -196,6 +196,15 @@ internal sealed class InstrumentLogoConfiguration : IEntityTypeConfiguration<Ins
     }
 }
 
+internal sealed class GoalConfiguration : IEntityTypeConfiguration<Goal>
+{
+    public void Configure(EntityTypeBuilder<Goal> builder)
+    {
+        builder.Property(g => g.Name).HasMaxLength(Lengths.Name);
+        builder.Property(g => g.Currency).HasMaxLength(Lengths.Currency);
+    }
+}
+
 internal sealed class ExchangeRateConfiguration : IEntityTypeConfiguration<ExchangeRate>
 {
     public void Configure(EntityTypeBuilder<ExchangeRate> builder)

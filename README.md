@@ -13,7 +13,7 @@ Trading 212's own app shows dividends one by one. T212Ext reads them through the
 
 ---
 
-## Features (2.10)
+## Features (2.13)
 
 **IRS report (Portugal)**
 - **Anexo J, quadro 8A:** foreign dividends by source country (code E11), gross and tax paid abroad, in euros at the ECB rate of each payment date. Exact withholding from the API's gross and the CSV's net per share.
@@ -30,7 +30,8 @@ Trading 212's own app shows dividends one by one. T212Ext reads them through the
   - an estimate for the next 12 months, yield on cost, the all-time total and the portfolio value;
   - charts: dividends per month with the 12-month average, passive income (dividends, interest, share lending), top payers, and the portfolio over time.
 - **Dividends:** totals per year with their growth, one year against the one before month by month, and breakdowns by country and currency.
-- **Income by instrument:** what each instrument has paid, all time and in the last 12 months. Each instrument has its own page with its payments and dividend per share over time.
+- **Income by instrument:** what each instrument has paid, all time and in the last 12 months, and how its dividend per share grew. Each instrument has its own page with its payments and its dividend per share by year (growth, years of growth in a row, cuts).
+- **Goals:** a passive income target a month, or a share of your expenses, with the progress over time and, at the current pace, when you would reach it.
 - **Positions:** the latest snapshot, with dividends, yield on cost, current yield and the 12-month estimate per position.
 - **Cash movements and orders:** deposits, withdrawals, interest, share lending, withholding tax refunds, and buys and sells with fees and realised gains.
 

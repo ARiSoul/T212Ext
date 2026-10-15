@@ -2,6 +2,13 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.13.0 — Goals (2026-10-15)
+
+**New**
+- **Goals** (new page): set a passive income target, either an amount a month or a share of your monthly expenses ("dividends pay half the electricity bill"), and choose whether interest and share lending count.
+- Each goal shows how far you are (the last 12 months' income a month against the target), the next 12 months' estimate, how much it grew in a year, and, at that pace, when it would be reached.
+- A chart and a table show the income a month over time against the target.
+
 ## 2.12.0 — Dividend growth (2026-10-15)
 
 **New**

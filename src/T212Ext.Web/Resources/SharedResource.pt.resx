@@ -207,6 +207,44 @@
   <data name="Gains_Subtitle" xml:space="preserve"><value>Vendas de ações e ETF para a declaração de IRS: Anexo J, quadro 9.2A</value></data>
   <data name="Gains_Unsupported" xml:space="preserve"><value>Eventos societários ainda não tratados (desdobramentos, spin-offs…), confirme estes ativos à mão:</value></data>
   <data name="Gains_YearOrMore" xml:space="preserve"><value>365 dias ou mais</value></data>
+  <data name="Goals_AtThisPace" xml:space="preserve"><value>Se o crescimento do último ano se mantiver</value></data>
+  <data name="Goals_Current" xml:space="preserve"><value>Agora, por mês</value></data>
+  <data name="Goals_CurrentHint" xml:space="preserve"><value>Últimos 12 meses ÷ 12</value></data>
+  <data name="Goals_DividendsOnly" xml:space="preserve"><value>só dividendos</value></data>
+  <data name="Goals_Edit" xml:space="preserve"><value>Editar objetivo</value></data>
+  <data name="Goals_Empty" xml:space="preserve"><value>Ainda não há objetivos. Adiciona um, por exemplo uma parte das tuas despesas mensais.</value></data>
+  <data name="Goals_Expenses" xml:space="preserve"><value>Despesas por mês</value></data>
+  <data name="Goals_FixedAmount" xml:space="preserve"><value>Um valor fixo</value></data>
+  <data name="Goals_Forward" xml:space="preserve"><value>Próximos 12 meses</value></data>
+  <data name="Goals_ForwardHint" xml:space="preserve"><value>Estimativa por mês, posições de hoje</value></data>
+  <data name="Goals_Growth" xml:space="preserve"><value>Crescimento num ano</value></data>
+  <data name="Goals_GrowthHint" xml:space="preserve"><value>Face a 12 meses antes</value></data>
+  <data name="Goals_History" xml:space="preserve"><value>{0}: rendimento por mês ao longo do tempo</value></data>
+  <data name="Goals_IncludeInterest" xml:space="preserve"><value>Contar juros do dinheiro e empréstimo de ações</value></data>
+  <data name="Goals_Invalid" xml:space="preserve"><value>Revê o objetivo: precisa de um nome e de um valor positivo, e a parte tem de estar entre 1 % e 1000 %.</value></data>
+  <data name="Goals_KindAmount" xml:space="preserve"><value>Um valor por mês</value></data>
+  <data name="Goals_KindExpenses" xml:space="preserve"><value>Uma parte das minhas despesas</value></data>
+  <data name="Goals_Month" xml:space="preserve"><value>Mês</value></data>
+  <data name="Goals_Name" xml:space="preserve"><value>Nome</value></data>
+  <data name="Goals_NamePlaceholder" xml:space="preserve"><value>ex.: Pagar a conta da luz</value></data>
+  <data name="Goals_NeedsAYear" xml:space="preserve"><value>Precisa de um ano de histórico</value></data>
+  <data name="Goals_New" xml:space="preserve"><value>Novo objetivo</value></data>
+  <data name="Goals_NotGrowing" xml:space="preserve"><value>Sem crescimento</value></data>
+  <data name="Goals_Note" xml:space="preserve"><value>O rendimento por mês é o dos últimos 12 meses a dividir por 12, para que os meses com e sem dividendos se compensem; os reembolsos de retenção contam, os juros só quando o objetivo o diz. A data assume que o crescimento do último ano continua, incluindo o que investiste nesse ano: é um ritmo, não uma promessa. Os objetivos são comuns a todas as contas; os valores seguem a conta escolhida no topo.</value></data>
+  <data name="Goals_OfExpenses" xml:space="preserve"><value>{0} de {1} de despesas</value></data>
+  <data name="Goals_PerMonth" xml:space="preserve"><value>por mês</value></data>
+  <data name="Goals_Progress" xml:space="preserve"><value>Do objetivo</value></data>
+  <data name="Goals_Reached" xml:space="preserve"><value>Atingido</value></data>
+  <data name="Goals_ReachedAround" xml:space="preserve"><value>Atingido por volta de</value></data>
+  <data name="Goals_ReachedHint" xml:space="preserve"><value>Os últimos 12 meses cobriram-no</value></data>
+  <data name="Goals_Save" xml:space="preserve"><value>Guardar</value></data>
+  <data name="Goals_Share" xml:space="preserve"><value>Parte a cobrir (%)</value></data>
+  <data name="Goals_ShowHistory" xml:space="preserve"><value>Ver a evolução</value></data>
+  <data name="Goals_Subtitle" xml:space="preserve"><value>A que distância está o teu rendimento passivo de um valor mensal, e quando lá pode chegar ao ritmo atual</value></data>
+  <data name="Goals_Target" xml:space="preserve"><value>Objetivo por mês</value></data>
+  <data name="Goals_TargetIs" xml:space="preserve"><value>Objetivo: {0} por mês</value></data>
+  <data name="Goals_TooFar" xml:space="preserve"><value>A mais de {0} anos</value></data>
+  <data name="Goals_WithInterest" xml:space="preserve"><value>dividendos e juros</value></data>
   <data name="Grid_ClearFilter" xml:space="preserve"><value>Limpar</value></data>
   <data name="Grid_Columns" xml:space="preserve"><value>Colunas</value></data>
   <data name="Grid_DateFrom" xml:space="preserve"><value>De</value></data>
@@ -281,6 +319,7 @@
   <data name="Nav_Cash" xml:space="preserve"><value>Movimentos de dinheiro</value></data>
   <data name="Nav_Data" xml:space="preserve"><value>Dados</value></data>
   <data name="Nav_Dividends" xml:space="preserve"><value>Dividendos</value></data>
+  <data name="Nav_Goals" xml:space="preserve"><value>Objetivos</value></data>
   <data name="Nav_Import" xml:space="preserve"><value>Importar CSV</value></data>
   <data name="Nav_Income" xml:space="preserve"><value>Rendimento por ativo</value></data>
   <data name="Nav_Menu" xml:space="preserve"><value>Menu</value></data>
