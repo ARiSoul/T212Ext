@@ -50,6 +50,10 @@
         new() { Key = "total", Title = L["Col_Total"], Value = i => i.Total, Text = i => Fmt.Money(i.Total, _dashboard?.Currency), AlignEnd = true,
                 Summaries = GridColumn<InstrumentIncome>.Numeric, SummaryText = n => Fmt.Money(n, _dashboard?.Currency) },
         new() { Key = "share", Title = L["Col_Share"], Value = i => i.ShareOfTotal, Text = i => Fmt.Percent(i.ShareOfTotal, 1), AlignEnd = true, HideBelow = "md" },
+        new() { Key = "growth", Title = L["Growth_LastYear"], Value = i => Growth(i)?.LastGrowth, AlignEnd = true, HideBelow = "lg",
+                Text = i => Growth(i)?.LastGrowth is { } g ? Signed(g) : "—",
+                Template = i => @<span class="@Fmt.SignClass(Growth(i)?.LastGrowth)">@(Growth(i)?.LastGrowth is { } g ? Signed(g) : "—")</span> },
+        new() { Key = "streak", Title = L["Growth_Streak"], Value = i => Growth(i)?.GrowthStreak ?? 0, AlignEnd = true, HideBelow = "xl", HideOnMobile = true },
         new() { Key = "first", Title = L["Col_FirstPaid"], Value = i => i.FirstPaid, Text = i => Fmt.Date(i.FirstPaid), HideBelow = "xl", HideOnMobile = true },
         new() { Key = "last", Title = L["Col_LastPaid"], Value = i => i.LastPaid, Text = i => Fmt.Date(i.LastPaid), HideBelow = "lg" },
     ];
@@ -58,7 +62,14 @@
     {
         _dashboard = await Analytics.GetDashboardAsync(AccountId);
         _top = _dashboard?.Instruments.Take(10).ToList() ?? [];
+        _growth = (await Analytics.GetGrowthAsync(AccountId)).ToDictionary(g => g.Key);
     }
+
+    private IReadOnlyDictionary<string, DividendGrowth> _growth = new Dictionary<string, DividendGrowth>();
+
+    private DividendGrowth? Growth(InstrumentIncome i) => _growth.GetValueOrDefault(DividendGrowthAnalysis.KeyOf(i.Ticker, i.Isin));
+
+    private static string Signed(decimal fraction) => (fraction > 0 ? "+" : "") + Fmt.Percent(fraction, 1);
 
     private void Open(InstrumentIncome instrument) =>
         Navigation.NavigateTo($"income/{Uri.EscapeDataString(instrument.Isin ?? instrument.Ticker)}");

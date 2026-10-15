@@ -238,6 +238,18 @@
   <data name="Grid_Summary_Sum" xml:space="preserve"><value>Sum</value></data>
   <data name="Grid_ViewName" xml:space="preserve"><value>View name</value></data>
   <data name="Grid_Views" xml:space="preserve"><value>Views</value></data>
+  <data name="Growth_Cagr" xml:space="preserve"><value>Average yearly growth</value></data>
+  <data name="Growth_CagrHint" xml:space="preserve"><value>Compound, over {0} year(s)</value></data>
+  <data name="Growth_CagrNone" xml:space="preserve"><value>Needs two comparable years</value></data>
+  <data name="Growth_CutHint" xml:space="preserve"><value>The dividend per share was cut</value></data>
+  <data name="Growth_LastYear" xml:space="preserve"><value>Growth last year</value></data>
+  <data name="Growth_LastYearHint" xml:space="preserve"><value>Per share, against the year before</value></data>
+  <data name="Growth_Note" xml:space="preserve"><value>Gross dividend per share in the instrument's currency, so the shares held and the exchange rate do not move it. Two years are compared only when they had the same number of payments (a payment that slips into January would look like a cut). * Current year, not compared. Returns of capital are left out.</value></data>
+  <data name="Growth_PerShare" xml:space="preserve"><value>Per share</value></data>
+  <data name="Growth_Streak" xml:space="preserve"><value>Years of growth</value></data>
+  <data name="Growth_StreakHint" xml:space="preserve"><value>In a row, up to last year</value></data>
+  <data name="Growth_Title" xml:space="preserve"><value>Dividend per share, by year</value></data>
+  <data name="Growth_VsYearBefore" xml:space="preserve"><value>Vs. year before</value></data>
   <data name="Import_Cash" xml:space="preserve"><value>Cash movements: {0} new, {1} already known</value></data>
   <data name="Import_Dividends" xml:space="preserve"><value>Dividends: {0} new, {1} already known</value></data>
   <data name="Import_Failed" xml:space="preserve"><value>The import failed. See the server log for details.</value></data>

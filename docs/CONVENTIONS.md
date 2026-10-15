@@ -85,6 +85,8 @@ The rules every change follows, for people and for coding assistants. Each rule 
     - Each one is an `AccountReport` row; the imported ones say how far the history is covered. Reports are asked for in order, one at a time, with an overlap, so the latest imported one ends the covered history.
     - A sync waits a few minutes at most for a report; one not ready is collected by the next sync. A failed one is asked for again on the next sync, never in a loop within one.
     - *Why:* the CSV is the only source of the tax withheld on each dividend, and the API's history has gaps. *(2.5.0)*
+12. **Dividend growth is measured per share, in the instrument's currency** (`Analytics/DividendGrowth.cs`): two years compare only when they had the same number of payments, the current year never, and returns of capital, demergers and liquidations are not dividends.
+    - *Why:* the shares held and the exchange rate would otherwise move it, and a payment slipping into January would look like a cut. *(2.12.0)*
 
 ## 4. App (`src/T212Ext.Web`)
 

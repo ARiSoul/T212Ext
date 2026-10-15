@@ -238,6 +238,18 @@
   <data name="Grid_Summary_Sum" xml:space="preserve"><value>Suma</value></data>
   <data name="Grid_ViewName" xml:space="preserve"><value>Nombre de la vista</value></data>
   <data name="Grid_Views" xml:space="preserve"><value>Vistas</value></data>
+  <data name="Growth_Cagr" xml:space="preserve"><value>Crecimiento medio anual</value></data>
+  <data name="Growth_CagrHint" xml:space="preserve"><value>Compuesto, en {0} año(s)</value></data>
+  <data name="Growth_CagrNone" xml:space="preserve"><value>Necesita dos años comparables</value></data>
+  <data name="Growth_CutHint" xml:space="preserve"><value>El dividendo por acción se recortó</value></data>
+  <data name="Growth_LastYear" xml:space="preserve"><value>Crecimiento el último año</value></data>
+  <data name="Growth_LastYearHint" xml:space="preserve"><value>Por acción, frente al año anterior</value></data>
+  <data name="Growth_Note" xml:space="preserve"><value>Dividendo bruto por acción en la moneda del activo, para que ni las acciones que tienes ni el tipo de cambio lo alteren. Dos años solo se comparan cuando tuvieron el mismo número de pagos (un pago que se desliza a enero parecería un recorte). * Año en curso, no comparado. Las devoluciones de capital quedan fuera.</value></data>
+  <data name="Growth_PerShare" xml:space="preserve"><value>Por acción</value></data>
+  <data name="Growth_Streak" xml:space="preserve"><value>Años seguidos creciendo</value></data>
+  <data name="Growth_StreakHint" xml:space="preserve"><value>Seguidos, hasta el año pasado</value></data>
+  <data name="Growth_Title" xml:space="preserve"><value>Dividendo por acción, por año</value></data>
+  <data name="Growth_VsYearBefore" xml:space="preserve"><value>Frente al año anterior</value></data>
   <data name="Import_Cash" xml:space="preserve"><value>Movimientos de efectivo: {0} nuevos, {1} ya conocidos</value></data>
   <data name="Import_Dividends" xml:space="preserve"><value>Dividendos: {0} nuevos, {1} ya conocidos</value></data>
   <data name="Import_Failed" xml:space="preserve"><value>La importación falló. Consulta el registro del servidor.</value></data>
