@@ -1,0 +1,115 @@
+@using System.Globalization
+@inject IStringLocalizer<SharedResource> L
+
+@* A month of payments: a grid of weeks on wide screens, an agenda of the days with payments on narrow ones. *@
+<div class="card payment-calendar">
+    <div class="card-header d-flex flex-wrap align-items-center gap-2">
+        <button type="button" class="btn btn-sm btn-outline-secondary" disabled="@(!CanPrevious)" @onclick="() => MonthChanged.InvokeAsync(Month.AddMonths(-1))"
+                title="@L["Calendar_PreviousMonth"]" aria-label="@L["Calendar_PreviousMonth"]"><i class="bi bi-chevron-left"></i></button>
+        <span class="pc-title">@Month.ToString("MMMM yyyy", CultureInfo.CurrentCulture)</span>
+        <button type="button" class="btn btn-sm btn-outline-secondary" disabled="@(!CanNext)" @onclick="() => MonthChanged.InvokeAsync(Month.AddMonths(1))"
+                title="@L["Calendar_NextMonth"]" aria-label="@L["Calendar_NextMonth"]"><i class="bi bi-chevron-right"></i></button>
+        <span class="ms-auto small text-body-secondary">
+            @if (InMonth.Any(e => e.Kind == PaymentKind.Paid))
+            {
+                <span class="me-3">@L["Calendar_KindPaid"]: <strong>@Fmt.Money(InMonth.Where(e => e.Kind == PaymentKind.Paid).Sum(e => e.Amount), Currency)</strong></span>
+            }
+            @L["Calendar_Expected"]: <strong>@Fmt.Money(InMonth.Where(e => e.Kind is PaymentKind.Estimated or PaymentKind.Due).Sum(e => e.Amount), Currency)</strong>
+        </span>
+    </div>
+    <div class="card-body">
+        <div class="pc-grid d-none d-lg-grid" role="grid" aria-label="@Month.ToString("MMMM yyyy", CultureInfo.CurrentCulture)">
+            @foreach (var day in WeekDays)
+            {
+                <div class="pc-weekday" role="columnheader">@DayName(day)</div>
+            }
+            @for (var i = 0; i < Leading; i++)
+            {
+                <div class="pc-day pc-outside" aria-hidden="true"></div>
+            }
+            @for (var date = Month; date < Month.AddMonths(1); date = date.AddDays(1))
+            {
+                var day = date;
+                <div class="pc-day @(day == Today ? "pc-today" : "")" role="gridcell">
+                    <div class="pc-date">@day.Day</div>
+                    @foreach (var entry in InMonth.Where(e => e.Date == day))
+                    {
+                        <button type="button" class="pc-entry pc-@entry.Kind.ToString().ToLowerInvariant()" title="@Describe(entry)" @onclick="() => Open.InvokeAsync(entry)">
+                            <InstrumentLabel Ticker="@entry.Ticker" Isin="@entry.Isin" Name="@entry.Name" Size="16" ShowName="false" />
+                            <span class="pc-amount">@entry.Amount.ToString("N2", CultureInfo.CurrentCulture)</span>
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="d-lg-none">
+            @if (InMonth.Count == 0)
+            {
+                <p class="text-body-secondary mb-0">@L["Calendar_MonthEmpty"]</p>
+            }
+            @foreach (var group in InMonth.GroupBy(e => e.Date))
+            {
+                <div class="pc-agenda-day @(group.Key == Today ? "pc-today" : "")">
+                    <div class="pc-agenda-date">@DayName(group.Key.DayOfWeek) @group.Key.Day</div>
+                    <div class="flex-grow-1" style="min-width: 0">
+                        @foreach (var entry in group)
+                        {
+                            <button type="button" class="pc-agenda-entry" @onclick="() => Open.InvokeAsync(entry)">
+                                <InstrumentLabel Ticker="@entry.Ticker" Isin="@entry.Isin" Name="@entry.Name" Size="20" />
+                                <span class="ms-auto text-nowrap">
+                                    <span class="pc-dot pc-@entry.Kind.ToString().ToLowerInvariant()" aria-hidden="true"></span>
+                                    @Fmt.Money(entry.Amount, Currency)
+                                </span>
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="pc-legend small text-body-secondary">
+            @foreach (var kind in Enum.GetValues<PaymentKind>())
+            {
+                <span><span class="pc-dot pc-@kind.ToString().ToLowerInvariant()" aria-hidden="true"></span>@KindText(kind)</span>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    /// <summary>The first day of the month shown.</summary>
+    [Parameter, EditorRequired] public DateOnly Month { get; set; }
+    [Parameter] public EventCallback<DateOnly> MonthChanged { get; set; }
+    [Parameter, EditorRequired] public IReadOnlyList<PaymentCalendarEntry> Entries { get; set; } = [];
+    [Parameter, EditorRequired] public string Currency { get; set; } = "";
+    [Parameter] public DateOnly Today { get; set; }
+    [Parameter] public bool CanPrevious { get; set; } = true;
+    [Parameter] public bool CanNext { get; set; } = true;
+    [Parameter] public EventCallback<PaymentCalendarEntry> Open { get; set; }
+
+    private IReadOnlyList<PaymentCalendarEntry> InMonth =>
+        [.. Entries.Where(e => e.Date >= Month && e.Date < Month.AddMonths(1)).OrderBy(e => e.Date).ThenBy(e => e.Kind).ThenByDescending(e => e.Amount)];
+
+    /// <summary>Weeks start on Monday (ISO 8601), as in Portugal and Spain: the neutral "pt" culture starts on Sunday, as in Brazil.</summary>
+    private static IEnumerable<DayOfWeek> WeekDays => Enumerable.Range(0, 7).Select(i => (DayOfWeek)((i + 1) % 7));
+
+    private int Leading => ((int)Month.DayOfWeek + 6) % 7;
+
+    /// <summary>Three letters: "seg", "Mon", "lun" (some cultures' abbreviations are the full name).</summary>
+    private static string DayName(DayOfWeek day)
+    {
+        var name = CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedDayName(day).TrimEnd('.');
+        return name.Length > 3 ? name[..3] : name;
+    }
+
+    private string KindText(PaymentKind kind) => kind switch
+    {
+        PaymentKind.Paid => L["Calendar_KindPaid"],
+        PaymentKind.Due => L["Calendar_StatusDue"],
+        PaymentKind.Late => L["Calendar_StatusLate"],
+        _ => L["Calendar_StatusEstimated"],
+    };
+
+    private string Describe(PaymentCalendarEntry entry) => $"{entry.Name ?? entry.Ticker} · {Fmt.Money(entry.Amount, Currency)} · {KindText(entry.Kind)}";
+}

@@ -51,7 +51,8 @@ public sealed record DividendDashboard(
     IReadOnlyList<PassiveIncomeMonth> PassiveIncome,
     IReadOnlyList<PositionIncome> Positions,
     IReadOnlyList<SnapshotFact> Portfolio,
-    IReadOnlyList<ExpectedPayment> Upcoming);
+    IReadOnlyList<ExpectedPayment> Upcoming,
+    IReadOnlyList<NotExpected> NotExpected);
 
 /// <summary>
 /// The dividend figures of the dashboard, computed in memory from plain facts so they can be tested
@@ -83,7 +84,8 @@ public static class DividendAnalytics
         var ytd = dividends.Where(d => d.PaidOn >= startOfYear && d.PaidOn <= now).Sum(d => d.Amount);
         var samePeriodLastYear = dividends.Where(d => d.PaidOn >= startOfLastYear && d.PaidOn <= sameDayLastYear).Sum(d => d.Amount);
 
-        var upcoming = DividendCalendar.Project(dividends, positions, now);
+        var calendar = DividendCalendar.Compute(dividends, positions, now);
+        var upcoming = calendar.Upcoming;
         var positionIncome = PositionsIncome(dividends, positions, upcoming, yearAgo, now);
         var totalCost = positionIncome.Where(p => p.TotalCost is > 0).Sum(p => p.TotalCost!.Value);
         var heldLast12 = positionIncome.Sum(p => p.Last12Months);
@@ -108,7 +110,8 @@ public static class DividendAnalytics
             Passive(dividends, otherIncome, now),
             positionIncome,
             [.. snapshots.OrderBy(s => s.Date)],
-            upcoming);
+            upcoming,
+            calendar.NotExpected);
     }
 
     /// <summary>The country of issue from an ISIN ("US0378331005" → "US"); null when it is not an ISIN.</summary>
