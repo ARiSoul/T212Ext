@@ -29,7 +29,7 @@ public enum IrsFlags
     /// <summary>No country of origin (no ISIN, or an international one like XS): set it on the instrument.</summary>
     NoCountry = 32,
 
-    /// <summary>Withholding above <see cref="IrsReport.TreatyRateWarning"/>: the credit is capped at the treaty rate.</summary>
+    /// <summary>Withholding above the treaty rate (<see cref="TreatyRates"/>): the credit is capped at that rate.</summary>
     HighWithholding = 64,
 }
 
@@ -66,9 +66,15 @@ public sealed record IrsDividend(
     decimal? WithheldEur,
     decimal? NetEur,
     decimal? EffectiveRate,
-    IrsFlags Flags);
+    IrsFlags Flags,
+    TreatyLimit? Treaty,
+    decimal? CreditCapEur);
 
-/// <summary>One line of Anexo J, quadro 8A: income code and source country, with totals in euros.</summary>
+/// <summary>
+/// One line of Anexo J, quadro 8A: income code and source country, with totals in euros.
+/// <see cref="TaxPaidAbroad"/> is what to declare: <see cref="Withheld"/> (less refunds), capped at the
+/// treaty rate when that is asked for.
+/// </summary>
 public sealed record IrsLine(
     int Number,
     string Code,
@@ -77,10 +83,15 @@ public sealed record IrsLine(
     decimal Gross,
     decimal TaxPaidAbroad,
     decimal RefundsDeducted,
-    int Count);
+    int Count,
+    decimal Withheld,
+    TreatyLimit? Treaty);
 
-/// <summary>Interest and share lending: listed apart, with the code and country suggested but to be confirmed.</summary>
-public sealed record IrsOtherIncome(string Type, string SuggestedCode, string? Country, int? CountryNumeric, decimal AmountEur, int Count);
+/// <summary>
+/// Interest and share lending, with their code and country. The code of interest on cash (E21) is
+/// confirmed by the Anexo J instructions; share lending could be E21 or E22 (<see cref="CodeConfirmed"/> false).
+/// </summary>
+public sealed record IrsOtherIncome(string Type, string SuggestedCode, string? Country, int? CountryNumeric, decimal AmountEur, int Count, bool CodeConfirmed);
 
 /// <summary>A withholding refund ("Dividend adjustment") and the tax year it refers to, from its note.</summary>
 public sealed record IrsRefund(DateTimeOffset ReceivedOn, decimal AmountEur, int? ForYear, string? Country, string? Note);
@@ -124,8 +135,14 @@ public static partial class IrsReport
     /// <summary>Portugal: its dividends are domestic income, not part of Anexo J.</summary>
     public const string DomesticCountry = "PT";
 
-    /// <summary>Above this, withholding exceeds the usual treaty rate (15 %), and the credit is capped.</summary>
-    public const decimal TreatyRateWarning = 0.155m;
+    /// <summary>The special rate on capital income (art. 72.º): the credit can never exceed it (art. 81.º n.º 1).</summary>
+    public const decimal PortugueseRate = 0.28m;
+
+    /// <summary>For a country whose treaty is not in <see cref="TreatyRates"/>: the usual treaty rate.</summary>
+    public const decimal UsualTreatyRate = 0.15m;
+
+    /// <summary>Withholding this much above the creditable rate is flagged (rounding stays below it).</summary>
+    public const decimal WarningMargin = 0.005m;
 
     /// <summary>Gross − withheld may differ from net by FX fees and rounding: 2 % or 5 cents.</summary>
     private const decimal MismatchShare = 0.02m;
@@ -138,7 +155,8 @@ public static partial class IrsReport
         IReadOnlyDictionary<string, string> sourceCountryByIsin,
         RateTable rates,
         string? interestCountry,
-        bool deductRefunds)
+        bool deductRefunds,
+        bool capAtTreaty = true)
     {
         var missingRates = new SortedSet<string>(StringComparer.Ordinal);
         var computed = dividends
@@ -164,15 +182,21 @@ public static partial class IrsReport
             {
                 var refunded = deductRefunds ? refunds.Where(r => r.Country == g.Key).Sum(r => r.AmountEur) : 0;
                 var withheld = g.Sum(d => d.WithheldEur ?? 0);
+                var paid = Math.Max(0, withheld - refunded);
+                // Art. 81.º n.º 2: no more than the treaty allows is credited; the excess is reclaimed
+                // from the source country. A dividend from a country not in the table keeps its tax.
+                var cap = g.Sum(d => d.CreditCapEur ?? d.WithheldEur ?? 0);
                 return new IrsLine(
                     801 + i,
                     DividendCode,
                     g.Key,
                     CountryCodes.Numeric(g.Key),
                     g.Sum(d => d.GrossEur!.Value),
-                    Math.Max(0, withheld - refunded),
+                    capAtTreaty ? Math.Min(paid, cap) : paid,
                     Math.Min(refunded, withheld),
-                    g.Count());
+                    g.Count(),
+                    paid,
+                    g.First().Treaty);
             })
             .ToList();
 
@@ -186,7 +210,8 @@ public static partial class IrsReport
                 interestCountry,
                 CountryCodes.Numeric(interestCountry),
                 g.Sum(c => ToEuro(c.Amount, c.Currency, c.DateTime, rates, missingRates) ?? 0),
-                g.Count()))
+                g.Count(),
+                g.Key == CashTransactionTypes.InterestOnFreeCash))
             .ToList();
 
         return new IrsReportResult(year, lines, computed, other, refunds, [.. missingRates],
@@ -251,11 +276,14 @@ public static partial class IrsReport
             ? Math.Round(wOrig / grossOriginal.Value, 4)
             : grossEur is > 0 && withheldEur is { } wr ? Math.Round(wr / grossEur.Value, 4) : null;
         // Portugal's own withholding (28 %, or 35 % on omnibus accounts) is not a treaty matter.
-        if (effective > TreatyRateWarning && country != DomesticCountry)
+        var treaty = country == DomesticCountry ? null : TreatyRates.For(country, d.PaidOn.UtcDateTime.Year);
+        if (effective > (treaty?.CreditRate ?? UsualTreatyRate) + WarningMargin && country != DomesticCountry)
             flags |= IrsFlags.HighWithholding;
 
+        decimal? creditCap = treaty is not null && grossEur is { } capBase ? Math.Round(capBase * treaty.CreditRate, 2) : null;
+
         var rate = d.InstrumentCurrency is { } currency ? rates.RateFor(RateTable.Normalise(0, currency).Currency, date) : null;
-        return new IrsDividend(d, country, grossOriginal, rate?.Date, rate?.PerEuro, grossEur, withheldEur, netEur, effective, flags);
+        return new IrsDividend(d, country, grossOriginal, rate?.Date, rate?.PerEuro, grossEur, withheldEur, netEur, effective, flags, treaty, creditCap);
     }
 
     private static decimal? ToEuro(decimal amount, string? currency, DateTimeOffset when, RateTable rates, ISet<string> missingRates)

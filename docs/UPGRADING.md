@@ -11,6 +11,11 @@ The usual deploy command and checks are in [OPERATIONS.md](OPERATIONS.md#1-deplo
 - Only the usual deploy.
 - **Try afterwards:** `docker compose run --rm t212ext-web no-such-command` must answer "Unknown command" and stop.
 
+## 2.8.0
+
+- Only the usual deploy: no migration, no new setting.
+- **Try afterwards:** the IRS report for 2025: the quadro 8A lines show "Withheld", "Treaty" and "Tax paid abroad"; with a dividend above its treaty, the switch changes the last one. On the capital gains tab, with holdings under a year, the aggregation check.
+
 ## How this file works
 
 - Each version section lists only what is extra to the usual deploy command: migrations to be aware of, new settings, and what to try afterwards.

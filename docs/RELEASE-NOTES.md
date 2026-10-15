@@ -2,6 +2,18 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 2.8.0 — IRS: treaty limits and aggregation (2026-10-15)
+
+See [TAX.md](TAX.md). To check, not tax advice.
+
+**New**
+- **Treaty limits per country** (the AT's table of treaties): each dividend is checked against its own country's treaty (10% for the Netherlands, Denmark, Japan and, from 2026, the United Kingdom; 15% for most; 28% for countries without a treaty, such as Sweden and Finland). The quadro 8A lines show the tax withheld, the treaty, and the tax to declare, capped at the treaty by default (a switch declares the full amount).
+- **Mandatory aggregation check** on the capital gains tab: with the year's other taxable income (optional, kept only in the browser), it says whether the balance of holdings under 365 days must be aggregated.
+- **A note on the inflation coefficient** for shares held more than 24 months.
+
+**Changed**
+- Interest on cash is code E21, now confirmed; share lending shows "E21 or E22" (no official source picks one; both are taxed alike).
+
 ## 2.7.1 — Unknown commands are refused (2026-10-15)
 
 **Fixed**

@@ -48,6 +48,10 @@
             <input class="form-check-input" type="checkbox" role="switch" id="deduct-refunds" checked="@_deductRefunds" @onchange="OnDeductRefundsChanged" />
             <label class="form-check-label" for="deduct-refunds">@L["Tax_DeductRefunds"]</label>
         </div>
+        <div class="form-check form-switch small mb-0">
+            <input class="form-check-input" type="checkbox" role="switch" id="cap-at-treaty" checked="@_capAtTreaty" @onchange="OnCapAtTreatyChanged" />
+            <label class="form-check-label" for="cap-at-treaty">@L["Tax_CapAtTreaty"]</label>
+        </div>
         <button type="button" class="btn btn-sm btn-outline-secondary ms-auto" disabled="@_updatingRates" @onclick="UpdateRatesAsync">
             @if (_updatingRates)
             {
@@ -97,7 +101,7 @@ else
     {
         <p class="small text-body-secondary mt-2">@string.Format(L["Tax_RefundsDeductedNote"], Fmt.Money(r.Lines.Sum(l => l.RefundsDeducted), "EUR"))</p>
     }
-    @if (r.Lines.Any(l => l.Gross > 0 && l.TaxPaidAbroad / l.Gross > IrsReport.TreatyRateWarning))
+    @if (r.Dividends.Any(d => d.Flags.HasFlag(IrsFlags.HighWithholding)))
     {
         <p class="small text-negative mt-2"><i class="bi bi-exclamation-triangle"></i> @L["Tax_TreatyCapNote"]</p>
     }
@@ -125,7 +129,16 @@ else
                         {
                             <tr>
                                 <td>@Labels.CashType(L, income.Type)</td>
-                                <td>@income.SuggestedCode <span class="badge text-bg-warning">@L["Tax_ToConfirm"]</span></td>
+                                <td>
+                                    @if (income.CodeConfirmed)
+                                    {
+                                        @income.SuggestedCode
+                                    }
+                                    else
+                                    {
+                                        <span class="badge text-bg-warning">@L["Tax_LendingCode"]</span>
+                                    }
+                                </td>
                                 <td>@CountryCodes.Format(income.CountryNumeric) · @Labels.Country(L, income.Country)</td>
                                 <td class="text-end">@income.Count</td>
                                 <td class="text-end">@Fmt.Money(income.AmountEur, "EUR")</td>
@@ -159,11 +172,13 @@ else
 @code {
     private const string InterestCountryKey = "t212ext.tax.interestCountry";
     private const string DeductRefundsKey = "t212ext.tax.deductRefunds";
+    private const string CapAtTreatyKey = "t212ext.tax.capAtTreaty";
 
     private IReadOnlyList<int> _years = [];
     private int _year = DateTime.UtcNow.Year - 1;
     private string _interestCountry = "CY";
     private bool _deductRefunds = true;
+    private bool _capAtTreaty = true;
     private bool _optionsRead;
     private IrsReportResult? _report;
     private bool _updatingRates;
@@ -189,10 +204,14 @@ else
         new() { Key = "count", Title = L["Col_Payments"], Value = l => l.Count, AlignEnd = true, HideBelow = "md" },
         new() { Key = "gross", Title = L["Tax_GrossIncome"], Value = l => l.Gross, Text = l => Fmt.Money(l.Gross, "EUR"), AlignEnd = true,
                 Summaries = [SummaryKind.Sum], SummaryText = n => Fmt.Money(n, "EUR") },
+        new() { Key = "withheld", Title = L["Tax_Withheld"], Value = l => l.Withheld, Text = l => Fmt.Money(l.Withheld, "EUR"), AlignEnd = true, HideBelow = "md",
+                Summaries = [SummaryKind.Sum], SummaryText = n => Fmt.Money(n, "EUR") },
+        new() { Key = "treaty", Title = L["Tax_Treaty"], Value = l => l.Treaty?.CreditRate, HideBelow = "lg",
+                Text = l => l.Treaty is null ? "—" : l.Treaty.Rate is { } rate ? $"{Fmt.Percent(rate, 0)} · {l.Treaty.Note}" : L["Tax_NoTreaty"] },
         new() { Key = "tax", Title = L["Tax_TaxPaidAbroadColumn"], Value = l => l.TaxPaidAbroad, Text = l => Fmt.Money(l.TaxPaidAbroad, "EUR"), AlignEnd = true,
                 Summaries = [SummaryKind.Sum], SummaryText = n => Fmt.Money(n, "EUR") },
-        new() { Key = "rate", Title = L["Tax_EffectiveRate"], Value = l => l.Gross > 0 ? l.TaxPaidAbroad / l.Gross : null,
-                Text = l => l.Gross > 0 ? Fmt.Percent(l.TaxPaidAbroad / l.Gross, 1) : "—", AlignEnd = true, HideBelow = "lg" },
+        new() { Key = "rate", Title = L["Tax_EffectiveRate"], Value = l => l.Gross > 0 ? l.Withheld / l.Gross : null,
+                Text = l => l.Gross > 0 ? Fmt.Percent(l.Withheld / l.Gross, 1) : "—", AlignEnd = true, HideBelow = "lg" },
     ];
 
     private IReadOnlyList<GridColumn<IrsDividend>> DividendColumns => [
@@ -220,6 +239,7 @@ else
         {
             _interestCountry = await Storage.GetAsync<string>(InterestCountryKey) ?? "CY";
             _deductRefunds = await Storage.GetAsync<bool?>(DeductRefundsKey) ?? true;
+            _capAtTreaty = await Storage.GetAsync<bool?>(CapAtTreatyKey) ?? true;
             _optionsRead = true;
         }
 
@@ -231,7 +251,7 @@ else
     }
 
     private async Task BuildAsync() =>
-        _report = await Tax.GetReportAsync(AccountId, _year, _interestCountry, _deductRefunds);
+        _report = await Tax.GetReportAsync(AccountId, _year, _interestCountry, _deductRefunds, _capAtTreaty);
 
     private async Task OnYearChanged(ChangeEventArgs e)
     {
@@ -251,6 +271,13 @@ else
     {
         _deductRefunds = e.Value is true;
         await Storage.SetAsync(DeductRefundsKey, _deductRefunds);
+        await BuildAsync();
+    }
+
+    private async Task OnCapAtTreatyChanged(ChangeEventArgs e)
+    {
+        _capAtTreaty = e.Value is true;
+        await Storage.SetAsync(CapAtTreatyKey, _capAtTreaty);
         await BuildAsync();
     }
 

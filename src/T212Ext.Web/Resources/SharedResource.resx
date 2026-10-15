@@ -4,6 +4,12 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Agg_Mandatory" xml:space="preserve"><value>Taxable income with this balance: {0}, at or above the top bracket ({1}). The balance of holdings under 365 days must be aggregated.</value></data>
+  <data name="Agg_NotMandatory" xml:space="preserve"><value>Taxable income with this balance: {0}, below the top bracket ({1}). Aggregation is optional; without it the 28% rate applies.</value></data>
+  <data name="Agg_OtherIncome" xml:space="preserve"><value>The year's other taxable income (rendimento coletável), in euros</value></data>
+  <data name="Agg_OtherIncomeHint" xml:space="preserve"><value>Optional, kept only in this browser. From the year's settlement note, or an estimate: wages, pensions and other aggregated income after their deductions. With joint taxation, confirm with the AT simulator.</value></data>
+  <data name="Agg_Title" xml:space="preserve"><value>Mandatory aggregation (englobamento)</value></data>
+  <data name="Agg_UnknownYear" xml:space="preserve"><value>The app does not know the top bracket for {0} yet: compare with that year's IRS table.</value></data>
   <data name="CashType_DEPOSIT" xml:space="preserve"><value>Deposits</value></data>
   <data name="CashType_DIVIDEND_ADJUSTMENT" xml:space="preserve"><value>Withholding tax refunds</value></data>
   <data name="CashType_FEE" xml:space="preserve"><value>Fees</value></data>
@@ -150,6 +156,7 @@
   <data name="Gains_Flag_MissingRate" xml:space="preserve"><value>no exchange rate</value></data>
   <data name="Gains_Flag_NoCountry" xml:space="preserve"><value>no source country</value></data>
   <data name="Gains_Gain" xml:space="preserve"><value>Gain / loss</value></data>
+  <data name="Gains_InflationNote" xml:space="preserve"><value>Shares held more than 24 months: the acquisition value is corrected by the inflation coefficient (Código do IRS art. 50.º, for partes sociais). The values here are not corrected: the AT applies the coefficient in the assessment. For ETFs it is not clear that it applies.</value></data>
   <data name="Gains_LessThanYear" xml:space="preserve"><value>Less than 365 days</value></data>
   <data name="Gains_LinesNote" xml:space="preserve"><value>One line per sale and purchase it was matched to (FIFO). Tax paid abroad is 0: no tax is withheld on these sales.</value></data>
   <data name="Gains_Listed" xml:space="preserve"><value>Listed securities</value></data>
@@ -159,7 +166,7 @@
   <data name="Gains_Realisation" xml:space="preserve"><value>Sale value</value></data>
   <data name="Gains_SalesCount" xml:space="preserve"><value>{0} sales</value></data>
   <data name="Gains_ShortTerm" xml:space="preserve"><value>Balance held &lt; 365 days</value></data>
-  <data name="Gains_ShortTermHint" xml:space="preserve"><value>May have to be aggregated: see the note in TAX.md</value></data>
+  <data name="Gains_ShortTermHint" xml:space="preserve"><value>Whether it must be aggregated: see below</value></data>
   <data name="Gains_ShortTermNote" xml:space="preserve"><value>A positive balance from assets held less than 365 days must be aggregated (englobamento) when your taxable income, including it, reaches the top bracket (83,696 EUR for 2025 income, 86,634 EUR for 2026) — Código do IRS art. 72.º n.º 14. Losses can only be carried forward (5 years) if you aggregate.</value></data>
   <data name="Gains_Shortfall" xml:space="preserve"><value>{0}: from {1}, {2} shares sold more than bought — probably a split to enter below</value></data>
   <data name="Gains_SoldOn" xml:space="preserve"><value>Sale date</value></data>
@@ -333,6 +340,7 @@
   <data name="Sync_Last" xml:space="preserve"><value>Last sync {0}</value></data>
   <data name="Sync_Now" xml:space="preserve"><value>Sync now</value></data>
   <data name="Sync_Running" xml:space="preserve"><value>Syncing</value></data>
+  <data name="Tax_CapAtTreaty" xml:space="preserve"><value>Cap the tax paid abroad at the treaty rate</value></data>
   <data name="Tax_Check" xml:space="preserve"><value>Check</value></data>
   <data name="Tax_Code" xml:space="preserve"><value>Code</value></data>
   <data name="Tax_DeductRefunds" xml:space="preserve"><value>Deduct withholding refunds for the year</value></data>
@@ -342,7 +350,7 @@
   <data name="Tax_DomesticTitle" xml:space="preserve"><value>Portuguese dividends</value></data>
   <data name="Tax_EffectiveRate" xml:space="preserve"><value>Rate withheld</value></data>
   <data name="Tax_Flag_GrossDerived" xml:space="preserve"><value>gross derived from net</value></data>
-  <data name="Tax_Flag_HighWithholding" xml:space="preserve"><value>withholding above 15 %</value></data>
+  <data name="Tax_Flag_HighWithholding" xml:space="preserve"><value>withholding above the treaty</value></data>
   <data name="Tax_Flag_Mismatch" xml:space="preserve"><value>gross − tax ≠ net</value></data>
   <data name="Tax_Flag_MissingRate" xml:space="preserve"><value>no exchange rate</value></data>
   <data name="Tax_Flag_NoCountry" xml:space="preserve"><value>no source country (set it on the instrument)</value></data>
@@ -352,12 +360,14 @@
   <data name="Tax_GrossIncome" xml:space="preserve"><value>Gross income</value></data>
   <data name="Tax_GrossOriginal" xml:space="preserve"><value>Gross (original)</value></data>
   <data name="Tax_InterestCountry" xml:space="preserve"><value>Country of your Trading 212 entity</value></data>
+  <data name="Tax_LendingCode" xml:space="preserve"><value>E21 or E22</value></data>
   <data name="Tax_Line" xml:space="preserve"><value>Line</value></data>
   <data name="Tax_MissingRates" xml:space="preserve"><value>Exchange rates missing for:</value></data>
   <data name="Tax_NetEur" xml:space="preserve"><value>Net EUR</value></data>
   <data name="Tax_NoLines" xml:space="preserve"><value>No foreign dividends in this year.</value></data>
+  <data name="Tax_NoTreaty" xml:space="preserve"><value>no treaty (28%)</value></data>
   <data name="Tax_OtherIncome" xml:space="preserve"><value>Interest and share lending</value></data>
-  <data name="Tax_OtherIncomeHint" xml:space="preserve"><value>Listed apart; code to confirm</value></data>
+  <data name="Tax_OtherIncomeHint" xml:space="preserve"><value>Interest E21; share lending E21 or E22</value></data>
   <data name="Tax_OtherIncomeNote" xml:space="preserve"><value>No official guidance was found for the code and country of interest and share lending paid by Trading 212. E21 (interest without Portuguese withholding) and the country of the Trading 212 entity of your account are the likely answer; confirm before declaring.</value></data>
   <data name="Tax_OtherIncomeTitle" xml:space="preserve"><value>Interest and share lending</value></data>
   <data name="Tax_Print" xml:space="preserve"><value>Print</value></data>
@@ -380,8 +390,10 @@
   <data name="Tax_ToCheck" xml:space="preserve"><value>Dividends to check</value></data>
   <data name="Tax_ToCheckHint" xml:space="preserve"><value>See the Check column below</value></data>
   <data name="Tax_ToConfirm" xml:space="preserve"><value>to confirm</value></data>
-  <data name="Tax_TreatyCapNote" xml:space="preserve"><value>Some countries withheld more than 15 %. The credit for tax paid abroad is capped at the rate of the double taxation treaty (Código do IRS art. 81.º): check how much to declare.</value></data>
+  <data name="Tax_Treaty" xml:space="preserve"><value>Treaty</value></data>
+  <data name="Tax_TreatyCapNote" xml:space="preserve"><value>Some dividends had more withheld than their country's treaty allows. Only the treaty amount is credited in Portugal (Código do IRS art. 81.º n.º 2); the excess can only be reclaimed from that country (AT FAQ 3448). No official text says whether the form takes the withheld or the capped amount: the switch above chooses, capped by default.</value></data>
   <data name="Tax_UpdateRates" xml:space="preserve"><value>Update exchange rates</value></data>
+  <data name="Tax_Withheld" xml:space="preserve"><value>Withheld (less refunds)</value></data>
   <data name="Tax_WithheldEur" xml:space="preserve"><value>Withheld EUR</value></data>
   <data name="Theme_Auto" xml:space="preserve"><value>Same as the system</value></data>
   <data name="Theme_Dark" xml:space="preserve"><value>Dark</value></data>

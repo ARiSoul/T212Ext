@@ -101,9 +101,35 @@ else
     {
         <p class="small text-body-secondary">@L["Gains_ExclusionNote"]</p>
     }
+    @if (_lines.Any(l => l.Code == CapitalGainCodes.Shares && l.DaysHeld > 730))
+    {
+        <p class="small text-body-secondary">@L["Gains_InflationNote"]</p>
+    }
     @if (r.ShortTermBalance > 0)
     {
-        <p class="small text-body-secondary">@L["Gains_ShortTermNote"]</p>
+        var check = Aggregation.Check(_year, r.ShortTermBalance, _otherIncome);
+        <h2 class="section-title">@L["Agg_Title"]</h2>
+        <div class="card mb-3">
+            <div class="card-body">
+                <p class="small text-body-secondary">@L["Gains_ShortTermNote"]</p>
+                <label class="small d-block mb-1" for="other-income">@L["Agg_OtherIncome"]</label>
+                <input id="other-income" type="number" min="0" step="0.01" inputmode="decimal" class="form-control form-control-sm mb-1" style="max-width: 14rem"
+                       value="@_otherIncome?.ToString(System.Globalization.CultureInfo.InvariantCulture)" @onchange="OnOtherIncomeChanged" />
+                <div class="form-text mb-3">@L["Agg_OtherIncomeHint"]</div>
+                @switch (check.Verdict)
+                {
+                    case AggregationVerdict.Mandatory:
+                        <div class="alert alert-warning mb-0">@string.Format(L["Agg_Mandatory"], Fmt.Money(check.IncomeWithBalance, "EUR"), Fmt.Money(check.TopBracket, "EUR"))</div>
+                        break;
+                    case AggregationVerdict.NotMandatory:
+                        <div class="alert alert-success mb-0">@string.Format(L["Agg_NotMandatory"], Fmt.Money(check.IncomeWithBalance, "EUR"), Fmt.Money(check.TopBracket, "EUR"))</div>
+                        break;
+                    case AggregationVerdict.UnknownYear:
+                        <div class="alert alert-info mb-0">@string.Format(L["Agg_UnknownYear"], _year)</div>
+                        break;
+                }
+            </div>
+        </div>
     }
 }
 
@@ -203,6 +229,21 @@ else
 
     private const string EntityCountryKey = "t212ext.tax.interestCountry";
     private string _entityCountry = "CY";
+    private decimal? _otherIncome;
+
+    // Kept per year in this browser only: it is personal, and the server does not need it.
+    private string OtherIncomeKey => $"t212ext.tax.otherIncome.{_year}";
+
+    private async Task OnOtherIncomeChanged(ChangeEventArgs e)
+    {
+        _otherIncome = decimal.TryParse(e.Value?.ToString(), System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var value) && value >= 0
+            ? value
+            : null;
+        if (_otherIncome is null)
+            await Storage.RemoveAsync(OtherIncomeKey);
+        else
+            await Storage.SetAsync(OtherIncomeKey, _otherIncome);
+    }
     private bool _optionsRead;
     private Dictionary<GainLine, int> _numbers = new(ReferenceEqualityComparer.Instance);
 
@@ -232,6 +273,7 @@ else
     private async Task BuildAsync()
     {
         (_result, _unsupported) = await Tax.GetCapitalGainsAsync(AccountId, _year);
+        _otherIncome = await Storage.GetAsync<decimal?>(OtherIncomeKey);
         _lines = [.. _result.Lines];
         _numbers = new(ReferenceEqualityComparer.Instance);
         var number = 951;
