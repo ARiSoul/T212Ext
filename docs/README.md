@@ -7,6 +7,7 @@
 | [T212-API.md](T212-API.md) | What we know about the Trading 212 API: authentication, endpoints, rate limits, quirks, terms of use. |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | First-time setup on the Hetzner server, next to traceon: database, sign-in, HTTPS, backups. |
 | [OPERATIONS.md](OPERATIONS.md) | Running it there: updates, rollback, logs, users, secrets, backups and restore. |
+| [POSTGRESQL.md](POSTGRESQL.md) | The database: why PostgreSQL and how it is set up, dates and text rules, the move from SQL Server (3.0.0), backups, upgrades, lessons for traceon. |
 | [BACKLOG.md](BACKLOG.md) | The roadmap by phase, and ideas not yet planned. |
 | [RELEASE-NOTES.md](RELEASE-NOTES.md) | What changed in each version, for the person using the app. |
 | [UPGRADING.md](UPGRADING.md) | Deploy steps of the versions not yet in production. |

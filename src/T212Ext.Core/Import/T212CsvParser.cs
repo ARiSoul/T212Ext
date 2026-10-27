@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using Arisoul.T212Ext.Core.Domain;
 
 namespace Arisoul.T212Ext.Core.Import;
 
@@ -87,18 +88,18 @@ public static partial class T212CsvParser
                 line,
                 action.Trim(),
                 time,
-                Text(fields, columns.Isin),
+                Codes.Upper(Text(fields, columns.Isin)),
                 Text(fields, columns.Ticker),
                 Text(fields, columns.Name),
                 Text(fields, columns.Id),
                 Number(fields, columns.Shares),
                 Number(fields, columns.PricePerShare),
-                Text(fields, columns.PriceCurrency),
+                Codes.Upper(Text(fields, columns.PriceCurrency)),
                 Number(fields, columns.ExchangeRate),
                 Number(fields, columns.Total.Index),
-                Text(fields, columns.TotalCurrency) ?? columns.Total.HeaderCurrency,
+                Codes.Upper(Text(fields, columns.TotalCurrency) ?? columns.Total.HeaderCurrency),
                 Number(fields, columns.WithholdingTax.Index),
-                Text(fields, columns.WithholdingTaxCurrency) ?? columns.WithholdingTax.HeaderCurrency,
+                Codes.Upper(Text(fields, columns.WithholdingTaxCurrency) ?? columns.WithholdingTax.HeaderCurrency),
                 Text(fields, columns.Notes)));
         }
 

@@ -10,6 +10,7 @@ public sealed class InstrumentSettings(IDbContextFactory<T212ExtDbContext> dbFac
 {
     public async Task<string?> GetSourceCountryAsync(string isin, CancellationToken cancellationToken = default)
     {
+        isin = Codes.Upper(isin) ?? "";
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         return await db.InstrumentSettings.AsNoTracking().Where(s => s.Isin == isin).Select(s => s.SourceCountry).FirstOrDefaultAsync(cancellationToken);
     }
@@ -17,7 +18,8 @@ public sealed class InstrumentSettings(IDbContextFactory<T212ExtDbContext> dbFac
     /// <summary>Sets the source country (ISO alpha-2); null or the ISIN's own country removes the override.</summary>
     public async Task SetSourceCountryAsync(string isin, string? country, CancellationToken cancellationToken = default)
     {
-        country = string.IsNullOrWhiteSpace(country) ? null : country.Trim().ToUpperInvariant();
+        isin = Codes.Upper(isin) ?? throw new ArgumentException("An ISIN is needed.", nameof(isin));
+        country = Codes.Upper(country);
         if (country is not null && (country.Length != 2 || !country.All(char.IsAsciiLetterUpper)))
             throw new ArgumentException("A country is two letters (ISO 3166).", nameof(country));
         if (country == DividendAnalytics.CountryOf(isin))
@@ -49,6 +51,7 @@ public sealed class InstrumentSettings(IDbContextFactory<T212ExtDbContext> dbFac
     {
         if (ratio <= 0 || ratio == 1)
             throw new ArgumentOutOfRangeException(nameof(ratio), "A split ratio is positive and not 1.");
+        isin = Codes.Upper(isin) ?? throw new ArgumentException("An ISIN is needed.", nameof(isin));
 
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
         var split = await db.StockSplits.FirstOrDefaultAsync(s => s.Isin == isin && s.Date == date, cancellationToken);

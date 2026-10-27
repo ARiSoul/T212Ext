@@ -43,7 +43,11 @@ public sealed class DividendQueries(IDbContextFactory<T212ExtDbContext> dbFactor
         var query = db.Dividends.AsNoTracking().Where(d => accountId == null || d.AccountId == accountId);
 
         if (!string.IsNullOrEmpty(instrument))
-            query = query.Where(d => d.Isin == instrument || d.Ticker == instrument);
+        {
+            // ISINs are stored in upper case (Codes); tickers keep Trading 212's case.
+            var isin = Codes.Upper(instrument);
+            query = query.Where(d => d.Isin == isin || d.Ticker == instrument);
+        }
 
         if (year is not null)
         {

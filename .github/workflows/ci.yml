@@ -20,25 +20,25 @@ jobs:
     timeout-minutes: 20
 
     services:
-      # Throwaway SQL Server for the integration tests (each run creates and drops its own database).
-      sqlserver:
-        image: mcr.microsoft.com/mssql/server:2022-latest
+      # Throwaway PostgreSQL for the integration tests (each run creates and drops its own database),
+      # the image and locale of docker-compose.yml's t212ext-db.
+      postgres:
+        image: postgres:18
         env:
-          ACCEPT_EULA: "Y"
-          MSSQL_SA_PASSWORD: CiOnly_Passw0rd
+          POSTGRES_PASSWORD: ci-only
+          POSTGRES_INITDB_ARGS: --locale-provider=builtin --builtin-locale=C.UTF-8
         ports:
-          - 1433:1433
+          - 5432:5432
         options: >-
-          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P CiOnly_Passw0rd -C -Q 'SELECT 1' -b -o /dev/null"
-          --health-interval 10s
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
           --health-timeout 5s
           --health-retries 12
-          --health-start-period 20s
 
     env:
       DOTNET_NOLOGO: true
       DOTNET_CLI_TELEMETRY_OPTOUT: true
-      T212EXT_TEST_SQL: Server=localhost,1433;User Id=sa;Password=CiOnly_Passw0rd;TrustServerCertificate=True
+      T212EXT_TEST_PG: Host=localhost;Port=5432;Username=postgres;Password=ci-only
 
     steps:
       - uses: actions/checkout@v7
@@ -63,7 +63,7 @@ jobs:
           path: TestResults
 
   # The image the server builds (docs/DEPLOYMENT.md): it must build, refuse to start without users,
-  # and with one start against SQL Server (migrations included) and answer /health.
+  # and with one start against PostgreSQL (migrations included) and answer /health.
   docker:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -74,19 +74,28 @@ jobs:
       - name: Check the compose file and the server scripts
         run: |
           cp .env.example .env
-          T212EXT_DB_PASSWORD=ci docker compose config --quiet
+          T212EXT_PG_PASSWORD=ci docker compose config --quiet
+          T212EXT_PG_PASSWORD=ci T212EXT_DB_PASSWORD=ci docker compose -f docker-compose.yml -f ops/postgres/copy-from-sqlserver.yml config --quiet
           rm .env
-          shellcheck ops/db/*.sh ops/backup/*.sh
+          shellcheck ops/*.sh ops/backup/*.sh
 
       - name: Build the image
         run: docker build -t t212ext:ci .
 
       - name: Smoke test
         env:
-          SQL: Server=sql;Database=T212Ext;User Id=sa;Password=CiOnly_Passw0rd;TrustServerCertificate=True
+          PG: Host=pg;Database=t212ext;Username=t212ext;Password=ci-only
         run: |
           docker network create t212ext-ci
-          docker run -d --name sql --network t212ext-ci -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD=CiOnly_Passw0rd mcr.microsoft.com/mssql/server:2022-latest
+          docker run -d --name pg --network t212ext-ci -e POSTGRES_USER=t212ext -e POSTGRES_PASSWORD=ci-only -e POSTGRES_DB=t212ext \
+            -e "POSTGRES_INITDB_ARGS=--locale-provider=builtin --builtin-locale=C.UTF-8" postgres:18
+
+          # The one-time copy (3.0.0) is in the image, and says what it needs.
+          if docker run --rm t212ext:ci copy-from-sqlserver 2> copy.log; then
+            echo "copy-from-sqlserver ran without connection strings" >&2
+            exit 1
+          fi
+          grep -q "ConnectionStrings:SqlServer" copy.log
 
           if docker run --rm -e ASPNETCORE_ENVIRONMENT=Production t212ext:ci 2> refused.log; then
             echo "Production started without users" >&2
@@ -95,11 +104,11 @@ jobs:
           grep -q "Auth:Users is empty" refused.log
 
           hash="$(printf '%s\n%s\n' ci-only-password ci-only-password | docker run --rm -i t212ext:ci hash-password)"
-          args=(-e ASPNETCORE_ENVIRONMENT=Production -e Sync__Enabled=false -e "ConnectionStrings__T212Ext=$SQL")
+          args=(-e ASPNETCORE_ENVIRONMENT=Production -e Sync__Enabled=false -e "ConnectionStrings__T212Ext=$PG")
           args+=(-e Auth__Users__0__Username=ci -e "Auth__Users__0__PasswordHash=$hash")
           for i in $(seq 1 40); do
-            docker exec sql /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P CiOnly_Passw0rd -C -Q "SELECT 1" -b -o /dev/null && break
-            sleep 3
+            docker exec pg pg_isready -U t212ext -d t212ext && break
+            sleep 2
           done
           docker run -d --name app --network t212ext-ci -p 8080:8080 "${args[@]}" t212ext:ci
 

@@ -2,6 +2,19 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 3.0.0 — PostgreSQL (2026-10-27)
+
+**Changed**
+- **The database is now PostgreSQL 18, the app's own** (`t212ext-db`, in T212Ext's compose project) instead of a database on traceon's SQL Server. Restarting traceon, or its database, no longer touches T212Ext. Nothing changes in use: every page, figure and report is the same.
+- **Moving the data** is a one-time command, `copy-from-sqlserver`: it copies every table, in one go, and compares the row count of every table. The SQL Server database is only read, and stays as the way back until the move is confirmed (docs/UPGRADING.md).
+- **Backups** are `pg_dump` archives (`t212ext-*.dump.gpg`), and the weekly restore test restores into a throwaway PostgreSQL database.
+- **Deploys** go through `ops/deploy.sh`: it builds the version's image and keeps the three newest versions' images, for a rollback without a build; older images and build cache are removed, so they no longer fill the disk.
+- Codes (ISINs, currencies, countries) are stored in upper case wherever they come in.
+
+**For developers**
+- Development runs a PostgreSQL container (README), and the tests start one with Testcontainers (Docker needed). LocalDB is no longer used.
+- What was decided and learned, for traceon's own move: docs/POSTGRESQL.md.
+
 ## 2.18.0 — Notification choices (2026-10-15)
 
 **New**

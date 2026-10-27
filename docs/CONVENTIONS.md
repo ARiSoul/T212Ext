@@ -22,12 +22,11 @@ The rules every change follows, for people and for coding assistants. Each rule 
    - They are never pasted into chats, issues, `appsettings*.json` or the repository.
    - Passwords are stored only as hashes (`hash-password`); `.env.example` holds names, never values.
 5. **Tests:**
-   - The client is tested against `StubHandler`. Everything that touches the database is tested against the throwaway SQL Server of `DatabaseFixture`.
+   - The client is tested against `StubHandler`. Everything that touches the database is tested against the throwaway PostgreSQL of `DatabaseFixture`: a `postgres:18` container started by Testcontainers (Docker running), or the server in `T212EXT_TEST_PG`.
    - Every fix and every new rule gets a test that fails without it.
    - The whole suite passes before a PR is opened.
    - Tests never call Trading 212.
    - Pure logic (analytics, grid engine) is tested without a database; `tests/T212Ext.Web.Tests` covers the web project's logic and the translations.
-   - A sandboxed tool (a coding assistant) may not reach the LocalDB instance another process started, and `dotnet ef` commands start `MSSQLLocalDB` in the tool's own context: stop it afterwards (`sqllocaldb stop MSSQLLocalDB`) so the maintainer's app can start it. It then uses its own instance through `T212EXT_TEST_SQL`, e.g. `Server=(localdb)\T212ExtClaude;...`.
 6. **Merge only with CI green** and the branch up to date with `main`. Docs-only PRs can merge at once.
 7. **Language:** code, comments, docs, commits and PRs are in English. The maintainer is addressed in European Portuguese.
 8. **A package with a known vulnerability fails the build** (NuGet audit warnings are errors).
@@ -97,6 +96,11 @@ The rules every change follows, for people and for coding assistants. Each rule 
     - Due and late rows are shown, but not counted in the next 12 months. Every holding with nothing expected is listed with the reason (never paid, stopped, missed).
     - *Why:* Trading 212 has no upcoming dividends and the providers that do are paid; one slot per payment keeps interim and final dividends apart, and keeping due rows out stops a late payment from being counted twice. Interim and final dividends have uneven gaps (121 and 244 days, say): judged from the median gap, they looked late months early, and dropped out (2.14.0, fixed in 2.15.0). *(2.14.0, 2.15.0)*
 
+15. **Codes are stored in one case** (`Domain/Codes.cs`): ISINs, currency and country codes in upper case, trimmed, wherever they come in (the API, CSV files, forms, page addresses). Tickers keep Trading 212's case.
+    - *Why:* PostgreSQL compares text case-sensitively, and the database uses the builtin `C.UTF-8` locale (code point order, no case-insensitive collation). SQL Server compared without case by default, so nothing had to decide it before. *(3.0.0)*
+16. **Instants are `DateTimeOffset`, stored in UTC** (`timestamptz`; a model-wide converter in `T212ExtDbContext`, query parameters included). Days are `DateOnly` (`date`), times of day `TimeOnly` (`time`); `DateTime` is not used in the model.
+    - *Why:* Npgsql writes `timestamptz` only from offset 0 and throws otherwise; API answers and CSV files can carry another offset. [POSTGRESQL.md](POSTGRESQL.md) has the details. *(3.0.0)*
+
 ## 4. App (`src/T212Ext.Web`)
 
 1. **Every text a person reads is translated.**
@@ -165,17 +169,18 @@ The rules every change follows, for people and for coding assistants. Each rule 
 1. **The server runs what the repository holds.** Its settings are only in `.env`; tracked files are never edited there, so `git pull` always applies cleanly.
 2. **A new setting the server needs goes, in the same PR, to `.env.example`, the settings table in the README, and the version's section in `UPGRADING.md`.**
 3. **T212Ext depends on the server's shared infrastructure, never on another app.**
-   - It joins only the external networks `edge` (the reverse proxy) and `data` (SQL Server as `sqlserver`), never another project's network, and publishes no port.
-   - Names on those networks are DNS names: every service and container is `t212ext-<role>` (today `t212ext-web`), never generic (`web`, `api`) nor `sqlserver`, `caddy` or `traceon-*`.
+   - It joins only the external network `edge` (the reverse proxy), never another project's network, and publishes no port. Its database is its own (`t212ext-db`, on the project's network); the network `data` is joined only by the one-time copy from SQL Server (3.0.0).
+   - Names on the shared network are DNS names: every service and container is `t212ext-<role>` (`t212ext-web`, `t212ext-db`), never generic (`web`, `api`, `db`) nor `caddy` or `traceon-*`.
    - Its site is a file in the proxy's sites folder, with the domain written in it; the docs always validate the configuration before reloading Caddy. Its backups, scripts and secrets are its own. Nothing in this repository calls another app's scripts.
    - The infrastructure's side of the contract is traceon's `docs/OPERATIONS.md`, section 20; a change there is checked against this section.
-   - Where the infrastructure lives (today traceon's compose project) is a setting with a default (`SA_ENV_FILE`, `DB_CONTAINER`), not something the app is built around.
    - The app trusts forwarded headers only because nothing but the proxy can reach it.
    - *Why:* the two apps are independent; a change in one must not break the other, and either could move to another server.
-4. **Database work outside migrations is a script in `ops/db/`, safe to run twice.**
-   - The app's login owns only its own database, and the app and its nightly backup use only that login.
-   - `sa` is used only to create the database and login, and to restore (restore test, disaster restore).
-5. **CI builds the image and starts it** against a SQL Server: it must refuse to start without users, answer `/health` with one, and serve the Blazor script the sign-in page references (fingerprinted, as JavaScript). A change to the `Dockerfile` or the compose file is checked there before it reaches the server.
+4. **The database is one PostgreSQL per app, in the app's own compose project** (`t212ext-db`, the latest stable `postgres` image, volume `pgdata`, password `T212EXT_PG_PASSWORD`).
+   - Database work outside migrations runs inside its container (`docker exec t212ext-db …`, the local socket, no password on a command line): backups, the restore test, `t212psql`.
+   - *Why:* a shared database coupled the apps: restarting traceon's SQL Server stopped T212Ext, and `docker compose down -v` there would have deleted its data. *(3.0.0)*
+5. **CI builds the image and starts it** against a PostgreSQL: it must refuse to start without users, answer `/health` with one, and serve the Blazor script the sign-in page references (fingerprinted, as JavaScript). A change to the `Dockerfile` or the compose file is checked there before it reaches the server.
    - *Why:* the Dockerfile restores from the project files alone, before any `.razor` file is there, and the SDK then leaves out `blazor.web.js` unless `RequiresAspNetWebAssets` is set in the csproj. The 2.4.0 image had no Blazor script: every page stayed blank after sign-in.
-6. **Server docs are commands to copy, one per block**, with `<placeholders>` for personal values ([DEPLOYMENT.md](DEPLOYMENT.md), [OPERATIONS.md](OPERATIONS.md)). They never show a secret's value.
-   - Steps are in the order they work: a command a version adds runs only after `git pull` and `docker compose build`. *(2.7.0: the keys command was given before the build, and the old image started a second copy of the app instead.)*
+6. **Deploys go through `ops/deploy.sh`.** It builds the version's image (`t212ext-web:<version>`, also `latest`), restarts, keeps the three newest versions' images for a rollback and removes the rest, with build cache older than a week.
+   - *Why:* every build on the server left an image behind; with traceon's builds, the disk filled up and stopped the database on 2026-10-25. Traceon's deploy keeps three versions the same way. *(3.0.0)*
+7. **Server docs are commands to copy, one per block**, with `<placeholders>` for personal values ([DEPLOYMENT.md](DEPLOYMENT.md), [OPERATIONS.md](OPERATIONS.md)). They never show a secret's value.
+   - Steps are in the order they work: a command a version adds runs only after the deploy has built its image (`ops/deploy.sh`). *(2.7.0: the keys command was given before the build, and the old image started a second copy of the app instead.)*

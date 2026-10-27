@@ -97,11 +97,11 @@ public sealed class AccountSynchronizer(
                 result += new JobResult(0, 1);
             }
 
-            instrument.Isin = item.Isin;
+            instrument.Isin = Codes.Upper(item.Isin);
             instrument.Name = item.Name;
             instrument.ShortName = item.ShortName;
             instrument.Type = item.Type;
-            instrument.Currency = item.CurrencyCode;
+            instrument.Currency = Codes.Upper(item.CurrencyCode);
             instrument.AddedOn = item.AddedOn;
             instrument.UpdatedAt = now;
         }
@@ -202,7 +202,7 @@ public sealed class AccountSynchronizer(
             if (!known.Add(item.Reference!))
                 continue;
 
-            var isin = item.Instrument?.Isin;
+            var isin = Codes.Upper(item.Instrument?.Isin);
             var ticker = item.Ticker ?? item.Instrument?.Ticker ?? isin ?? "?";
             var match = DividendMatcher.FindMatch(csvOnly, isin, ticker, item.PaidOn!.Value, item.Quantity ?? 0, item.Amount ?? 0);
 
@@ -278,7 +278,7 @@ public sealed class AccountSynchronizer(
                 OrderId = order.Id.Value,
                 FillId = fill?.Id,
                 Ticker = order.Ticker ?? order.Instrument?.Ticker ?? "?",
-                Isin = order.Instrument?.Isin,
+                Isin = Codes.Upper(order.Instrument?.Isin),
                 InstrumentName = order.Instrument?.Name,
                 InstrumentCurrency = order.Instrument?.Currency ?? order.Currency,
                 Side = order.Side,

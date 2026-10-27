@@ -1,6 +1,6 @@
 # Operations
 
-Running T212Ext on the server once it is set up ([DEPLOYMENT.md](DEPLOYMENT.md)). The shared infrastructure (Caddy, SQL Server, the networks `edge` and `data`) lives in traceon's compose project: its `docs/OPERATIONS.md` covers it, and its section "Other apps on this server" says what it keeps stable for T212Ext.
+Running T212Ext on the server once it is set up ([DEPLOYMENT.md](DEPLOYMENT.md)). The only shared infrastructure, Caddy and the network `edge`, lives in traceon's compose project: its `docs/OPERATIONS.md` covers it, and its section "Other apps on this server" says what it keeps stable for T212Ext. The database (`t212ext-db`, PostgreSQL) is T212Ext's own ([POSTGRESQL.md](POSTGRESQL.md)).
 
 ## Contents
 
@@ -19,13 +19,13 @@ Running T212Ext on the server once it is set up ([DEPLOYMENT.md](DEPLOYMENT.md))
 - Server: `ssh deploy@<ip>`, repository in `~/t212ext`. The shared infrastructure is in `~/traceon`.
 - Settings and secrets live only in `~/t212ext/.env` (template: [.env.example](../.env.example)). Never paste their values into chats, issues or logs.
 - The working tree has no local changes (`git status` shows nothing modified). Do not edit tracked files on the server.
-- `t212sql "..."` runs a query in the `T212Ext` database as the app's own login (it cannot touch anything else). It is a shell function that reads the password from `.env` without printing it; define it in each SSH session, or append it once to `~/.bashrc`:
+- `t212psql -c "..."` runs SQL in the `t212ext` database, inside its container (the image trusts its local socket: no password). Without `-c` it opens `psql`. Define it in each SSH session, or append it once to `~/.bashrc`:
 
 ```bash
-t212sql() { docker exec -e SQLCMDPASSWORD="$(grep -E '^T212EXT_DB_PASSWORD=' ~/t212ext/.env | cut -d= -f2-)" traceon-db /opt/mssql-tools18/bin/sqlcmd -S localhost -U t212ext -d T212Ext -C -b -Q "$1"; }
+t212psql() { docker exec -i t212ext-db psql -U t212ext -d t212ext -X "$@"; }
 ```
 
-- `sql "..."` is the infrastructure's `sa` helper (traceon `docs/OPERATIONS.md`, Conventions). Only the restore below needs it.
+  Names are quoted, as EF creates them: `t212psql -c 'SELECT COUNT(*) FROM "Dividends";'`.
 
 ## 1. Deploying an update
 
@@ -38,13 +38,13 @@ After a PR is merged to `main` (and its tag created):
 ~/t212ext/ops/backup/t212ext-backup.sh
 ```
 
-3. Pull and rebuild:
+3. Pull, build and restart:
 
 ```bash
-cd ~/t212ext && git pull && docker compose up -d --build
+cd ~/t212ext && ./ops/deploy.sh
 ```
 
-   The keys volume stays; migrations apply when the app starts.
+   It pulls `main`, builds the version's image (`t212ext-web:<version>`, also tagged `latest`), and restarts on it. **The three newest versions' images stay** for a rollback without a build; older ones, dangling layers and build cache older than a week are removed, as in traceon's deploy (the server's disk filled up once, 2026-10-25). The volumes stay; migrations apply when the app starts.
 
 4. Check: `t212ext-web` is `healthy` after about a minute, `/health` answers, the version at the bottom of the menu is the new one.
 
@@ -58,7 +58,7 @@ curl -s https://t212ext.<your-domain>/health
 
 **Changing only `.env`** needs no build: `docker compose up -d` recreates the container with the new values.
 
-**A command the new version adds** (such as `new-vapid-keys` in 2.7.0) needs the new image first: `docker compose run` uses the image already built, and an older one does not know the command, so it starts a second copy of the app instead (stop it with Ctrl+C); from 2.7.1 on, an unknown command is refused with the list of the known ones. After `git pull`, run `docker compose build`, then the command, then `docker compose up -d`.
+**A command the new version adds** (such as `new-vapid-keys` in 2.7.0) needs the new image first: `docker compose run` uses the image tagged `latest`, and an older one does not know the command (from 2.7.1 on it refuses it with the list of the known ones). Deploy first (`./ops/deploy.sh`), then run the command.
 
 **Changing the domain:** a new DNS record, then edit `~/traceon/caddy-sites/t212ext.caddy` and validate before reloading, as in [DEPLOYMENT.md](DEPLOYMENT.md#8-https-through-the-shared-caddy). Never reload without validating: a broken site file would keep Caddy, and every site on the server, from starting again.
 
@@ -66,13 +66,14 @@ A sync cut short by the restart keeps what it saved (history jobs save page by p
 
 ## 2. Rolling back
 
-- **Code:** go back to the previous tag and rebuild.
+- **Code, to one of the three versions kept** (`docker images t212ext-web` lists them), here 3.0.0:
 
 ```bash
-cd ~/t212ext && git checkout v<previous> && docker compose up -d --build
+cd ~/t212ext && git checkout v3.0.0 && T212EXT_VERSION=3.0.0 docker compose up -d --no-build && docker tag t212ext-web:3.0.0 t212ext-web:latest
 ```
 
-  Migrations are not reverted. Additive ones (new tables, new nullable columns) do not bother the previous version; otherwise restore the backup taken before the deploy (section 7). Return with `git checkout main && git pull`.
+  An older version, whose image is gone: `git checkout v<version> && T212EXT_VERSION=<version> docker compose up -d --build`. Migrations are not reverted. Additive ones (new tables, new nullable columns) do not bother the previous version; otherwise restore the backup taken before the deploy (section 7). Return with `git checkout main && ./ops/deploy.sh`.
+- **To 2.x** (before PostgreSQL): see [UPGRADING.md](UPGRADING.md), 3.0.0, "The way back".
 - **A setting:** put the old value back in `.env` and run `docker compose up -d`.
 
 ## 3. Status and logs
@@ -136,7 +137,7 @@ A session lasts 14 days from the last visit.
 
 | Secret | Where | How |
 |---|---|---|
-| Database password | `T212EXT_DB_PASSWORD` | Generate a new one (the `sed` line in [DEPLOYMENT.md](DEPLOYMENT.md#4-database)), run `~/t212ext/ops/db/create-database.sh`, then `docker compose up -d`. |
+| Database password | `T212EXT_PG_PASSWORD` | The database keeps the password it was created with. Generate a new one in `.env` (the `sed` line in [DEPLOYMENT.md](DEPLOYMENT.md#4-database)), give it to the database, then restart the app (below). |
 | Password, authenticator secret | `Auth__Users__N__*` | Section 4. |
 | Trading 212 key and secret | `T212__Accounts__N__*` | Section 5. |
 | Data protection keys | volume `t212ext_keys` | Section 4, "sign out everywhere". Never in `.env`. |
@@ -145,9 +146,19 @@ A session lasts 14 days from the last visit.
 
 If a secret leaks, change it first and investigate afterwards.
 
+**Changing the database password.** After the new value is in `.env`, this sets it in the database. The value goes by environment and `psql` reads it with `\getenv`, so it is never on a command line:
+
+```bash
+cd ~/t212ext && PW="$(grep -E '^T212EXT_PG_PASSWORD=' .env | cut -d= -f2-)" && export PW && printf '%s\n' '\getenv pw PW' "ALTER USER t212ext WITH PASSWORD :'pw';" | docker exec -i -e PW t212ext-db psql -U t212ext -d t212ext -X -q && unset PW
+```
+
+```bash
+docker compose up -d
+```
+
 ## 7. Backups and restore
 
-**Nightly** `ops/backup/t212ext-backup.sh`, as the app's login, and **weekly** the restore test (cron lines in [DEPLOYMENT.md](DEPLOYMENT.md#10-backups-and-monitoring)): encrypted, 7 daily and 4 weekly copies in `/var/backups/t212ext` (files `T212Ext-*.bak.gz.gpg`), mirrored to the Storage Box folder `t212ext-backups`.
+**Nightly** `ops/backup/t212ext-backup.sh` (`pg_dump`, checked with `pg_restore --list`), and **weekly** the restore test (cron lines in [DEPLOYMENT.md](DEPLOYMENT.md#10-backups-and-monitoring)): encrypted, 7 daily and 4 weekly copies in `/var/backups/t212ext` (files `t212ext-*.dump.gpg`), mirrored to the Storage Box folder `t212ext-backups`.
 
 ```bash
 tail -n 5 ~/t212ext-backup.log
@@ -157,59 +168,70 @@ tail -n 5 ~/t212ext-backup.log
 tail -n 20 ~/t212ext-restore-test.log
 ```
 
-**Restore test by hand** (restores into a throwaway `T212Ext_RestoreTest`, compares row counts, drops it; the live database is only read). Now and then, test the **Storage Box copy**, the real disaster case:
+**Restore test by hand** (restores into a throwaway `t212ext_restore_test`, compares row counts, drops it; the live database is only read). Now and then, test the **Storage Box copy**, the real disaster case:
 
 ```bash
 mkdir -p /tmp/t212ext-restore && rsync -a -e "ssh -p 23 -i ~/.ssh/storagebox_ed25519" <u123456>@<u123456>.your-storagebox.de:t212ext-backups/daily/ /tmp/t212ext-restore/
 ```
 
 ```bash
-~/t212ext/ops/backup/t212ext-restore-test.sh "$(ls -1t /tmp/t212ext-restore/T212Ext-* | head -n1)"
+~/t212ext/ops/backup/t212ext-restore-test.sh "$(ls -1t /tmp/t212ext-restore/t212ext-* | head -n1)"
 ```
 
-**Disaster restore** (replaces the live database; needs `sa`). On a new server, first write the passphrase from the password manager to `~/.config/t212ext/backup.passphrase` and fetch the file from the Storage Box (command above).
+**Disaster restore** (replaces the live database). On a new server, first write the passphrase from the password manager to `~/.config/t212ext/backup.passphrase`, fetch the file from the Storage Box (command above), and start the database once (`docker compose up -d t212ext-db`).
 
 ```bash
 cd ~/t212ext && docker compose stop t212ext-web
 ```
 
 ```bash
-gpg --batch --pinentry-mode loopback --passphrase-file ~/.config/t212ext/backup.passphrase -d <T212Ext-file.bak.gz.gpg> | gunzip > /tmp/t212ext-restore.bak
+gpg --batch --pinentry-mode loopback --passphrase-file ~/.config/t212ext/backup.passphrase -d <t212ext-file.dump.gpg> > /tmp/t212ext-restore.dump
 ```
 
 ```bash
-docker cp /tmp/t212ext-restore.bak traceon-db:/var/opt/mssql/backup/t212ext-restore.bak && rm /tmp/t212ext-restore.bak
+docker exec t212ext-db psql -U t212ext -d postgres -X -c "DROP DATABASE t212ext WITH (FORCE);" -c "CREATE DATABASE t212ext;"
 ```
 
 ```bash
-sql "ALTER DATABASE [T212Ext] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; RESTORE DATABASE [T212Ext] FROM DISK = N'/var/opt/mssql/backup/t212ext-restore.bak' WITH REPLACE; ALTER DATABASE [T212Ext] SET MULTI_USER;"
+docker exec -i t212ext-db pg_restore -U t212ext -d t212ext --no-owner --exit-on-error < /tmp/t212ext-restore.dump && rm /tmp/t212ext-restore.dump
 ```
 
-On a new server, run `~/t212ext/ops/db/create-database.sh` now: it maps the restored database's user to the new login. Then:
-
 ```bash
-docker exec traceon-db rm -f /var/opt/mssql/backup/t212ext-restore.bak && cd ~/t212ext && docker compose start t212ext-web
+docker compose start t212ext-web
 ```
 
 What a backup does not hold: `.env` and `backup.env` (keep the secrets in the password manager) and the data protection keys (losing them only signs everyone out).
 
 ## 8. Database
 
-Size, against SQL Server Express's 10 GB per database (years of history stay far below):
+`t212ext-db`, PostgreSQL, the project's own: restarting traceon (or anything in `~/traceon`) does not touch it. The app retries the database for about a minute at startup. Its decisions and lessons: [POSTGRESQL.md](POSTGRESQL.md).
+
+Size and version:
 
 ```bash
-t212sql "SELECT SUM(size) * 8 / 1024 AS DataMB FROM sys.database_files WHERE type = 0;"
+t212psql -c "SELECT pg_size_pretty(pg_database_size('t212ext')) AS size, version();"
 ```
 
-State (must be `ONLINE` and `SIMPLE`):
+Rows per table:
 
 ```bash
-t212sql "SELECT CAST(DATABASEPROPERTYEX('T212Ext', 'Status') AS nvarchar(20)) AS State, CAST(DATABASEPROPERTYEX('T212Ext', 'Recovery') AS nvarchar(20)) AS Recovery;"
+t212psql -c "SELECT relname AS table, n_live_tup AS rows FROM pg_stat_user_tables ORDER BY relname;"
 ```
 
-Read-only queries from your PC with SSMS: the infrastructure's SSH tunnel (traceon `docs/OPERATIONS.md`, Database), signed in as `t212ext` (password from `.env`), database `T212Ext`.
+**Minor updates** (18.6 → 18.7: fixes, same data format). Nothing pulls the image again on its own; once a month, after a backup:
 
-The SQL Server is shared: restarting it, changing its edition or upgrading it (in traceon's project) also stops T212Ext for that time. The app retries the database for about a minute at startup; while running, an action during the restart may fail, and works again once SQL Server is back.
+```bash
+cd ~/t212ext && docker compose pull t212ext-db && docker compose up -d t212ext-db
+```
+
+**A new major version** (18 → 19) comes with a release that changes the image in `docker-compose.yml`, and is a dump and restore: the new version starts empty beside the old data (the volume keeps each major's data in its own folder, `/var/lib/postgresql/<major>/docker`), which stays as the way back. The release's UPGRADING section has the steps; in short:
+
+1. `./ops/backup/t212ext-backup.sh`, and a plain dump: `docker exec t212ext-db pg_dump -U t212ext -d t212ext --format=custom > ~/t212ext-before-upgrade.dump`
+2. `docker compose stop t212ext-web t212ext-db`, then `git pull` (the new image)
+3. `docker compose up -d t212ext-db` (empty), then `docker exec -i t212ext-db pg_restore -U t212ext -d t212ext --no-owner --exit-on-error < ~/t212ext-before-upgrade.dump`
+4. `./ops/deploy.sh`, check, and only later remove the old folder and the dump.
+
+No port is published: queries go through `t212psql` on the server.
 
 ## 9. Notifications
 

@@ -27,10 +27,10 @@ Read [docs/CONVENTIONS.md](docs/CONVENTIONS.md) before changing code, and follow
   - `Resources/`: `SharedResource` texts (en, pt, es);
   - `wwwroot/app.css`: the design tokens (light and dark).
 - `tests/T212Ext.Client.Tests/`: client tests with a stubbed HTTP handler.
-- `tests/T212Ext.Core.Tests/`: integration tests against a throwaway SQL Server database (LocalDB by default, `T212EXT_TEST_SQL` to override), and analytics tests.
+- `tests/T212Ext.Core.Tests/`: integration tests against a throwaway PostgreSQL (a Testcontainers `postgres:18` by default, `T212EXT_TEST_PG` to override; Docker must run), and analytics tests.
 - `tests/T212Ext.Web.Tests/`: grid engine, languages and translation tests.
 - `Dockerfile`, `docker-compose.yml`, `.env.example`, `ops/`: the server deployment next to traceon (docs/DEPLOYMENT.md, docs/OPERATIONS.md).
-- `docs/`: see [docs/README.md](docs/README.md).
+- `docs/`: see [docs/README.md](docs/README.md). The database decisions and lessons: [docs/POSTGRESQL.md](docs/POSTGRESQL.md).
 
 ## Commands
 

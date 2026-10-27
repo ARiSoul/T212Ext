@@ -9,6 +9,8 @@ using Arisoul.T212Ext.Web.Services;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Localization;
 
+if (CopyFromSqlServer.IsCommand(args))
+    return await CopyFromSqlServer.RunAsync(args, Console.Out, Console.Error);
 if (AuthCommands.IsCommand(args))
     return AuthCommands.Run(args, Console.In, Console.Out, Console.Error);
 if (AuthCommands.IsUnknownCommand(args))
