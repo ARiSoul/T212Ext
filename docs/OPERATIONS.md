@@ -19,6 +19,7 @@ Running T212Ext on the server once it is set up ([DEPLOYMENT.md](DEPLOYMENT.md))
 - Server: `ssh deploy@<ip>`, repository in `~/t212ext`. The shared infrastructure is in `~/traceon`.
 - Settings and secrets live only in `~/t212ext/.env` (template: [.env.example](../.env.example)). Never paste their values into chats, issues or logs.
 - The working tree has no local changes (`git status` shows nothing modified). Do not edit tracked files on the server.
+- **Never `export T212EXT_VERSION`** in the shell. It picks the image of every later `docker compose` command in that session (`up -d` would go back to that version, `run` would use its commands); give it only in front of one command, as in section 2. `docker compose config --images` shows the image compose would use. `./ops/deploy.sh` sets its own. *(2026-10-27: an `export` left from the 3.0.0 move made `docker compose run` use the 3.0.0 image after 3.1.0 was deployed.)*
 - `t212psql -c "..."` runs SQL in the `t212ext` database, inside its container (the image trusts its local socket: no password). Without `-c` it opens `psql`. Define it in each SSH session, or append it once to `~/.bashrc`:
 
 ```bash
@@ -73,7 +74,7 @@ cd ~/t212ext && git checkout v3.0.0 && T212EXT_VERSION=3.0.0 docker compose up -
 ```
 
   An older version, whose image is gone: `git checkout v<version> && T212EXT_VERSION=<version> docker compose up -d --build`. Migrations are not reverted. Additive ones (new tables, new nullable columns) do not bother the previous version; otherwise restore the backup taken before the deploy (section 7). Return with `git checkout main && ./ops/deploy.sh`.
-- **To 2.x** (before PostgreSQL): see [UPGRADING.md](UPGRADING.md), 3.0.0, "The way back".
+- **To 2.x** (before PostgreSQL): no longer possible. The SQL Server database was dropped once the move was confirmed (2026-10-27).
 - **A setting:** put the old value back in `.env` and run `docker compose up -d`.
 
 ## 3. Status and logs

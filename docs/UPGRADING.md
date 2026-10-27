@@ -4,13 +4,7 @@ Deploy steps for the versions that are not yet in production.
 
 The usual deploy command and checks are in [OPERATIONS.md](OPERATIONS.md#1-deploying-an-update).
 
-**Production runs 3.0.0** (since 2026-10-27).
-
-## 3.1.0
-
-- Nothing extra: the usual deploy (`./ops/deploy.sh`).
-- **Before it**, if not done yet: the `T212EXT_DB_PASSWORD` line can leave `.env` (nothing reads it now); the deploy then recreates the container without it.
-- **Try afterwards:** `docker compose run --rm t212ext-web copy-from-sqlserver` answers "Unknown command".
+**Production runs 3.1.0** (since 2026-10-27). No version is waiting to be deployed.
 
 ## How this file works
 

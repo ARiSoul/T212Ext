@@ -24,7 +24,7 @@ T212Ext moved from SQL Server to PostgreSQL in **3.0.0** (2026-10-27), as the pr
   - *Why:* collations from glibc or ICU can change with an operating system or library update, and then indexes on text silently go out of order until reindexed. The builtin provider never changes. The cost: sorting is by code point (`B` before `a`, accents after `z`), so human ordering is done in .NET (T212Ext sorts its lists there anyway).
 - **Codes are normalised in the app** (section 3), rather than an ICU nondeterministic collation.
 - **The data moves with a command of the app**, `copy-from-sqlserver`, not pgloader (section 5).
-- **SQL Server stays untouched** as the way back until the move is confirmed; dropping the old database and login is done by hand afterwards (docs/UPGRADING.md).
+- **SQL Server stays untouched** as the way back until the move is confirmed; the old database, login and backups were then removed by hand (2026-10-27).
 
 ## 2. Dates and times
 
