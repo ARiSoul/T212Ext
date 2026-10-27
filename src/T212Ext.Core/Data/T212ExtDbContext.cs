@@ -1,5 +1,6 @@
 using Arisoul.T212Ext.Core.Domain;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Arisoul.T212Ext.Core.Data;
 
@@ -29,7 +30,14 @@ public class T212ExtDbContext(DbContextOptions<T212ExtDbContext> options) : DbCo
         configurationBuilder.Properties<decimal>().HavePrecision(28, 10);
         configurationBuilder.Properties<decimal?>().HavePrecision(28, 10);
         configurationBuilder.Properties<SyncJob>().HaveConversion<string>().HaveMaxLength(20);
+
+        // timestamptz takes only UTC (offset 0): every instant is written, and compared, in UTC
+        // whatever offset it came with (an API answer, a CSV file). See docs/POSTGRESQL.md.
+        configurationBuilder.Properties<DateTimeOffset>().HaveConversion<UtcConverter>();
+        configurationBuilder.Properties<DateTimeOffset?>().HaveConversion<UtcConverter>();
     }
+
+    private sealed class UtcConverter() : ValueConverter<DateTimeOffset, DateTimeOffset>(v => v.ToUniversalTime(), v => v);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(T212ExtDbContext).Assembly);

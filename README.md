@@ -13,7 +13,7 @@ Trading 212's own app shows dividends one by one. T212Ext reads them through the
 
 ---
 
-## Features (2.18)
+## Features (3.0)
 
 **IRS report (Portugal)**
 - **Anexo J, quadro 8A:** foreign dividends by source country (code E11), gross and tax paid abroad, in euros at the ECB rate of each payment date. Exact withholding from the API's gross and the CSV's net per share.
@@ -57,7 +57,7 @@ The grids remember your choices.
 - **Sign-in** with a password and an authenticator code (TOTP), for running on a server, and a page with every attempt of the last 90 days. A strict Content-Security-Policy on every page.
 - **Installable** on the phone and the computer ("Add to Home Screen", "Install app"): its own icon and window, no browser bars.
 - **Notifications** when a dividend arrives, a monthly summary compared with the year before, and on Monday the payments expected that week, in each device's language (Web Push; on the iPhone in the installed app). Each device chooses which it gets, and its quiet hours.
-- **Docker** image and compose file for the server it shares with traceon: independent apps that share only the reverse proxy (HTTPS) and SQL Server, through neutral networks. Own database login, own encrypted backups. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+- **Docker** image and compose file for the server it shares with traceon: independent apps that share only the reverse proxy (HTTPS), through a neutral network. Its own PostgreSQL, its own encrypted backups, a deploy that keeps three versions. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 Next: see [docs/BACKLOG.md](docs/BACKLOG.md).
 
@@ -67,16 +67,16 @@ Next: see [docs/BACKLOG.md](docs/BACKLOG.md).
 |---|---|
 | **App** | ASP.NET Core 10, Blazor Web App (Interactive Server), Bootstrap 5, Bootstrap Icons, Blazor-ApexCharts |
 | **Sync** | `BackgroundService` in the same process, typed `HttpClient` |
-| **Database** | SQL Server (LocalDB in development, Express in production), EF Core 10 with migrations |
-| **Hosting** | Docker Compose behind the server's shared Caddy (HTTPS) and SQL Server; cookie sign-in with TOTP |
-| **Tests** | xUnit; integration tests against a throwaway SQL Server database |
+| **Database** | PostgreSQL 18 (a container in development and in production), EF Core 10 with Npgsql and migrations ([docs/POSTGRESQL.md](docs/POSTGRESQL.md)) |
+| **Hosting** | Docker Compose behind the server's shared Caddy (HTTPS); cookie sign-in with TOTP |
+| **Tests** | xUnit; integration tests against a throwaway PostgreSQL (Testcontainers) |
 
 ## Getting started
 
 ### Prerequisites
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- SQL Server: **LocalDB** (comes with Visual Studio) or any SQL Server you can reach.
+- **Docker** (Docker Desktop on Windows): the database in development and the tests run PostgreSQL in a container.
 - The EF Core CLI, only to create migrations: `dotnet tool install --global dotnet-ef`.
 
 ### 1. Create a Trading 212 API key
@@ -111,7 +111,7 @@ dotnet user-secrets set "T212:Accounts:1:ApiSecret" "<secret>"
 
 | Setting | Default | Meaning |
 |---|---|---|
-| `ConnectionStrings:T212Ext` | LocalDB in development | SQL Server database. Created and migrated at startup. |
+| `ConnectionStrings:T212Ext` | the local container in development | PostgreSQL database. Migrated at startup. |
 | `T212:Accounts:N:Key` | | Stable id stored in the database: lowercase letters, digits and dashes. Never change it once data exists. |
 | `T212:Accounts:N:Name` | | Name shown in the app. |
 | `T212:Accounts:N:Environment` | `Live` | `Live` or `Demo` (practice account). A key works only in its own environment. |
@@ -155,6 +155,12 @@ Then `Auth:Users:0:PasswordHash` and, optionally, `Auth:Users:0:TotpSecret` the 
 
 ### 3. Run
 
+The database, once: a PostgreSQL container on `localhost:5433`, reachable only from this computer (hence no password), with the production locale. It keeps its data in a volume and starts with Docker:
+
+```bash
+docker run -d --name t212ext-dev-db --restart unless-stopped -p 127.0.0.1:5433:5432 -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=t212ext -e "POSTGRES_INITDB_ARGS=--locale-provider=builtin --builtin-locale=C.UTF-8" -v t212ext-dev-pgdata:/var/lib/postgresql postgres:18
+```
+
 ```bash
 dotnet run --project src/T212Ext.Web
 ```
@@ -163,10 +169,10 @@ Open http://localhost:5067. The first start creates the database, and a first sy
 
 > **Exposing it to the internet:** follow [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Outside Development the app refuses to start without users.
 
-**If startup fails with "LocalDB … SQL Server process failed to start"**, the LocalDB instance is running in a context your process cannot reach. This happens, for example, when a sandboxed tool or another session started it. Stop it, and let the app start it again:
+**A local database from before 3.0.0** (LocalDB) moves with the command the server uses, into the empty local PostgreSQL (docs/UPGRADING.md, 3.0.0):
 
 ```bash
-sqllocaldb stop MSSQLLocalDB
+dotnet run --project src/T212Ext.Web -- copy-from-sqlserver "--ConnectionStrings:SqlServer=Server=(localdb)\MSSQLLocalDB;Database=T212Ext;Trusted_Connection=True;TrustServerCertificate=True"
 ```
 
 ### 4. Import your history (recommended)
@@ -182,9 +188,9 @@ dotnet test T212Ext.slnx
 ```
 
 - `tests/T212Ext.Client.Tests`: the API client against a stubbed HTTP handler. Covers authentication, pagination, rate limits, retries and errors.
-- `tests/T212Ext.Core.Tests`: sync, CSV parsing and import, merging between sources, analytics and queries, against a real SQL Server.
+- `tests/T212Ext.Core.Tests`: sync, CSV parsing and import, merging between sources, analytics and queries, the copy from SQL Server, against a real PostgreSQL.
   - Each run creates a throwaway database and drops it at the end.
-  - The server is LocalDB by default. Set `T212EXT_TEST_SQL` to use another one (a connection string without `Database`).
+  - By default a `postgres:18` container is started for the run (Testcontainers; Docker must be running). Set `T212EXT_TEST_PG` to use another server (a connection string; its database is replaced).
 - `tests/T212Ext.Web.Tests`: the grid engine (filters, date ranges, sorting, totals, paging, export, columns, saved views) and the grid component (bUnit), sign-in (passwords, authenticator codes, return URLs, settings), languages, and that the three translations have the same keys.
 
 ## Project layout

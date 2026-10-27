@@ -3,8 +3,8 @@ using System;
 using Arisoul.T212Ext.Core.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -18,9 +18,9 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "10.0.13")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Arisoul.T212Ext.Core.Domain.AccountReport", b =>
                 {
@@ -28,46 +28,46 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<int>("AccountId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("DividendsAdded")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("DividendsMatched")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Error")
                         .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
+                        .HasColumnType("character varying(2000)");
 
                     b.Property<DateTimeOffset?>("FinishedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset>("From")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<long>("ReportId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset>("RequestedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("character varying(20)");
 
                     b.Property<DateTimeOffset>("To")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("TransactionsAdded")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("TransactionsMatched")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -81,21 +81,21 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Currency")
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("character varying(10)");
 
                     b.Property<string>("Environment")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<long?>("ExternalId")
                         .HasColumnType("bigint");
@@ -103,12 +103,12 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                     b.Property<string>("Key")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasColumnType("character varying(300)");
 
                     b.HasKey("Id");
 
@@ -124,46 +124,46 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<int>("AccountId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("Amount")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<string>("CsvReference")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Currency")
                         .IsRequired()
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("character varying(10)");
 
                     b.Property<DateTimeOffset>("DateTime")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset>("ImportedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Note")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("Reference")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<int>("Sources")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
 
@@ -183,83 +183,83 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<int>("AccountId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("Amount")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<decimal?>("AmountInEuro")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<string>("CsvReference")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Currency")
                         .IsRequired()
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("character varying(10)");
 
                     b.Property<decimal?>("GrossAmountPerShare")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<DateTimeOffset>("ImportedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("InstrumentCurrency")
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("character varying(10)");
 
                     b.Property<string>("InstrumentName")
                         .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasColumnType("character varying(300)");
 
                     b.Property<string>("Isin")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("character varying(20)");
 
                     b.Property<decimal?>("NetAmountPerShare")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<DateTimeOffset>("PaidOn")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal>("Quantity")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<string>("Reference")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<int>("Sources")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Ticker")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<decimal?>("WithholdingTax")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<string>("WithholdingTaxCurrency")
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("character varying(10)");
 
                     b.HasKey("Id");
 
@@ -279,14 +279,14 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                 {
                     b.Property<string>("Currency")
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("character varying(10)");
 
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
                     b.Property<decimal>("PerEuro")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.HasKey("Currency", "Date");
 
@@ -297,37 +297,37 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<decimal?>("CoverShare")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Currency")
                         .IsRequired()
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("character varying(10)");
 
                     b.Property<bool>("IncludeInterest")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<decimal?>("MonthlyExpenses")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<decimal>("MonthlyTarget")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasColumnType("character varying(300)");
 
                     b.HasKey("Id");
 
@@ -340,122 +340,122 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<int>("AccountId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset?>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<long?>("FillId")
                         .HasColumnType("bigint");
 
                     b.Property<decimal?>("FillPrice")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<decimal?>("FillQuantity")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<string>("FillType")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<DateTimeOffset?>("FilledAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal?>("FilledQuantity")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<decimal?>("FilledValue")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<decimal?>("FxRate")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<DateTimeOffset>("ImportedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("InitiatedFrom")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("InstrumentCurrency")
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("character varying(10)");
 
                     b.Property<string>("InstrumentName")
                         .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasColumnType("character varying(300)");
 
                     b.Property<string>("Isin")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("character varying(20)");
 
                     b.Property<decimal?>("LimitPrice")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<decimal?>("NetValue")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<long>("OrderId")
                         .HasColumnType("bigint");
 
                     b.Property<decimal?>("Quantity")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<decimal?>("RealisedProfitLoss")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<string>("Side")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Status")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<decimal?>("StopPrice")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<string>("Strategy")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Ticker")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("TimeInForce")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("TradingMethod")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Type")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<decimal?>("Value")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<string>("WalletCurrency")
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("character varying(10)");
 
                     b.HasKey("Id");
 
@@ -470,33 +470,33 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                 {
                     b.Property<string>("Ticker")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<DateTimeOffset?>("AddedOn")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Currency")
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("character varying(10)");
 
                     b.Property<string>("Isin")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("Name")
                         .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasColumnType("character varying(300)");
 
                     b.Property<string>("ShortName")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Type")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Ticker");
 
@@ -509,21 +509,21 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                 {
                     b.Property<string>("Key")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("ContentType")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<byte[]>("Data")
-                        .HasColumnType("varbinary(max)");
+                        .HasColumnType("bytea");
 
                     b.Property<DateTimeOffset>("FetchedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Source")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("character varying(20)");
 
                     b.HasKey("Key");
 
@@ -534,14 +534,14 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                 {
                     b.Property<string>("Isin")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("SourceCountry")
                         .HasMaxLength(2)
-                        .HasColumnType("nvarchar(2)");
+                        .HasColumnType("character varying(2)");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Isin");
 
@@ -551,7 +551,7 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
             modelBuilder.Entity("Arisoul.T212Ext.Core.Domain.NotificationState", b =>
                 {
                     b.Property<int>("Id")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<long?>("LastDividendId")
                         .HasColumnType("bigint");
@@ -573,52 +573,52 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<int>("AccountId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<decimal?>("CashAvailable")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<decimal?>("CashInPies")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<decimal?>("CashReserved")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<string>("Currency")
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("character varying(10)");
 
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
                     b.Property<decimal?>("InvestmentsValue")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<decimal?>("RealizedProfitLoss")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<DateTimeOffset>("TakenAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal?>("TotalCost")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<decimal?>("TotalValue")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.Property<decimal?>("UnrealizedProfitLoss")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.HasKey("Id");
 
@@ -634,67 +634,67 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Auth")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Culture")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("Endpoint")
                         .IsRequired()
                         .HasMaxLength(2048)
-                        .HasColumnType("nvarchar(2048)");
+                        .HasColumnType("character varying(2048)");
 
                     b.Property<string>("EndpointHash")
                         .IsRequired()
                         .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
+                        .HasColumnType("character varying(64)");
 
                     b.Property<string>("Label")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<DateTimeOffset?>("LastUsedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("NotifyDividends")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("NotifySummary")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("NotifyWeek")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("P256dh")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("character varying(200)");
 
                     b.Property<TimeOnly?>("QuietFrom")
-                        .HasColumnType("time");
+                        .HasColumnType("time without time zone");
 
                     b.Property<TimeOnly?>("QuietTo")
-                        .HasColumnType("time");
+                        .HasColumnType("time without time zone");
 
                     b.Property<string>("TimeZone")
                         .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
+                        .HasColumnType("character varying(64)");
 
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasColumnType("character varying(300)");
 
                     b.HasKey("Id");
 
@@ -710,27 +710,27 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Address")
                         .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
+                        .HasColumnType("character varying(64)");
 
                     b.Property<DateTimeOffset>("At")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Outcome")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("UserAgent")
                         .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasColumnType("character varying(300)");
 
                     b.Property<string>("Username")
                         .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasColumnType("character varying(300)");
 
                     b.HasKey("Id");
 
@@ -745,10 +745,10 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
@@ -756,11 +756,11 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                     b.Property<string>("Isin")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("character varying(20)");
 
                     b.Property<decimal>("Ratio")
                         .HasPrecision(28, 10)
-                        .HasColumnType("decimal(28,10)");
+                        .HasColumnType("numeric(28,10)");
 
                     b.HasKey("Id");
 
@@ -776,34 +776,34 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<int?>("AccountId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Error")
                         .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
+                        .HasColumnType("character varying(2000)");
 
                     b.Property<DateTimeOffset?>("FinishedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("ItemsAdded")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("ItemsUpdated")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Job")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("character varying(20)");
 
                     b.Property<DateTimeOffset>("StartedAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("Succeeded")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 
@@ -817,17 +817,17 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
             modelBuilder.Entity("Arisoul.T212Ext.Core.Domain.SyncState", b =>
                 {
                     b.Property<int>("AccountId")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Job")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("character varying(20)");
 
                     b.Property<bool>("HistoryComplete")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<DateTimeOffset?>("LastSuccessAt")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("AccountId", "Job");
 
@@ -880,25 +880,25 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
 
                             b1.Property<int>("Id")
                                 .ValueGeneratedOnAdd()
-                                .HasColumnType("int");
+                                .HasColumnType("integer");
 
-                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
 
                             b1.Property<DateTimeOffset?>("ChargedAt")
-                                .HasColumnType("datetimeoffset");
+                                .HasColumnType("timestamp with time zone");
 
                             b1.Property<string>("Currency")
                                 .HasMaxLength(10)
-                                .HasColumnType("nvarchar(10)");
+                                .HasColumnType("character varying(10)");
 
                             b1.Property<string>("Name")
                                 .IsRequired()
                                 .HasMaxLength(100)
-                                .HasColumnType("nvarchar(100)");
+                                .HasColumnType("character varying(100)");
 
                             b1.Property<decimal>("Quantity")
                                 .HasPrecision(28, 10)
-                                .HasColumnType("decimal(28,10)");
+                                .HasColumnType("numeric(28,10)");
 
                             b1.HasKey("HistoricalOrderId", "Id");
 
@@ -928,65 +928,65 @@ namespace Arisoul.T212Ext.Core.Data.Migrations
 
                             b1.Property<int>("Id")
                                 .ValueGeneratedOnAdd()
-                                .HasColumnType("int");
+                                .HasColumnType("integer");
 
-                            SqlServerPropertyBuilderExtensions.UseIdentityColumn(b1.Property<int>("Id"));
+                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
 
                             b1.Property<decimal?>("AveragePricePaid")
                                 .HasPrecision(28, 10)
-                                .HasColumnType("decimal(28,10)");
+                                .HasColumnType("numeric(28,10)");
 
                             b1.Property<decimal?>("CurrentPrice")
                                 .HasPrecision(28, 10)
-                                .HasColumnType("decimal(28,10)");
+                                .HasColumnType("numeric(28,10)");
 
                             b1.Property<decimal?>("CurrentValue")
                                 .HasPrecision(28, 10)
-                                .HasColumnType("decimal(28,10)");
+                                .HasColumnType("numeric(28,10)");
 
                             b1.Property<decimal?>("FxImpact")
                                 .HasPrecision(28, 10)
-                                .HasColumnType("decimal(28,10)");
+                                .HasColumnType("numeric(28,10)");
 
                             b1.Property<string>("InstrumentCurrency")
                                 .HasMaxLength(10)
-                                .HasColumnType("nvarchar(10)");
+                                .HasColumnType("character varying(10)");
 
                             b1.Property<string>("Isin")
                                 .HasMaxLength(20)
-                                .HasColumnType("nvarchar(20)");
+                                .HasColumnType("character varying(20)");
 
                             b1.Property<string>("Name")
                                 .HasMaxLength(300)
-                                .HasColumnType("nvarchar(300)");
+                                .HasColumnType("character varying(300)");
 
                             b1.Property<DateTimeOffset?>("OpenedAt")
-                                .HasColumnType("datetimeoffset");
+                                .HasColumnType("timestamp with time zone");
 
                             b1.Property<decimal>("Quantity")
                                 .HasPrecision(28, 10)
-                                .HasColumnType("decimal(28,10)");
+                                .HasColumnType("numeric(28,10)");
 
                             b1.Property<decimal?>("QuantityInPies")
                                 .HasPrecision(28, 10)
-                                .HasColumnType("decimal(28,10)");
+                                .HasColumnType("numeric(28,10)");
 
                             b1.Property<string>("Ticker")
                                 .IsRequired()
                                 .HasMaxLength(100)
-                                .HasColumnType("nvarchar(100)");
+                                .HasColumnType("character varying(100)");
 
                             b1.Property<decimal?>("TotalCost")
                                 .HasPrecision(28, 10)
-                                .HasColumnType("decimal(28,10)");
+                                .HasColumnType("numeric(28,10)");
 
                             b1.Property<decimal?>("UnrealizedProfitLoss")
                                 .HasPrecision(28, 10)
-                                .HasColumnType("decimal(28,10)");
+                                .HasColumnType("numeric(28,10)");
 
                             b1.Property<string>("WalletCurrency")
                                 .HasMaxLength(10)
-                                .HasColumnType("nvarchar(10)");
+                                .HasColumnType("character varying(10)");
 
                             b1.HasKey("PortfolioSnapshotId", "Id");
 

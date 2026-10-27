@@ -25,7 +25,7 @@ public static class AuthCommands
 
     public static int Unknown(string[] args, TextWriter error)
     {
-        error.WriteLine($"Unknown command '{args[0]}'. This version knows: {string.Join(", ", Names)}.");
+        error.WriteLine($"Unknown command '{args[0]}'. This version knows: {string.Join(", ", Names.Append(CopyFromSqlServer.Name))}.");
         error.WriteLine("A command added by a newer version needs its image first: git pull, then docker compose build.");
         return 2;
     }

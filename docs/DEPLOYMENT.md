@@ -18,27 +18,27 @@ First-time setup of T212Ext on the Hetzner server that also runs traceon. Day-to
 
 ## 1. How it fits on the server
 
-T212Ext and traceon are independent apps, each its own Docker Compose project. They share only the server's infrastructure: the reverse proxy, which alone can own ports 80 and 443, and SQL Server, so the small server runs one instance (SQL Server on Linux needs 2 GB of memory each). That infrastructure lives in traceon's compose project today; T212Ext reaches it only through two neutral Docker networks, never traceon's own.
+T212Ext and traceon are independent apps, each its own Docker Compose project. They share only the reverse proxy, which alone can own ports 80 and 443. That proxy lives in traceon's compose project today; T212Ext reaches it only through a neutral Docker network, never traceon's own. The database is T212Ext's own (3.0.0; before, it was on traceon's SQL Server).
 
 ```
 browser ──▶ t212ext.<your-domain> ──▶ server :443 ──▶ Caddy (shared)
                                                         │  network edge
                                                         ▼
                                                   t212ext-web:8080
-                                                        │  network data
+                                                        │  T212Ext's own network
                                                         ▼
-                                                  SQL Server "sqlserver" (shared)
-                                                  database T212Ext, login "t212ext"
+                                                  t212ext-db (PostgreSQL 18)
+                                                  database t212ext, volume pgdata
 ```
 
 traceon's domains go through the same Caddy to traceon's containers, on traceon's own network, which T212Ext cannot see.
 
-- **One container, `t212ext-web`**, built from this repository's `Dockerfile` by its `docker-compose.yml`. It publishes no port.
+- **Two containers**, from this repository's `docker-compose.yml`: `t212ext-web`, built from the `Dockerfile`, and `t212ext-db`, the `postgres` image. Neither publishes a port.
 - **Network `edge`:** the proxy and the apps it serves. Caddy reaches the app as `t212ext-web:8080`. Caddy picks the app by domain; each domain gets its own certificate automatically.
-- **Names on the shared networks are DNS names**, so they carry the app's prefix (`t212ext-web`), never a generic one (`web`, `api`) nor `sqlserver`, `caddy` or `traceon-*`.
-- **Network `data`:** the apps and SQL Server, reached as `sqlserver`. T212Ext has its own database and a login that can touch nothing else.
+- **Names on the shared network are DNS names**, so they carry the app's prefix (`t212ext-web`), never a generic one (`web`, `api`) nor `caddy` or `traceon-*`.
+- **The database** is on the project's own network: only `t212ext-web` reaches it. Restarting traceon, or anything in `~/traceon`, does not touch it. Why it is PostgreSQL, and what was learned moving it: [POSTGRESQL.md](POSTGRESQL.md).
 - **T212Ext cannot reach traceon's containers**, nor traceon T212Ext's. Different domains also mean the browser never mixes their cookies.
-- **Backups are the app's own** ([ops/backup](../ops/backup)): signed in with the app's login, to a folder of their own on the Storage Box.
+- **Backups are the app's own** ([ops/backup](../ops/backup)): `pg_dump` from its container, to a folder of their own on the Storage Box.
 - **The rules of that shared infrastructure** (what it keeps stable, and what every app does on its side) are in traceon's `docs/OPERATIONS.md`, section 20, "Other apps on this server".
 - **Sign-in** is the app's own: users with a password and, preferably, an authenticator code, set in `.env`. Every page needs it; only `/login` and `/health` are open.
 - **Data protection keys** (they encrypt the sign-in and language cookies) are on a Docker volume, so restarts and new images do not sign you out.
@@ -46,13 +46,13 @@ traceon's domains go through the same Caddy to traceon's containers, on traceon'
 ## 2. Before you start
 
 - The server, with the `deploy` user over SSH, and traceon running in `~/traceon` (its `docs/DEPLOYMENT.md`).
-- **The shared infrastructure:** the networks `edge` and `data` exist, Caddy is on `edge` and reads site files from `~/traceon/caddy-sites/`, and SQL Server is on `data`. These come with traceon's version that introduced them (its `UPGRADING.md`). Check:
+- **The shared infrastructure:** the network `edge` exists, and Caddy is on it and reads site files from `~/traceon/caddy-sites/`. These come with traceon's version that introduced them (its `UPGRADING.md`). Check:
 
 ```bash
-docker network inspect edge data --format '{{.Name}}: {{range .Containers}}{{.Name}} {{end}}'
+docker network inspect edge --format '{{.Name}}: {{range .Containers}}{{.Name}} {{end}}'
 ```
 
-  Expected: `edge: traceon-caddy` and `data: traceon-db`. If the networks are missing, update traceon first.
+  Expected: `edge: traceon-caddy`. If the network is missing, update traceon first.
 - **A domain for the app**, for example `t212ext.<your-domain>`, with an `A` record (and `AAAA` if the server has IPv6) to the server's address. Check it before section 8:
 
 ```bash
@@ -78,18 +78,12 @@ cd ~/t212ext && cp .env.example .env && chmod 600 .env
 Generate the database password straight into `.env` (it is never shown):
 
 ```bash
-cd ~/t212ext && sed -i "s|^T212EXT_DB_PASSWORD=.*|T212EXT_DB_PASSWORD=$(openssl rand -base64 33 | tr -d '/+=\n')|" .env
+cd ~/t212ext && sed -i "s|^T212EXT_PG_PASSWORD=.*|T212EXT_PG_PASSWORD=$(openssl rand -hex 32)|" .env
 ```
 
-Create the database and its login. Creating a database needs SQL Server's `sa`, so the script reads its password from where the infrastructure keeps it (`~/traceon/.env` by default; `SA_ENV_FILE`, `SA_ENV_KEY` and `DB_CONTAINER` change that) and the new one from `~/t212ext/.env`, and passes both through the environment, never on a command line:
+That is all: `t212ext-db` creates the database `t212ext` and its owner `t212ext` with that password the first time it starts (section 7), with the builtin `C.UTF-8` locale ([POSTGRESQL.md](POSTGRESQL.md#1-decisions)). The app applies its migrations itself when it starts.
 
-```bash
-~/t212ext/ops/db/create-database.sh
-```
-
-It ends with a line `T212Ext  SIMPLE  ONLINE`. It is safe to run again; it also resets the login's password to the one in `.env` (that is how the password is changed, see [OPERATIONS.md](OPERATIONS.md#6-changing-secrets)).
-
-What it does ([ops/db/create-database.sql](../ops/db/create-database.sql)): creates the database `T212Ext` with the simple recovery model (nightly full backups, no log backups), a login `t212ext`, and makes it owner of that database only. The app applies its migrations itself when it starts, and the nightly backup uses the same login: after this step, nothing of T212Ext needs `sa` except the weekly restore test.
+**Set it before the first start.** The database keeps the password it was created with: changing it later is a step of its own ([OPERATIONS.md](OPERATIONS.md#6-changing-secrets)).
 
 ## 5. Sign-in
 
@@ -115,7 +109,7 @@ cd ~/t212ext && docker compose run --rm t212ext-web new-totp-secret <username>
 
 It prints a secret (32 letters and digits) and an `otpauth://` link. Put the secret in `Auth__Users__0__TotpSecret=`, and add it to the authenticator app as a "setup key" (time-based). Keep a copy in the password manager: it is the only way to recover the codes if the phone is lost.
 
-`docker compose run` needs `T212EXT_DB_PASSWORD` already in `.env` (section 4), since compose reads the whole file, and the networks of section 2.
+`docker compose run` needs `T212EXT_PG_PASSWORD` already in `.env` (section 4), since compose reads the whole file, and the network of section 2. It starts `t212ext-db` too, the first time creating the database.
 
 A second person gets a second block (`Auth__Users__1__Username`, …).
 
@@ -138,20 +132,22 @@ Details of the API in [T212-API.md](T212-API.md).
 ## 7. Start it
 
 ```bash
-cd ~/t212ext && docker compose up -d --build
+cd ~/t212ext && ./ops/deploy.sh
 ```
+
+It builds the image of the version (`t212ext-web:<version>`), starts `t212ext-db`, then `t212ext-web` once the database answers ([OPERATIONS.md](OPERATIONS.md#1-deploying-an-update)).
 
 ```bash
 docker compose ps
 ```
 
-`t212ext-web` turns `healthy` after about a minute. The first start creates the tables (migrations), then the first sync starts.
+`t212ext-db` turns `healthy` within seconds, `t212ext-web` after about a minute. The first start creates the tables (migrations), then the first sync starts.
 
 ```bash
 docker compose logs --tail 50 t212ext-web
 ```
 
-Expected: `Now listening on: http://[::]:8080`, then the sync jobs. Errors about the database mean section 4 (or `T212EXT_DB_PASSWORD` changed without running the script); an error about `Auth:Users` means section 5; `network edge declared as external, but could not be found` means section 2.
+Expected: `Now listening on: http://[::]:8080`, then the sync jobs. On the very first start one `Failed executing DbCommand … "__EFMigrationsHistory"` comes before `Applying migration`: EF looks for the table before creating it, and it is harmless. Errors about the database mean section 4 (`T212EXT_PG_PASSWORD` missing, or changed after the first start); an error about `Auth:Users` means section 5; `network edge declared as external, but could not be found` means section 2.
 
 ## 8. HTTPS through the shared Caddy
 
@@ -187,7 +183,7 @@ The sync on startup fetches what the API gives (positions, orders, dividends and
 2. In the app: **Import CSV**, all files at once.
 3. **Stock splits** (menu IRS report → Capital gains, when it reports missing shares) and **instrument settings** (source country) are entered by hand again.
 
-**Moving the local database instead is not possible:** LocalDB on Windows is SQL Server 2025 (version 17), and a backup cannot be restored on an older SQL Server (the server runs 2022). Everything except splits and instrument settings comes back from the API and the CSV reports.
+**A local database can be moved instead** (3.0.0 and later): `pg_dump --format=custom` from the local PostgreSQL, copied to the server, and restored as in a disaster ([OPERATIONS.md](OPERATIONS.md#7-backups-and-restore)). Splits and instrument settings come with it.
 
 ## 10. Backups and monitoring
 

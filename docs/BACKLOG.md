@@ -4,6 +4,7 @@ The roadmap by phase, then ideas and known limitations not yet planned. When an 
 
 Done so far:
 - **2.0.0, phase 1 (foundations):** API client, database, scheduled sync, CSV import, first pages, tests.
+- **3.0.0:** PostgreSQL: the app's own database (`t212ext-db`) instead of traceon's SQL Server, a one-time copy command, backups with `pg_dump`, tests on a PostgreSQL container; `ops/deploy.sh` keeps three versions' images.
 - **2.18.0:** notification choices per device (dividends, monthly summary, the week ahead), quiet hours in the device's time zone, and a Monday notice of the payments expected that week.
 - **2.17.0:** Content-Security-Policy: scripts from this site or with the request's nonce only; checked in CI.
 - **2.16.0:** sign-in history: every checked attempt for 90 days (outcome, address, device), on a page with the failures and the previous sign-in.
@@ -32,7 +33,7 @@ Done so far:
 
 - [IRS report follow-ups](#irs-report-follow-ups)
 - [Deployment follow-ups](#deployment-follow-ups)
-- [Phase 5 — Extras (2.19 and later)](#phase-5--extras-219-and-later)
+- [Phase 5 — Extras (3.1 and later)](#phase-5--extras-31-and-later)
 - [App and grid follow-ups](#app-and-grid-follow-ups)
 - [Known limitations and technical debt](#known-limitations-and-technical-debt)
 - [Product ideas](#product-ideas)
@@ -56,9 +57,11 @@ Phase 4 shipped as **2.4.0**: see [DEPLOYMENT.md](DEPLOYMENT.md). Left for later
 | # | Item | Notes |
 |---|---|---|
 | 4.11 | **Image from CI** | Build the image in GitHub Actions and pull it on the server (GHCR), instead of building on the server. Worth it only if the server's builds get slow. |
-| 4.12 | **Infrastructure project** | Move Caddy, SQL Server and the shared networks out of traceon's compose into a project of their own, with both apps as equal guests. Worth it with a third app, or before touching traceon's SQL Server for another reason. Moving SQL Server means a short downtime and a backup and restore of every database. |
+| 4.12 | **Infrastructure project** | Move Caddy and the network `edge` out of traceon's compose into a project of their own, with both apps as equal guests. Worth it with a third app. (Since 3.0.0 T212Ext no longer shares a database.) |
+| 4.13 | **After the move to PostgreSQL** | Once production has run 3.0.0 for a while: remove `copy-from-sqlserver`, the SQL Server package and its Pkcs pin, and `ops/postgres/copy-from-sqlserver.yml` (3.1). The old database and login on traceon's SQL Server, and the old `T212Ext-*.bak.gz.gpg` backups, are removed by hand (docs/UPGRADING.md, 3.0.0). |
+| 4.14 | **PostgreSQL 19** | Due 2026-11-19. A release that changes the image, with the dump and restore of docs/OPERATIONS.md, section 8. |
 
-## Phase 5 — Extras (2.19 and later)
+## Phase 5 — Extras (3.1 and later)
 
 - **Announced dividends on top of the projected calendar:** EODHD's free key (20 calls a day) returns declared future dividends (`/api/div`, amount and currency; pay dates often missing outside North America). Ask only for holdings with a projected payment in the next ~45 days, and replace the projection when one is announced. First check, with a free key, that it serves Euronext, Xetra and LSE symbols; if it only serves the US, the paid "Historian" plan is the next step. Its terms allow storing the data for private use only.
 - **Sector of each holding**, for a sector breakdown, from free sources: SEC EDGAR's SIC code (US issuers and foreign ones registered there), else Wikidata's industry by ISIN (mapped to ~11 sectors; coverage is uneven), else entered by hand. Distributing ETFs by hand, or Alpha Vantage's free ETF profile if it covers UCITS.

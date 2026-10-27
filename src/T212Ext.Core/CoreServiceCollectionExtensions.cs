@@ -10,7 +10,7 @@ using Arisoul.T212Ext.Core.Reports;
 using Arisoul.T212Ext.Core.Security;
 using Arisoul.T212Ext.Core.Sync;
 using Arisoul.T212Ext.Core.Tax;
-using Microsoft.Data.SqlClient;
+using Npgsql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,7 +30,7 @@ public static class CoreServiceCollectionExtensions
             ?? throw new InvalidOperationException($"Connection string '{ConnectionStringName}' is missing.");
 
         services.TryAddSingleton(TimeProvider.System);
-        services.AddDbContextFactory<T212ExtDbContext>(options => options.UseSqlServer(connectionString));
+        services.AddDbContextFactory<T212ExtDbContext>(options => options.UseNpgsql(connectionString));
 
         services.AddOptions<T212Options>().Bind(configuration.GetSection(T212Options.Section));
         services.AddOptions<SyncOptions>().Bind(configuration.GetSection(SyncOptions.Section));
@@ -83,8 +83,8 @@ public static class CoreServiceCollectionExtensions
     /// Applies pending migrations and creates the rows of the configured accounts. Run once at startup.
     /// </summary>
     /// <remarks>
-    /// Retries while SQL Server cannot be reached: LocalDB can fail to start when two processes
-    /// wake it at once, and a SQL Server container may still be starting.
+    /// Retries while PostgreSQL cannot be reached: its container may still be starting (compose waits
+    /// for it to be healthy, but a restart of the database alone does not wait for anyone).
     /// </remarks>
     public static async Task InitializeT212ExtAsync(this IServiceProvider services, CancellationToken cancellationToken = default)
     {
@@ -101,10 +101,10 @@ public static class CoreServiceCollectionExtensions
                 await scope.ServiceProvider.GetRequiredService<AccountRegistry>().EnsureAccountsAsync(db, cancellationToken);
                 return;
             }
-            catch (SqlException ex) when (attempt < StartupAttempts)
+            catch (NpgsqlException ex) when (attempt < StartupAttempts)
             {
                 var wait = TimeSpan.FromSeconds(5 * attempt);
-                logger.LogWarning("SQL Server not reachable at startup ({Error}); attempt {Attempt} of {Max}, retrying in {Wait}",
+                logger.LogWarning("PostgreSQL not reachable at startup ({Error}); attempt {Attempt} of {Max}, retrying in {Wait}",
                     ex.Message, attempt, StartupAttempts, wait);
                 await Task.Delay(wait, cancellationToken);
             }

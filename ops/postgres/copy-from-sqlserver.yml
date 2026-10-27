@@ -1,0 +1,24 @@
+# One-time move from SQL Server to PostgreSQL (3.0.0, docs/UPGRADING.md). Added to the project's
+# compose file only for that run; the app itself never joins the "data" network again:
+#   docker compose -f docker-compose.yml -f ops/postgres/copy-from-sqlserver.yml run --rm t212ext-copy
+# It reads the old database on the shared SQL Server (as before 3.0.0: "sqlserver", login t212ext,
+# T212EXT_DB_PASSWORD) and writes the empty one in t212ext-db, then compares every table's rows.
+services:
+  t212ext-copy:
+    image: t212ext-web:${T212EXT_VERSION:-latest}
+    env_file: .env
+    environment:
+      ConnectionStrings__T212Ext: "Host=t212ext-db;Database=t212ext;Username=t212ext;Password=${T212EXT_PG_PASSWORD:?set T212EXT_PG_PASSWORD in .env}"
+      ConnectionStrings__SqlServer: "Server=sqlserver,1433;Database=T212Ext;User Id=t212ext;Password=${T212EXT_DB_PASSWORD:?keep T212EXT_DB_PASSWORD in .env until the move is confirmed};TrustServerCertificate=True"
+    command: ["copy-from-sqlserver"]
+    networks:
+      - default
+      - data
+    depends_on:
+      t212ext-db:
+        condition: service_healthy
+    profiles: ["copy"]
+
+networks:
+  data:
+    external: true

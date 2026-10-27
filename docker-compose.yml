@@ -1,9 +1,10 @@
 # T212Ext on the server, next to traceon (docs/DEPLOYMENT.md).
-# It talks only to the server's shared infrastructure, never to another app:
-#   edge: the reverse proxy (Caddy) serves it over HTTPS as "t212ext-web:8080";
-#   data: it reaches SQL Server as "sqlserver", with a login of its own.
-# Both networks are created once by hand (docker network create edge / data). It publishes no port.
-# Names on those networks are DNS names: keep the "t212ext-" prefix (traceon docs/OPERATIONS.md, section 20).
+# Its database is its own (t212ext-db, PostgreSQL), on this project's network only: nothing else
+# reaches it, and nothing here depends on another app (3.0.0; before, it lived on traceon's SQL Server).
+# The only shared piece is "edge": the reverse proxy (Caddy) serves the app over HTTPS as
+# "t212ext-web:8080". That network is created once by hand (docker network create edge). No port is
+# published. Names on it are DNS names: keep the "t212ext-" prefix (traceon docs/OPERATIONS.md, section 20).
+# Deploy with ops/deploy.sh: it builds the image of the version (t212ext-web:<version>) and keeps three.
 
 # Log rotation (Docker's json-file driver has no limit by default)
 x-logging: &default-logging
@@ -13,8 +14,32 @@ x-logging: &default-logging
     max-file: "5"
 
 services:
+  t212ext-db:
+    # The latest stable PostgreSQL; a new major version is a dump and restore (docs/OPERATIONS.md).
+    image: postgres:18
+    container_name: t212ext-db
+    environment:
+      POSTGRES_DB: t212ext
+      POSTGRES_USER: t212ext
+      POSTGRES_PASSWORD: ${T212EXT_PG_PASSWORD:?set T212EXT_PG_PASSWORD in .env}
+      # Text compares and sorts by code point, the same on every server and image: the builtin
+      # provider never changes with the operating system's libraries (docs/POSTGRESQL.md).
+      POSTGRES_INITDB_ARGS: "--locale-provider=builtin --builtin-locale=C.UTF-8"
+    volumes:
+      # From PostgreSQL 18 the image keeps its data under /var/lib/postgresql/<major>/docker.
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U t212ext -d t212ext"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    logging: *default-logging
+    restart: unless-stopped
+
   t212ext-web:
     build: .
+    image: t212ext-web:${T212EXT_VERSION:-latest}
     container_name: t212ext-web
     # The app's settings (Auth__Users__*, T212__Accounts__*) come from .env as they are; see .env.example.
     env_file: .env
@@ -22,21 +47,24 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       # Caddy terminates HTTPS: trust its X-Forwarded-For/-Proto (the port is not published).
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
-      ConnectionStrings__T212Ext: "Server=sqlserver,1433;Database=T212Ext;User Id=t212ext;Password=${T212EXT_DB_PASSWORD:?set T212EXT_DB_PASSWORD in .env};TrustServerCertificate=True"
+      ConnectionStrings__T212Ext: "Host=t212ext-db;Database=t212ext;Username=t212ext;Password=${T212EXT_PG_PASSWORD:?set T212EXT_PG_PASSWORD in .env}"
     volumes:
       - keys:/data/keys
     networks:
+      - default
       - edge
-      - data
+    depends_on:
+      t212ext-db:
+        condition: service_healthy
     logging: *default-logging
     restart: unless-stopped
 
 volumes:
+  # The database.
+  pgdata:
   # Data protection keys: without them every restart signs everyone out.
   keys:
 
 networks:
   edge:
-    external: true
-  data:
     external: true
