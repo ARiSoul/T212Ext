@@ -2,6 +2,11 @@
 
 What changed in each version, for the person using the app. Versions follow [semantic versioning](https://semver.org); the branch prefix decides the bump (see [README.md](README.md#versions)). Each released version is a git tag (`v2.0.0`) with a GitHub release.
 
+## 3.1.0 — SQL Server removed (2026-10-27)
+
+**Removed**
+- The one-time `copy-from-sqlserver` command and what only it needed: the SQL Server database package (and the `System.Security.Cryptography.Pkcs` pin that came with it) and `ops/postgres/copy-from-sqlserver.yml`. Production moved to PostgreSQL with 3.0.0; nothing in the app uses SQL Server any more. The command stays in tag `v3.0.0`.
+
 ## 3.0.0 — PostgreSQL (2026-10-27)
 
 **Changed**

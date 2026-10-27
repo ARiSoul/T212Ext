@@ -75,7 +75,6 @@ jobs:
         run: |
           cp .env.example .env
           T212EXT_PG_PASSWORD=ci docker compose config --quiet
-          T212EXT_PG_PASSWORD=ci T212EXT_DB_PASSWORD=ci docker compose -f docker-compose.yml -f ops/postgres/copy-from-sqlserver.yml config --quiet
           rm .env
           shellcheck ops/*.sh ops/backup/*.sh
 
@@ -89,13 +88,6 @@ jobs:
           docker network create t212ext-ci
           docker run -d --name pg --network t212ext-ci -e POSTGRES_USER=t212ext -e POSTGRES_PASSWORD=ci-only -e POSTGRES_DB=t212ext \
             -e "POSTGRES_INITDB_ARGS=--locale-provider=builtin --builtin-locale=C.UTF-8" postgres:18
-
-          # The one-time copy (3.0.0) is in the image, and says what it needs.
-          if docker run --rm t212ext:ci copy-from-sqlserver 2> copy.log; then
-            echo "copy-from-sqlserver ran without connection strings" >&2
-            exit 1
-          fi
-          grep -q "ConnectionStrings:SqlServer" copy.log
 
           if docker run --rm -e ASPNETCORE_ENVIRONMENT=Production t212ext:ci 2> refused.log; then
             echo "Production started without users" >&2

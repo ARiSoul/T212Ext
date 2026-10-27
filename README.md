@@ -169,12 +169,6 @@ Open http://localhost:5067. The first start creates the database, and a first sy
 
 > **Exposing it to the internet:** follow [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Outside Development the app refuses to start without users.
 
-**A local database from before 3.0.0** (LocalDB) moves with the command the server uses, into the empty local PostgreSQL (docs/UPGRADING.md, 3.0.0):
-
-```bash
-dotnet run --project src/T212Ext.Web -- copy-from-sqlserver "--ConnectionStrings:SqlServer=Server=(localdb)\MSSQLLocalDB;Database=T212Ext;Trusted_Connection=True;TrustServerCertificate=True"
-```
-
 ### 4. Import your history (recommended)
 
 The API's history is incomplete for some accounts, and it never includes withholding tax. The sync fixes both on its own by asking Trading 212 for CSV reports (`Reports:*` above); the **Import CSV** page lists them.
@@ -188,7 +182,7 @@ dotnet test T212Ext.slnx
 ```
 
 - `tests/T212Ext.Client.Tests`: the API client against a stubbed HTTP handler. Covers authentication, pagination, rate limits, retries and errors.
-- `tests/T212Ext.Core.Tests`: sync, CSV parsing and import, merging between sources, analytics and queries, the copy from SQL Server, against a real PostgreSQL.
+- `tests/T212Ext.Core.Tests`: sync, CSV parsing and import, merging between sources, analytics and queries, against a real PostgreSQL.
   - Each run creates a throwaway database and drops it at the end.
   - By default a `postgres:18` container is started for the run (Testcontainers; Docker must be running). Set `T212EXT_TEST_PG` to use another server (a connection string; its database is replaced).
 - `tests/T212Ext.Web.Tests`: the grid engine (filters, date ranges, sorting, totals, paging, export, columns, saved views) and the grid component (bUnit), sign-in (passwords, authenticator codes, return URLs, settings), languages, and that the three translations have the same keys.

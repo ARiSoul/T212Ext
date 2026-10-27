@@ -39,7 +39,7 @@ public sealed class FakePushTexts : IPushTexts
 
     public PushText Test(CultureInfo culture) => new($"{culture.Name} test", "");
 
-    // Amounts come back from SQL Server with ten decimals.
+    // Amounts come back from the database with ten decimals.
     private static string N(decimal value) => value.ToString("0.##########", CultureInfo.InvariantCulture);
 }
 

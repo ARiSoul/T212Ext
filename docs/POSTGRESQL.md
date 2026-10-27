@@ -69,7 +69,7 @@ What the model became: `numeric(28,10)` for decimals, `character varying(n)` for
 
 ## 5. Moving the data
 
-**`copy-from-sqlserver`** (a command of the image, like `hash-password`; `Web/CopyFromSqlServer.cs`, `Core/Data/DatabaseCopy.cs`):
+**`copy-from-sqlserver`** (a command of the image, like `hash-password`; `Web/CopyFromSqlServer.cs`, `Core/Data/DatabaseCopy.cs`, in tag `v3.0.0`):
 
 - Reads with the SqlServer provider (`ConnectionStrings:SqlServer`) and writes with Npgsql (`ConnectionStrings:T212Ext`), **through the EF model**, so values convert as the app writes them (instants to UTC, decimals exactly).
 - **Foreign-key order** from the model (principals first), **one transaction**: a failure leaves the target empty. Owned rows (positions of a snapshot, taxes of an order) go with their owner.
@@ -80,12 +80,12 @@ What the model became: `numeric(28,10)` for decimals, `character varying(n)` for
 - Tested against a real SQL Server (LocalDB) into PostgreSQL 18: every count, sums and first and last dates equal, the sequence at the highest id. The generic copy is tested in CI PostgreSQL to PostgreSQL (`PostgreSqlTests`).
 - **pgloader** was the alternative: nothing to keep in the code, but `datetimeoffset`, the decimals and the sequences would have been ours to check, untested.
 
-The command and the SQL Server package go away once the move is confirmed (backlog).
+Production moved on 2026-10-27. **3.1.0 removed** the command, `DatabaseCopy` and its tests, the SQL Server package and the compose file; the old database, login and backups were removed by hand. The code stays in tag `v3.0.0`, for traceon.
 
 ## 6. Tests and CI
 
 - **Tests**: a `postgres:18` container started for the run by **Testcontainers** (`Testcontainers.PostgreSql`), with the production locale; or `T212EXT_TEST_PG` (a connection string; the fixture uses its own database on it). LocalDB is gone. Docker must be running for the tests.
-- **CI**: a `postgres:18` service container, through `T212EXT_TEST_PG`. The image's smoke test starts the app against a PostgreSQL container (migrations included), and checks that `copy-from-sqlserver` is in the image.
+- **CI**: a `postgres:18` service container, through `T212EXT_TEST_PG`. The image's smoke test starts the app against a PostgreSQL container (migrations included).
 - Testcontainers 4.x takes the image in the builder's constructor (`new PostgreSqlBuilder("postgres:18")`).
 - EF's analyser refuses interpolated raw SQL (`EF1002`); table names from the model are the one place it is suppressed, with the reason.
 

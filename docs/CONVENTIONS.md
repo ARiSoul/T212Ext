@@ -169,7 +169,7 @@ The rules every change follows, for people and for coding assistants. Each rule 
 1. **The server runs what the repository holds.** Its settings are only in `.env`; tracked files are never edited there, so `git pull` always applies cleanly.
 2. **A new setting the server needs goes, in the same PR, to `.env.example`, the settings table in the README, and the version's section in `UPGRADING.md`.**
 3. **T212Ext depends on the server's shared infrastructure, never on another app.**
-   - It joins only the external network `edge` (the reverse proxy), never another project's network, and publishes no port. Its database is its own (`t212ext-db`, on the project's network); the network `data` is joined only by the one-time copy from SQL Server (3.0.0).
+   - It joins only the external network `edge` (the reverse proxy), never another project's network, and publishes no port. Its database is its own (`t212ext-db`, on the project's network).
    - Names on the shared network are DNS names: every service and container is `t212ext-<role>` (`t212ext-web`, `t212ext-db`), never generic (`web`, `api`, `db`) nor `caddy` or `traceon-*`.
    - Its site is a file in the proxy's sites folder, with the domain written in it; the docs always validate the configuration before reloading Caddy. Its backups, scripts and secrets are its own. Nothing in this repository calls another app's scripts.
    - The infrastructure's side of the contract is traceon's `docs/OPERATIONS.md`, section 20; a change there is checked against this section.
